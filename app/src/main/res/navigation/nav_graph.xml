@@ -3,16 +3,28 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/testFragment">
+    app:startDestination="@id/mainFragment">
 
     <fragment
         android:id="@+id/mainFragment"
         android:name="com.nikealarm.nikedrawalarm.MainFragment"
         android:label="fragment_main"
-        tools:layout="@layout/fragment_main" />
+        tools:layout="@layout/fragment_main" >
+        <action
+            android:id="@+id/action_mainFragment_to_settingScreenPreference"
+            app:destination="@id/settingScreenPreference" />
+    </fragment>
     <fragment
         android:id="@+id/testFragment"
         android:name="com.nikealarm.nikedrawalarm.TestFragment"
         android:label="fragment_test"
         tools:layout="@layout/fragment_test" />
+    <fragment
+        android:id="@+id/settingScreenPreference"
+        android:name="com.nikealarm.nikedrawalarm.SettingScreenPreference"
+        android:label="SettingScreenPreference" >
+        <action
+            android:id="@+id/action_settingScreenPreference_to_mainFragment"
+            app:popUpTo="@id/mainFragment" />
+    </fragment>
 </navigation>

@@ -1,5 +1,10 @@
 package com.nikealarm.nikedrawalarm
 
+import android.app.AlarmManager
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -16,8 +21,10 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.WorkRequest
+import java.util.*
 
 class TestFragment : Fragment() {
+    private lateinit var mAlarmManager: AlarmManager
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -31,24 +38,49 @@ class TestFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        mAlarmManager = context?.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
         val testText = view.findViewById<TextView>(R.id.test_text)
         val testButton = view.findViewById<Button>(R.id.test_button).apply {
             setOnClickListener {
                 // 버튼 클릭 시
-
-                val parsingWorkRequest = OneTimeWorkRequestBuilder<ParsingWorker>()
-                    .build()
-                WorkManager.getInstance(context).enqueue(parsingWorkRequest)
-
-                WorkManager.getInstance(context).getWorkInfoByIdLiveData(parsingWorkRequest.id)
-                    .observe(viewLifecycleOwner, Observer {
-                        if(it != null && it.state == WorkInfo.State.SUCCEEDED) {
-                            val result = it.outputData.getString("Data")
-
-                            testText.text = result
-                        }
-                    })
+                setAlarm()
             }
         }
+    }
+
+    // 알람 설정
+    private fun setAlarm() {
+        val mIntent = Intent(context, MyAlarmReceiver::class.java)
+
+        val mCalendar = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, 9)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+
+        val timeTrigger: Long
+        if (System.currentTimeMillis() > mCalendar.timeInMillis) {
+            timeTrigger = mCalendar.timeInMillis + 86400000
+            mIntent.putExtra(MainActivity.SET_ALARM, timeTrigger)
+        } else {
+            timeTrigger = mCalendar.timeInMillis
+            mIntent.putExtra(MainActivity.SET_ALARM, timeTrigger + 86400000)
+        }
+
+        val mPendingIntent = PendingIntent.getBroadcast(
+            requireContext(),
+            MainActivity.REQUEST_ALARM_CODE,
+            mIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
+        // 오전 9시 알람 설정
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            mAlarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, timeTrigger, mPendingIntent)
+        }
+
+        Toast.makeText(context, "눌림", Toast.LENGTH_SHORT).show()
     }
 }
