@@ -7,15 +7,24 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.view.MenuItem
+import androidx.navigation.fragment.findNavController
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreferenceCompat
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import java.util.*
+
+/*
+* 알림설정(버전 별마다)
+* */
 
 class SettingScreenPreference : PreferenceFragmentCompat() {
     private lateinit var mAlarmManager: AlarmManager
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.setting_screen, rootKey)
+        setHasOptionsMenu(true)
         (activity as MainActivity).supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         // 인스턴스 설정
@@ -35,12 +44,22 @@ class SettingScreenPreference : PreferenceFragmentCompat() {
             }
     }
 
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            android.R.id.home -> {
+                findNavController().navigate(R.id.action_settingScreenPreference_to_mainFragment)
+                true
+            }
+            else -> false
+        }
+    }
+
     // 알람 설정
     private fun setAlarm() {
         val mIntent = Intent(context, MyAlarmReceiver::class.java)
 
         val mCalendar = Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, 9)
+            set(Calendar.HOUR_OF_DAY, 8)
             set(Calendar.MINUTE, 0)
             set(Calendar.SECOND, 0)
             set(Calendar.MILLISECOND, 0)
@@ -64,24 +83,34 @@ class SettingScreenPreference : PreferenceFragmentCompat() {
 
         // 오전 9시 알람 설정
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            mAlarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, timeTrigger, mPendingIntent)
+            mAlarmManager.setExactAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                timeTrigger,
+                mPendingIntent
+            )
         }
 
+//        val parsingWorkRequest = OneTimeWorkRequestBuilder<ParsingWorker>()
+//            .build()
+//        WorkManager.getInstance(requireContext()).enqueue(parsingWorkRequest)
         Log.i("SetAlarm", "동작")
     }
 
     // 알람 지우기
     private fun removeAlarm() {
         val mIntent = Intent(context, MyAlarmReceiver::class.java)
-        val alarmPendingIntent = PendingIntent.getBroadcast(
-            context,
-            MainActivity.REQUEST_ALARM_CODE,
-            mIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT
-        )
 
         // 이미 설정된 알람이 있는지 확인
-        if(checkExistAlarm(mIntent)) {
+        if (checkExistAlarm(mIntent)) {
+
+            // 설정된 알람이 있으면 삭제함
+            val alarmPendingIntent = PendingIntent.getBroadcast(
+                context,
+                MainActivity.REQUEST_ALARM_CODE,
+                mIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT
+            )
+
             mAlarmManager.cancel(alarmPendingIntent)
             alarmPendingIntent.cancel()
 
@@ -98,7 +127,7 @@ class SettingScreenPreference : PreferenceFragmentCompat() {
             PendingIntent.FLAG_NO_CREATE
         )
 
-        if(alarmPendingIntent != null) {
+        if (alarmPendingIntent != null) {
             return true
         }
 

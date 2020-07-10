@@ -57,7 +57,7 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(c
                 .text()
 
             // draw가 있을 시
-            if(/*shoesInfo == "THE DRAW 진행예정"*/channelId == 0) {
+            if(shoesInfo == "THE DRAW 진행예정" || channelId == 0) {
                 val innerUrl = "https://www.nike.com" + elementData.select("a").attr("href") // 해당 draw 링크창을 읽어옴
                 val innerDoc = Jsoup.connect(innerUrl)
                     .userAgent("Mozilla")
@@ -67,7 +67,7 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(c
                     .select("img")
                     .eq(0)
                     .attr("src")
-                val shoesBitmap = Picasso.get().load(Uri.parse(shoesImageUrl)).get()
+                val shoesBitmap = Picasso.get().load(shoesImageUrl).get()
 
                 /* draw 있을 때 수정하기 */
                 val innerElementData = innerDoc.select("span.uk-text-bold")
@@ -119,7 +119,7 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(c
             .addAction(0, "응모하러 가기", mPendingIntent)
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(channelId.toString(), shoesInfo.shoesTitle, NotificationManager.IMPORTANCE_DEFAULT)
+            val channel = NotificationChannel("Default", shoesInfo.shoesTitle, NotificationManager.IMPORTANCE_DEFAULT)
             val notificationManager = mContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
             notificationManager.createNotificationChannel(channel)

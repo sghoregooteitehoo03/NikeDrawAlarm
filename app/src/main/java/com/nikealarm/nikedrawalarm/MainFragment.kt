@@ -1,15 +1,21 @@
 package com.nikealarm.nikedrawalarm
 
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import androidx.fragment.app.Fragment
 import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.ProgressBar
+import androidx.activity.OnBackPressedCallback
 import androidx.navigation.fragment.findNavController
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 
 class MainFragment : Fragment() {
     private lateinit var mainWebView: WebView
+    private lateinit var mainProgress: ProgressBar
+    private lateinit var mainWebRefresh: SwipeRefreshLayout
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -19,6 +25,7 @@ class MainFragment : Fragment() {
 
         setHasOptionsMenu(true)
         (activity as MainActivity).supportActionBar?.setDisplayHomeAsUpEnabled(false)
+        requireActivity().onBackPressedDispatcher.addCallback(backPressedCallback)
 
         return inflater.inflate(R.layout.fragment_main, container, false)
     }
@@ -27,18 +34,23 @@ class MainFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val url = requireActivity().intent.getStringExtra(MainActivity.DRAW_URL)?:"https://www.nike.com/kr/launch/?type=feed"
+        val url = requireActivity().intent.getStringExtra(MainActivity.DRAW_URL)
+            ?: "https://www.nike.com/kr/launch/?type=feed"
+
         // id설정
         mainWebView = view.findViewById<WebView>(R.id.main_webView).apply {
             loadUrl(url)
 
             settings.javaScriptEnabled = true
             webViewClient = WebViewClient()
+            webChromeClient = mWebChromeClient
         }
-    }
-
-    private val mWebChromeClient = object : WebChromeClient() {
-
+        mainProgress = view.findViewById(R.id.main_webProgress)
+        mainWebRefresh = view.findViewById<SwipeRefreshLayout>(R.id.main_webViewRefresh).apply {
+            setOnRefreshListener {
+                mainWebView.reload()
+            }
+        }
     }
 
     // 메뉴 설정
@@ -48,12 +60,39 @@ class MainFragment : Fragment() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when(item.itemId) {
+        return when (item.itemId) {
             R.id.mainMenu_setting -> {
                 findNavController().navigate(R.id.action_mainFragment_to_settingScreenPreference)
                 true
             }
             else -> false
+        }
+    }
+
+    private val mWebChromeClient = object : WebChromeClient() {
+        override fun onProgressChanged(view: WebView?, newProgress: Int) {
+            super.onProgressChanged(view, newProgress)
+
+            with(mainProgress) {
+                visibility = View.VISIBLE
+                progress = newProgress
+
+                if (progress == 100) {
+                    visibility = View.GONE
+                    mainWebRefresh.isRefreshing = false
+                }
+            }
+        }
+    }
+
+    private val backPressedCallback = object : OnBackPressedCallback(true) {
+        override fun handleOnBackPressed() {
+            if (mainWebView.canGoBack()) {
+                mainWebView.goBack()
+            } else {
+                super.setEnabled(false)
+                requireActivity().onBackPressed()
+            }
         }
     }
 }

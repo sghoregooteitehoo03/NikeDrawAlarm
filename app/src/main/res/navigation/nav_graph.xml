@@ -15,11 +15,6 @@
             app:destination="@id/settingScreenPreference" />
     </fragment>
     <fragment
-        android:id="@+id/testFragment"
-        android:name="com.nikealarm.nikedrawalarm.TestFragment"
-        android:label="fragment_test"
-        tools:layout="@layout/fragment_test" />
-    <fragment
         android:id="@+id/settingScreenPreference"
         android:name="com.nikealarm.nikedrawalarm.SettingScreenPreference"
         android:label="SettingScreenPreference" >

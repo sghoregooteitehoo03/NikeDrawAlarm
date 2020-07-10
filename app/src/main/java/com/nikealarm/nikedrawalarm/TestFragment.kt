@@ -44,7 +44,9 @@ class TestFragment : Fragment() {
         val testButton = view.findViewById<Button>(R.id.test_button).apply {
             setOnClickListener {
                 // 버튼 클릭 시
-                setAlarm()
+                val parsingWorkRequest = OneTimeWorkRequestBuilder<ParsingWorker>()
+                    .build()
+                WorkManager.getInstance(requireContext()).enqueue(parsingWorkRequest)
             }
         }
     }
