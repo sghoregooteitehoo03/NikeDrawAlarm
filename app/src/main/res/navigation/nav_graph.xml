@@ -5,11 +5,21 @@
     android:id="@+id/nav_graph"
     app:startDestination="@id/mainFragment">
 
+    <action
+        android:id="@+id/action_global_mainFragment"
+        app:destination="@id/mainFragment"
+        app:launchSingleTop="true" />
+
+    <action
+        android:id="@+id/action_global_drawListFragment"
+        app:destination="@id/drawListFragment"
+        app:launchSingleTop="true"/>
+
     <fragment
         android:id="@+id/mainFragment"
         android:name="com.nikealarm.nikedrawalarm.MainFragment"
         android:label="fragment_main"
-        tools:layout="@layout/fragment_main" >
+        tools:layout="@layout/fragment_main">
         <action
             android:id="@+id/action_mainFragment_to_settingScreenPreference"
             app:destination="@id/settingScreenPreference" />
@@ -17,9 +27,21 @@
     <fragment
         android:id="@+id/settingScreenPreference"
         android:name="com.nikealarm.nikedrawalarm.SettingScreenPreference"
-        android:label="SettingScreenPreference" >
+        android:label="SettingScreenPreference">
         <action
             android:id="@+id/action_settingScreenPreference_to_mainFragment"
             app:popUpTo="@id/mainFragment" />
+        <action
+            android:id="@+id/action_settingScreenPreference_to_drawListFragment"
+            app:destination="@id/drawListFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/drawListFragment"
+        android:name="com.nikealarm.nikedrawalarm.DrawListFragment"
+        android:label="fragment_draw_list"
+        tools:layout="@layout/fragment_draw_list">
+        <action
+            android:id="@+id/action_drawListFragment_to_settingScreenPreference"
+            app:popUpTo="@id/settingScreenPreference" />
     </fragment>
 </navigation>

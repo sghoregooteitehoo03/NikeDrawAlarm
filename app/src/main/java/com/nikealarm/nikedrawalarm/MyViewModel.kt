@@ -1,16 +1,24 @@
 package com.nikealarm.nikedrawalarm
 
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.viewModelScope
+import androidx.paging.PagedList
+import kotlinx.coroutines.launch
 
-class MyViewModel : ViewModel() {
-    private val receiveData = MutableLiveData<String>()
+class MyViewModel(application: Application) : AndroidViewModel(application) {
+    private val repository = MyRepository(application)
 
-    fun setReceiveData(setData: String) {
-        receiveData.value = setData
+    fun getAllShoesPagingData(): LiveData<PagedList<DrawShoesDataModel>> {
+        return repository.getAllShoesPagingData()
     }
 
-    fun getReceiveData(): MutableLiveData<String> {
-        return receiveData
+    fun insertShoesData(insertData: DrawShoesDataModel) = viewModelScope.launch {
+        repository.insertShoesData(insertData)
+    }
+
+    fun clearShoesData() = viewModelScope.launch {
+        repository.clearShoesData()
     }
 }

@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
 import androidx.navigation.fragment.findNavController
+import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreferenceCompat
 import androidx.work.OneTimeWorkRequestBuilder
@@ -42,6 +43,13 @@ class SettingScreenPreference : PreferenceFragmentCompat() {
                     true
                 }
             }
+        val showListPreference =
+            findPreference<Preference>(getString(R.string.setting_preference_showListPreferenceKey))?.apply {
+                setOnPreferenceClickListener {
+                    findNavController().navigate(R.id.action_settingScreenPreference_to_drawListFragment)
+                    true
+                }
+            }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -56,43 +64,46 @@ class SettingScreenPreference : PreferenceFragmentCompat() {
 
     // 알람 설정
     private fun setAlarm() {
-        val mIntent = Intent(context, MyAlarmReceiver::class.java)
+//        val mIntent = Intent(context, MyAlarmReceiver::class.java).apply {
+//            action = Contents.INTENT_ACTION_SYNC_ALARM
+//        }
+//
+//        val mCalendar = Calendar.getInstance().apply {
+//            set(Calendar.HOUR_OF_DAY, 8)
+//            set(Calendar.MINUTE, 0)
+//            set(Calendar.SECOND, 0)
+//            set(Calendar.MILLISECOND, 0)
+//        }
+//
+//        val timeTrigger: Long
+//        if (System.currentTimeMillis() > mCalendar.timeInMillis) {
+//            timeTrigger = mCalendar.timeInMillis + 86400000
+//            mIntent.putExtra(MainActivity.SET_ALARM, timeTrigger + 86400000)
+//        } else {
+//            timeTrigger = mCalendar.timeInMillis
+//            mIntent.putExtra(MainActivity.SET_ALARM, timeTrigger + 86400000)
+//        }
+//
+//        val mPendingIntent = PendingIntent.getBroadcast(
+//            context,
+//            MainActivity.REQUEST_ALARM_CODE,
+//            mIntent,
+//            PendingIntent.FLAG_UPDATE_CURRENT
+//        )
+//
+//        // 오전 8시 알람 설정
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+//            mAlarmManager.setExactAndAllowWhileIdle(
+//                AlarmManager.RTC_WAKEUP,
+//                timeTrigger,
+//                mPendingIntent
+//            )
+//        }
 
-        val mCalendar = Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, 8)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }
-
-        val timeTrigger: Long
-        if (System.currentTimeMillis() > mCalendar.timeInMillis) {
-            timeTrigger = mCalendar.timeInMillis + 86400000
-            mIntent.putExtra(MainActivity.SET_ALARM, timeTrigger + 86400000)
-        } else {
-            timeTrigger = mCalendar.timeInMillis
-            mIntent.putExtra(MainActivity.SET_ALARM, timeTrigger + 86400000)
-        }
-
-        val mPendingIntent = PendingIntent.getBroadcast(
-            context,
-            MainActivity.REQUEST_ALARM_CODE,
-            mIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT
-        )
-
-        // 오전 9시 알람 설정
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            mAlarmManager.setExactAndAllowWhileIdle(
-                AlarmManager.RTC_WAKEUP,
-                timeTrigger,
-                mPendingIntent
-            )
-        }
-
-//        val parsingWorkRequest = OneTimeWorkRequestBuilder<ParsingWorker>()
-//            .build()
-//        WorkManager.getInstance(requireContext()).enqueue(parsingWorkRequest)
+        // 테스트
+        val parsingWorkRequest = OneTimeWorkRequestBuilder<ParsingWorker>()
+            .build()
+        WorkManager.getInstance(requireContext()).enqueue(parsingWorkRequest)
         Log.i("SetAlarm", "동작")
     }
 
@@ -106,7 +117,7 @@ class SettingScreenPreference : PreferenceFragmentCompat() {
             // 설정된 알람이 있으면 삭제함
             val alarmPendingIntent = PendingIntent.getBroadcast(
                 context,
-                MainActivity.REQUEST_ALARM_CODE,
+                Contents.SYNC_ALARM_CODE,
                 mIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT
             )
@@ -122,7 +133,7 @@ class SettingScreenPreference : PreferenceFragmentCompat() {
     private fun checkExistAlarm(mIntent: Intent): Boolean {
         val alarmPendingIntent = PendingIntent.getBroadcast(
             context,
-            MainActivity.REQUEST_ALARM_CODE,
+            Contents.SYNC_ALARM_CODE,
             mIntent,
             PendingIntent.FLAG_NO_CREATE
         )

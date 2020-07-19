@@ -1,8 +1,9 @@
 <resources>
-    <string name="app_name">NikeDrawAlarm</string>
+    <string name="app_name">NDA</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
 
     <!-- 키 -->
     <string name="setting_preference_switchKey">isAllowSync</string>
+    <string name="setting_preference_showListPreferenceKey">showList</string>
 </resources>

@@ -11,6 +11,9 @@ import android.widget.ProgressBar
 import androidx.activity.OnBackPressedCallback
 import androidx.navigation.fragment.findNavController
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class MainFragment : Fragment() {
     private lateinit var mainWebView: WebView
@@ -34,7 +37,7 @@ class MainFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val url = requireActivity().intent.getStringExtra(MainActivity.DRAW_URL)
+        val url = requireActivity().intent.getStringExtra(Contents.DRAW_URL)
             ?: "https://www.nike.com/kr/launch/?type=feed"
 
         // id설정
@@ -62,6 +65,9 @@ class MainFragment : Fragment() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.mainMenu_setting -> {
+                CoroutineScope(Dispatchers.IO).launch {
+                    MyDataBase.getDatabase(requireContext())!!.getDao().clearShoesData()
+                }
                 findNavController().navigate(R.id.action_mainFragment_to_settingScreenPreference)
                 true
             }
