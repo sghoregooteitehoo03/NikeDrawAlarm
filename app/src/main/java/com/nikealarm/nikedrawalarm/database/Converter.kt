@@ -1,4 +1,4 @@
-package com.nikealarm.nikedrawalarm
+package com.nikealarm.nikedrawalarm.database
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory

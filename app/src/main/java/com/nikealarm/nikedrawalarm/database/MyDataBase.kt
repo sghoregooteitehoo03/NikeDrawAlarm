@@ -1,4 +1,4 @@
-package com.nikealarm.nikedrawalarm
+package com.nikealarm.nikedrawalarm.database
 
 import android.content.Context
 import androidx.room.Database

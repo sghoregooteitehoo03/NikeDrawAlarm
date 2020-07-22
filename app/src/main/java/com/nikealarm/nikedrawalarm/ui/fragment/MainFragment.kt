@@ -1,7 +1,6 @@
-package com.nikealarm.nikedrawalarm
+package com.nikealarm.nikedrawalarm.ui.fragment
 
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import androidx.fragment.app.Fragment
 import android.webkit.WebChromeClient
@@ -11,9 +10,9 @@ import android.widget.ProgressBar
 import androidx.activity.OnBackPressedCallback
 import androidx.navigation.fragment.findNavController
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import com.nikealarm.nikedrawalarm.R
+import com.nikealarm.nikedrawalarm.other.Contents
+import com.nikealarm.nikedrawalarm.ui.MainActivity
 
 class MainFragment : Fragment() {
     private lateinit var mainWebView: WebView
@@ -65,9 +64,9 @@ class MainFragment : Fragment() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.mainMenu_setting -> {
-                CoroutineScope(Dispatchers.IO).launch {
-                    MyDataBase.getDatabase(requireContext())!!.getDao().clearShoesData()
-                }
+//                CoroutineScope(Dispatchers.IO).launch {
+//                    MyDataBase.getDatabase(requireContext())!!.getDao().clearShoesData()
+//                }
                 findNavController().navigate(R.id.action_mainFragment_to_settingScreenPreference)
                 true
             }

@@ -1,4 +1,4 @@
-package com.nikealarm.nikedrawalarm
+package com.nikealarm.nikedrawalarm.other
 
 object Contents {
     const val INTENT_ACTION_SYNC_ALARM = "INTENT_ACTION_SYNC_ALARM"
@@ -10,6 +10,12 @@ object Contents {
     const val CHANNEL_ID = "channelId"
     const val DRAW_URL = "drawUrl"
 
-    const val SET_ALARM = "setAlarm"
+    const val PREFERENCE_NAME_TIME = "PREFERENCE_NAME_TIME"
     const val SYNC_ALARM_CODE = 2000
+
+    const val SYNC_ALARM_KEY = "SYNC_ALARM_KEY"
+    const val PRODUCT_ALARM_KEY = "PRODUCT_ALARM_KEY"
+
+
+    const val WORKER_INPUT_DATA_KEY = "WORKER_INPUT_DATA_KEY"
 }

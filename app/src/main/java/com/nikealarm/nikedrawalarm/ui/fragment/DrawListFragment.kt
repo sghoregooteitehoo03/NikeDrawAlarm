@@ -1,17 +1,21 @@
-package com.nikealarm.nikedrawalarm
+package com.nikealarm.nikedrawalarm.ui.fragment
 
+import android.content.Context
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.nikealarm.nikedrawalarm.adapter.DrawListAdapter
+import com.nikealarm.nikedrawalarm.R
+import com.nikealarm.nikedrawalarm.ui.MainActivity
+import com.nikealarm.nikedrawalarm.viewmodel.MyViewModel
 
 class DrawListFragment : Fragment() {
     private lateinit var mViewModel: MyViewModel
@@ -33,7 +37,10 @@ class DrawListFragment : Fragment() {
         // 뷰모델 설정
         mViewModel = ViewModelProvider(this)[MyViewModel::class.java]
 
-        val mAdapter = DrawListAdapter(requireContext())
+        val mAdapter = DrawListAdapter(
+            requireContext(),
+            activity?.getPreferences(Context.MODE_PRIVATE)
+        )
         mViewModel.getAllShoesPagingData().observe(viewLifecycleOwner, Observer {
             mAdapter.submitList(it)
         })

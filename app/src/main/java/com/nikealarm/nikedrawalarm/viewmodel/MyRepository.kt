@@ -1,13 +1,16 @@
-package com.nikealarm.nikedrawalarm
+package com.nikealarm.nikedrawalarm.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.LiveData
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
+import com.nikealarm.nikedrawalarm.database.DrawShoesDataModel
+import com.nikealarm.nikedrawalarm.database.MyDataBase
 
 class MyRepository(application: Application) {
     private val mDao = MyDataBase.getDatabase(application)!!.getDao()
 
+    // Draw
     fun getAllShoesData(): List<DrawShoesDataModel> {
         return mDao.getAllShoesData()
     }

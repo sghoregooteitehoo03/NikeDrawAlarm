@@ -1,4 +1,4 @@
-package com.nikealarm.nikedrawalarm
+package com.nikealarm.nikedrawalarm.component
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -10,15 +10,16 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.work.Worker
 import androidx.work.WorkerParameters
+import com.nikealarm.nikedrawalarm.R
+import com.nikealarm.nikedrawalarm.database.DrawShoesDataModel
+import com.nikealarm.nikedrawalarm.database.MyDataBase
+import com.nikealarm.nikedrawalarm.other.Contents
+import com.nikealarm.nikedrawalarm.ui.MainActivity
 import com.squareup.picasso.Picasso
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.launch
 import org.jsoup.Jsoup
-
-/*
-* 자동으로 데이터 갱신하기
-* */
 
 class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(context,
     workerParams
@@ -81,11 +82,34 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(c
 
                 howToEvent += "\n$shoesPrice"
 
-                if(!mDao.getAllShoesData().contains(DrawShoesDataModel(0, shoesSubTitle, shoesTitle))) {
+                if(!mDao.getAllShoesData().contains(
+                        DrawShoesDataModel(
+                            0,
+                            shoesSubTitle,
+                            shoesTitle
+                        )
+                    )) {
                     // 알림생성
-                    createNotification(DrawShoesDataModel(0, shoesSubTitle, shoesTitle, howToEvent, shoesBitmap, innerUrl), channelId)
+                    createNotification(
+                        DrawShoesDataModel(
+                            0,
+                            shoesSubTitle,
+                            shoesTitle,
+                            howToEvent,
+                            shoesBitmap,
+                            innerUrl
+                        ), channelId)
                     // 데이터베이스에 추가함
-                    insertDatabase(DrawShoesDataModel(null, shoesSubTitle, shoesTitle, howToEvent, shoesBitmap, innerUrl))
+                    insertDatabase(
+                        DrawShoesDataModel(
+                            null,
+                            shoesSubTitle,
+                            shoesTitle,
+                            howToEvent,
+                            shoesBitmap,
+                            innerUrl
+                        )
+                    )
                 } else {
                     isInExist = false
                 }
@@ -94,7 +118,7 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(c
             channelId++
         }
 
-        clearDatabase()
+//        clearDatabase()
     }
 
     // 알림 생성
@@ -119,7 +143,7 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(c
         val setAlarmPendingIntent = PendingIntent.getActivity(mContext, 100, setAlarmIntent, PendingIntent.FLAG_ONE_SHOT)
 
         val notificationBuilder = NotificationCompat.Builder(mContext, "Default")
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.mipmap.ic_launcher)
             .setContentTitle("${shoesData.shoesSubTitle} - ${shoesData.shoesTitle}")
             .setVibrate(vibrate)
             .setLargeIcon(shoesData.shoesImage)

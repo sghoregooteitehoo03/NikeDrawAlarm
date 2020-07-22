@@ -17,7 +17,7 @@
 
     <fragment
         android:id="@+id/mainFragment"
-        android:name="com.nikealarm.nikedrawalarm.MainFragment"
+        android:name="com.nikealarm.nikedrawalarm.ui.fragment.MainFragment"
         android:label="fragment_main"
         tools:layout="@layout/fragment_main">
         <action
@@ -26,7 +26,7 @@
     </fragment>
     <fragment
         android:id="@+id/settingScreenPreference"
-        android:name="com.nikealarm.nikedrawalarm.SettingScreenPreference"
+        android:name="com.nikealarm.nikedrawalarm.ui.fragment.SettingScreenPreference"
         android:label="SettingScreenPreference">
         <action
             android:id="@+id/action_settingScreenPreference_to_mainFragment"
@@ -37,7 +37,7 @@
     </fragment>
     <fragment
         android:id="@+id/drawListFragment"
-        android:name="com.nikealarm.nikedrawalarm.DrawListFragment"
+        android:name="com.nikealarm.nikedrawalarm.ui.fragment.DrawListFragment"
         android:label="fragment_draw_list"
         tools:layout="@layout/fragment_draw_list">
         <action
