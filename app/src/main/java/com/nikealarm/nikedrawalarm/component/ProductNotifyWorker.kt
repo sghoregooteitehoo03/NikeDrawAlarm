@@ -11,21 +11,27 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import com.nikealarm.nikedrawalarm.R
+import com.nikealarm.nikedrawalarm.database.Dao
 import com.nikealarm.nikedrawalarm.database.DrawShoesDataModel
 import com.nikealarm.nikedrawalarm.database.MyDataBase
 import com.nikealarm.nikedrawalarm.other.Contents
 import com.nikealarm.nikedrawalarm.ui.MainActivity
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class ProductNotifyWorker(context: Context, workerParams: WorkerParameters) : Worker(context,
     workerParams
 ) {
+    private lateinit var mDao: Dao
 
     override fun doWork(): Result {
-        val mDao = MyDataBase.getDatabase(applicationContext)!!.getDao()
+        mDao = MyDataBase.getDatabase(applicationContext)!!.getDao()
         val position = inputData.getInt(Contents.WORKER_INPUT_DATA_KEY, -1)
 
         if(position != -1) {
-            createNotification(mDao.getAllShoesData()[position], applicationContext)
+            val data = mDao.getAllShoesData()[position]
+            createNotification(data, applicationContext)
         }
 
         return Result.success()
@@ -78,6 +84,22 @@ class ProductNotifyWorker(context: Context, workerParams: WorkerParameters) : Wo
 
         with(NotificationManagerCompat.from(context)) {
             notify(100, notificationBuilder.build())
+        }
+
+        // 알림 후 해당 상품을 db에서 지움
+        deleteShoesData(drawShoesInfo)
+    }
+
+    // 데이터를 지움
+    private fun deleteShoesData(data: DrawShoesDataModel) {
+        val mSharedPreferences = applicationContext.getSharedPreferences(Contents.PREFERENCE_NAME_TIME, Context.MODE_PRIVATE)
+        with(mSharedPreferences.edit()) {
+            remove(data.shoesTitle)
+            commit()
+        }
+
+        CoroutineScope(Dispatchers.IO).launch {
+            mDao.deleteShoesData(data)
         }
     }
 }
