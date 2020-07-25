@@ -15,6 +15,7 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
+import androidx.navigation.NavController
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
@@ -32,6 +33,16 @@ class DrawListAdapter(
         diffCallback
     ) {
 
+    private lateinit var mListener: ItemClickListener
+
+    interface ItemClickListener {
+        fun onClickItem(newUrl: String?)
+    }
+
+    fun setOnItemClickListener(listener: ItemClickListener) {
+        mListener = listener
+    }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DrawListViewHolder {
         val view =
             LayoutInflater.from(parent.context).inflate(R.layout.drawlist_item, parent, false)
@@ -48,12 +59,17 @@ class DrawListAdapter(
         val shoesTitleText = itemView.findViewById<TextView>(R.id.drawList_shoesTitle_text)
         val howToEventText = itemView.findViewById<TextView>(R.id.drawList_howToEvent_text)
         val allowAlarmBtn = itemView.findViewById<ImageButton>(R.id.drawList_allowAlarm_btn)
+        val learnMoreText = itemView.findViewById<TextView>(R.id.drawList_learnMore_text)
 
         fun bindView(data: DrawShoesDataModel?) {
             shoesImage.setImageBitmap(data?.shoesImage)
             shoesSubTitleText.text = data?.shoesSubTitle
             shoesTitleText.text = data?.shoesTitle
             howToEventText.text = data?.howToEvent
+
+            learnMoreText.setOnClickListener {
+                mListener.onClickItem(data?.url)
+            }
 
             if (isChecked(data?.shoesTitle)) {
                 allowAlarmBtn.setImageResource(R.drawable.ic_baseline_notifications_active)
@@ -68,7 +84,6 @@ class DrawListAdapter(
                     setNotification(data?.howToEvent, adapterPosition, data?.shoesTitle)
                 }
             }
-
         }
 
         private fun setPreference(preferenceKey: String?, timeTrigger: Long) {

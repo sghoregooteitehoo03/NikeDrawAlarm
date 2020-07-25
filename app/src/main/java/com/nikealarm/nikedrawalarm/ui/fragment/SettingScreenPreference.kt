@@ -51,19 +51,12 @@ class SettingScreenPreference : PreferenceFragmentCompat() {
                     true
                 }
             }
-        val showListPreference =
-            findPreference<Preference>(getString(R.string.setting_preference_showListPreferenceKey))?.apply {
-                setOnPreferenceClickListener {
-                    findNavController().navigate(R.id.action_settingScreenPreference_to_drawListFragment)
-                    true
-                }
-            }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             android.R.id.home -> {
-                findNavController().navigate(R.id.action_settingScreenPreference_to_mainFragment)
+                findNavController().navigate(R.id.action_settingScreenPreference_to_drawListFragment)
                 true
             }
             else -> false
@@ -72,50 +65,50 @@ class SettingScreenPreference : PreferenceFragmentCompat() {
 
     // 알람 설정
     private fun setAlarm() {
-        val alarmIntent = Intent(context, MyAlarmReceiver::class.java).apply {
-            action = Contents.INTENT_ACTION_SYNC_ALARM
-        }
-
-        val mCalendar = Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, 8)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }
-
-        val timeTrigger = if (System.currentTimeMillis() > mCalendar.timeInMillis) {
-            mCalendar.timeInMillis + 86400000
-        } else {
-            mCalendar.timeInMillis
-        }
-
-        val alarmPendingIntent = PendingIntent.getBroadcast(
-            context,
-            Contents.SYNC_ALARM_CODE,
-            alarmIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT
-        )
-
-        // 오전 8시 알람 설정
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            mAlarmManager.setExactAndAllowWhileIdle(
-                AlarmManager.RTC_WAKEUP,
-                timeTrigger,
-                alarmPendingIntent
-            )
-        }  else {
-            mAlarmManager.setExact(
-                AlarmManager.RTC_WAKEUP,
-                timeTrigger,
-                alarmPendingIntent
-            )
-        }
-        setPreference(timeTrigger)
+//        val alarmIntent = Intent(context, MyAlarmReceiver::class.java).apply {
+//            action = Contents.INTENT_ACTION_SYNC_ALARM
+//        }
+//
+//        val mCalendar = Calendar.getInstance().apply {
+//            set(Calendar.HOUR_OF_DAY, 8)
+//            set(Calendar.MINUTE, 0)
+//            set(Calendar.SECOND, 0)
+//            set(Calendar.MILLISECOND, 0)
+//        }
+//
+//        val timeTrigger = if (System.currentTimeMillis() > mCalendar.timeInMillis) {
+//            mCalendar.timeInMillis + 86400000
+//        } else {
+//            mCalendar.timeInMillis
+//        }
+//
+//        val alarmPendingIntent = PendingIntent.getBroadcast(
+//            context,
+//            Contents.SYNC_ALARM_CODE,
+//            alarmIntent,
+//            PendingIntent.FLAG_UPDATE_CURRENT
+//        )
+//
+//        // 오전 8시 알람 설정
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+//            mAlarmManager.setExactAndAllowWhileIdle(
+//                AlarmManager.RTC_WAKEUP,
+//                timeTrigger,
+//                alarmPendingIntent
+//            )
+//        }  else {
+//            mAlarmManager.setExact(
+//                AlarmManager.RTC_WAKEUP,
+//                timeTrigger,
+//                alarmPendingIntent
+//            )
+//        }
+//        setPreference(timeTrigger)
 
         // 테스트
-//        val parsingWorkRequest = OneTimeWorkRequestBuilder<ParsingWorker>()
-//            .build()
-//        WorkManager.getInstance(requireContext()).enqueue(parsingWorkRequest)
+        val parsingWorkRequest = OneTimeWorkRequestBuilder<ParsingWorker>()
+            .build()
+        WorkManager.getInstance(requireContext()).enqueue(parsingWorkRequest)
 
         Log.i("SetAlarm", "동작")
     }

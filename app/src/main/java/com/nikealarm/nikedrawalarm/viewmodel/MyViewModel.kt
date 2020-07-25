@@ -3,6 +3,7 @@ package com.nikealarm.nikedrawalarm.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagedList
 import com.nikealarm.nikedrawalarm.database.DrawShoesDataModel
@@ -23,5 +24,15 @@ class MyViewModel(application: Application) : AndroidViewModel(application) {
 
     fun clearShoesData() = viewModelScope.launch {
         repository.clearShoesData()
+    }
+
+    private val url = MutableLiveData<String>()
+
+    fun setUrl(url: String) {
+        this.url.value = url
+    }
+
+    fun getUrl(): MutableLiveData<String> {
+        return url
     }
 }

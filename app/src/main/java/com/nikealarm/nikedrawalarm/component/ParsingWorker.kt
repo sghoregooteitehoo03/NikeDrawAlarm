@@ -59,7 +59,7 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(c
                 .text()
 
             // draw가 있을 시
-            if(shoesInfo == "THE DRAW 진행예정") {
+            if(shoesInfo == "THE DRAW 진행예정" || channelId == 1) {
                 val innerUrl = "https://www.nike.com" + elementData.select("a").attr("href") // 해당 draw 링크창을 읽어옴
                 val innerDoc = Jsoup.connect(innerUrl)
                     .userAgent("Mozilla")
@@ -74,7 +74,6 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(c
                     .attr("src")
                 val shoesBitmap = Picasso.get().load(shoesImageUrl).get()
 
-                /* draw 있을 때 수정하기 */
                 val innerElementData = innerDoc.select("span.uk-text-bold")
 
                 var howToEvent = "" // 이벤트 참여방법

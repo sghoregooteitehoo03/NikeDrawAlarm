@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/mainFragment">
+    app:startDestination="@id/drawListFragment">
 
     <action
         android:id="@+id/action_global_mainFragment"
@@ -19,21 +19,14 @@
         android:id="@+id/mainFragment"
         android:name="com.nikealarm.nikedrawalarm.ui.fragment.WebFragment"
         android:label="fragment_main"
-        tools:layout="@layout/fragment_web">
-        <action
-            android:id="@+id/action_mainFragment_to_settingScreenPreference"
-            app:destination="@id/settingScreenPreference" />
-    </fragment>
+        tools:layout="@layout/fragment_web"/>
     <fragment
         android:id="@+id/settingScreenPreference"
         android:name="com.nikealarm.nikedrawalarm.ui.fragment.SettingScreenPreference"
         android:label="SettingScreenPreference">
         <action
-            android:id="@+id/action_settingScreenPreference_to_mainFragment"
-            app:popUpTo="@id/mainFragment" />
-        <action
             android:id="@+id/action_settingScreenPreference_to_drawListFragment"
-            app:destination="@id/drawListFragment" />
+            app:popUpTo="@id/drawListFragment" />
     </fragment>
     <fragment
         android:id="@+id/drawListFragment"
@@ -42,6 +35,17 @@
         tools:layout="@layout/fragment_draw_list">
         <action
             android:id="@+id/action_drawListFragment_to_settingScreenPreference"
-            app:popUpTo="@id/settingScreenPreference" />
+            app:destination="@id/settingScreenPreference" />
+        <action
+            android:id="@+id/action_drawListFragment_to_mainWebFragment"
+            app:destination="@id/mainWebFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/mainWebFragment"
+        android:name="com.nikealarm.nikedrawalarm.ui.fragment.MainWebFragment"
+        android:label="MainWebFragment" >
+        <action
+            android:id="@+id/action_mainWebFragment_to_drawListFragment"
+            app:popUpTo="@id/drawListFragment" />
     </fragment>
 </navigation>

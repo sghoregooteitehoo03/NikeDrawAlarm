@@ -69,6 +69,18 @@
                     android:textStyle="bold"
                     tools:text="응모 기간 07/25(토) 11:00 ~ 12:00 (1시간)\n당첨자 발표 07/25(토) 13:00
             \n당첨자 구매 기간 07/25(토) 13:00 ~ 15:00 (2시간)" />
+
+                <TextView
+                    android:id="@+id/drawList_learnMore_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="5dp"
+                    android:gravity="center"
+                    android:text="자세히 보기"
+                    android:textColor="@android:color/holo_blue_light"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
             </LinearLayout>
         </FrameLayout>
 

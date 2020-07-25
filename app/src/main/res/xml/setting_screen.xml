@@ -9,10 +9,5 @@
             app:iconSpaceReserved="false"
             app:key="@string/setting_preference_switchKey"
             app:title="Draw 알림 허용" />
-
-        <Preference
-            app:iconSpaceReserved="false"
-            app:key="@string/setting_preference_showListPreferenceKey"
-            app:title="Draw 목록 보기" />
     </PreferenceCategory>
 </PreferenceScreen>

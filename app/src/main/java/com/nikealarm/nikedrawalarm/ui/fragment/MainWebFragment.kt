@@ -8,22 +8,29 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.ProgressBar
 import androidx.activity.OnBackPressedCallback
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.other.Contents
 import com.nikealarm.nikedrawalarm.ui.MainActivity
+import com.nikealarm.nikedrawalarm.viewmodel.MyViewModel
 
-class WebFragment : Fragment() {
+class MainWebFragment : Fragment() {
     private lateinit var mainWebView: WebView
     private lateinit var mainProgress: ProgressBar
     private lateinit var mainWebRefresh: SwipeRefreshLayout
+
+    private lateinit var mViewModel: MyViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
+
+        setHasOptionsMenu(true)
+        (activity as MainActivity).supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         return inflater.inflate(R.layout.fragment_web, container, false)
     }
@@ -32,8 +39,10 @@ class WebFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val url = requireActivity().intent.getStringExtra(Contents.DRAW_URL)
-            ?: "https://www.nike.com/kr/launch/?type=feed"
+        // 인스턴스 설정
+        mViewModel = ViewModelProvider(requireActivity())[MyViewModel::class.java]
+
+        val url = mViewModel.getUrl().value?:"https://www.nike.com/kr/launch/?type=feed"
 
         // id설정
         mainWebView = view.findViewById<WebView>(R.id.main_webView).apply {
@@ -57,6 +66,15 @@ class WebFragment : Fragment() {
 //        inflater.inflate(R.menu.main_menu, menu)
 //    }
 //
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            android.R.id.home -> {
+                findNavController().navigate(R.id.action_mainWebFragment_to_drawListFragment)
+                true
+            }
+            else -> false
+        }
+    }
 
     private val mWebChromeClient = object : WebChromeClient() {
         override fun onProgressChanged(view: WebView?, newProgress: Int) {

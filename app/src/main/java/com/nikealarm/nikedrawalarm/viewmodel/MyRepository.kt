@@ -10,11 +10,6 @@ import com.nikealarm.nikedrawalarm.database.MyDataBase
 class MyRepository(application: Application) {
     private val mDao = MyDataBase.getDatabase(application)!!.getDao()
 
-    // Draw
-    fun getAllShoesData(): List<DrawShoesDataModel> {
-        return mDao.getAllShoesData()
-    }
-
     fun getAllShoesPagingData(): LiveData<PagedList<DrawShoesDataModel>> {
         return LivePagedListBuilder(mDao.getAllShoesPagingData(), 60).build()
     }

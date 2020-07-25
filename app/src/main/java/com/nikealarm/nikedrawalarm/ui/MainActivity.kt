@@ -11,6 +11,7 @@ import com.nikealarm.nikedrawalarm.other.Contents
 import kotlinx.android.synthetic.main.activity_main.*
 
 /*
+* 카테고리별 신발 리스트 보여주기
 * UI 수정 및 최적화
 * 코드 최적화
 * */
