@@ -14,7 +14,7 @@ import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.other.Contents
 import com.nikealarm.nikedrawalarm.ui.MainActivity
 
-class MainFragment : Fragment() {
+class WebFragment : Fragment() {
     private lateinit var mainWebView: WebView
     private lateinit var mainProgress: ProgressBar
     private lateinit var mainWebRefresh: SwipeRefreshLayout
@@ -29,7 +29,7 @@ class MainFragment : Fragment() {
         (activity as MainActivity).supportActionBar?.setDisplayHomeAsUpEnabled(false)
         requireActivity().onBackPressedDispatcher.addCallback(backPressedCallback)
 
-        return inflater.inflate(R.layout.fragment_main, container, false)
+        return inflater.inflate(R.layout.fragment_web, container, false)
     }
 
     // 시작

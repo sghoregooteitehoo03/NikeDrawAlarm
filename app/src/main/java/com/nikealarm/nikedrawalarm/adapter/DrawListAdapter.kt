@@ -77,22 +77,26 @@ class DrawListAdapter(
 
             if(isAllowAlarm) {
                 with(timeSharedPreference.edit()) {
-                    putInt(Contents.PRODUCT_ALARM_KEY, adapterPosition)
                     putLong(preferenceKey, timeTrigger)
                     commit()
                 }
+
+                with(mSharedPreferences?.edit()) {
+                    this?.putBoolean(preferenceKey, isAllowAlarm)
+                    this?.commit()
+                }
             } else {
                 with(timeSharedPreference.edit()) {
-                    this.remove(Contents.PRODUCT_ALARM_KEY)
                     this.remove(preferenceKey)
                     commit()
                 }
+
+                with(mSharedPreferences?.edit()) {
+                    this?.remove(preferenceKey)
+                    this?.commit()
+                }
             }
 
-            with(mSharedPreferences?.edit()) {
-                this?.putBoolean(preferenceKey, isAllowAlarm)
-                this?.commit()
-            }
         }
 
         private fun isChecked(preferenceKey: String?): Boolean {

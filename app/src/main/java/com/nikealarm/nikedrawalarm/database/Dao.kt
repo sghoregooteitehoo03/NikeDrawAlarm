@@ -22,4 +22,7 @@ interface Dao {
 
     @Delete(entity = DrawShoesDataModel::class)
     suspend fun deleteShoesData(deleteData: DrawShoesDataModel)
+
+    @Query("DELETE FROM DrawShoesDataModel WHERE ShoesSubTitle = :subTitle AND ShoesTitle = :title")
+    suspend fun deleteShoesData(subTitle: String, title: String)
 }

@@ -11,8 +11,6 @@ import com.nikealarm.nikedrawalarm.other.Contents
 import kotlinx.android.synthetic.main.activity_main.*
 
 /*
-* 특정 상품의 알림 울린 후 데이터베이스에서 그 상품목록을 삭제함
-* 데이터베이스에서 삭제하는 기준 수정
 * UI 수정 및 최적화
 * 코드 최적화
 * */

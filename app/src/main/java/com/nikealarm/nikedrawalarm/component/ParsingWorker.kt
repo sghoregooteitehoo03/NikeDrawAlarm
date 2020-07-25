@@ -17,6 +17,7 @@ import com.nikealarm.nikedrawalarm.other.Contents
 import com.nikealarm.nikedrawalarm.ui.MainActivity
 import com.squareup.picasso.Picasso
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.launch
 import org.jsoup.Jsoup
@@ -26,7 +27,8 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(c
 ) {
     private val mContext = context
     private val mDao = MyDataBase.getDatabase(mContext)!!.getDao()
-    private var isInExist = true
+
+    private val notDrawShoesList = mutableListOf<DrawShoesDataModel>()
 
     override fun doWork(): Result {
         parsingData()
@@ -49,6 +51,12 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(c
                 .select("div.btn-box")
                 .select("span")
                 .text()
+            val shoesSubTitle = elementData.select("div.text-box")
+                .select("p.txt-subject")
+                .text()
+            val shoesTitle = elementData.select("div.text-box")
+                .select("p.txt-description")
+                .text()
 
             // draw가 있을 시
             if(shoesInfo == "THE DRAW 진행예정") {
@@ -58,10 +66,6 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(c
                     .get()
 
                 // 신발 정보를 가져옴
-                val shoesSubTitle = innerDoc.select("h1.txt-subtitle")
-                    .text()
-                val shoesTitle = innerDoc.select("h5.txt-title")
-                    .text()
                 val shoesPrice = innerDoc.select("div.price") // draw 신발 가격
                     .text()
                 val shoesImageUrl = innerDoc.select("li.uk-width-1-2") // draw 신발 이미지
@@ -110,15 +114,14 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(c
                             innerUrl
                         )
                     )
-                } else {
-                    isInExist = false
                 }
             }
 
+            notDrawShoesList.add(DrawShoesDataModel(0, shoesSubTitle, shoesTitle))
             channelId++
         }
 
-//        clearDatabase()
+        checkDatabase()
     }
 
     // 알림 생성
@@ -173,15 +176,19 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(c
         CoroutineScope(IO).launch {
             mDao.insertShoesData(insertShoesData)
         }
-
-        isInExist = false
     }
 
-    private fun clearDatabase() {
-        if(isInExist && mDao.getAllShoesData().isNotEmpty()) {
-            CoroutineScope(IO).launch {
-                mDao.clearShoesData()
+    private fun checkDatabase() {
+        for(shoesData in mDao.getAllShoesData()) {
+            if(!notDrawShoesList.contains(shoesData)) {
+                deleteShoesData(shoesData)
             }
+        }
+    }
+
+    private fun deleteShoesData(deleteData: DrawShoesDataModel) {
+        CoroutineScope(IO).launch {
+            mDao.deleteShoesData(deleteData)
         }
     }
 }

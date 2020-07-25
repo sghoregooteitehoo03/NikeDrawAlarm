@@ -31,7 +31,11 @@ class ProductNotifyWorker(context: Context, workerParams: WorkerParameters) : Wo
 
         if(position != -1) {
             val data = mDao.getAllShoesData()[position]
+
             createNotification(data, applicationContext)
+
+            // 알림 후 해당 상품을 db에서 지움
+            deleteShoesData(data)
         }
 
         return Result.success()
@@ -85,9 +89,6 @@ class ProductNotifyWorker(context: Context, workerParams: WorkerParameters) : Wo
         with(NotificationManagerCompat.from(context)) {
             notify(100, notificationBuilder.build())
         }
-
-        // 알림 후 해당 상품을 db에서 지움
-        deleteShoesData(drawShoesInfo)
     }
 
     // 데이터를 지움

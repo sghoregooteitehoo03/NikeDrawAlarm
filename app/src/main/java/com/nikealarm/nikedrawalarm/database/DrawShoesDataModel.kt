@@ -23,6 +23,6 @@ data class DrawShoesDataModel(
     ) {
     override fun equals(other: Any?): Boolean {
         other as DrawShoesDataModel
-        return shoesTitle == other.shoesTitle
+        return shoesTitle == other.shoesTitle && shoesSubTitle == other.shoesSubTitle
     }
 }

@@ -22,8 +22,8 @@ class MyAlarmReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         // This method is called when the BroadcastReceiver is receiving an Intent broadcast.
+        // 재부팅 시 알람 재설정
         if (intent.action == "android.intent.action.BOOT_COMPLETED") {
-            // 재부팅 시 알람 재설정
             reSetAlarm(context)
             reSetProductAlarm(context)
         } else {
@@ -55,11 +55,12 @@ class MyAlarmReceiver : BroadcastReceiver() {
     private fun reSetAlarm(context: Context) {
         Log.i("Check", "동작")
 
-        val mSharedPreferences = context.getSharedPreferences(Contents.PREFERENCE_NAME_TIME, Context.MODE_PRIVATE)
+        val mSharedPreferences =
+            context.getSharedPreferences(Contents.PREFERENCE_NAME_TIME, Context.MODE_PRIVATE)
         var timeTrigger = mSharedPreferences.getLong(Contents.SYNC_ALARM_KEY, 0)
 
         if (timeTrigger != 0.toLong()) {
-            if(timeTrigger < System.currentTimeMillis()) {
+            if (timeTrigger < System.currentTimeMillis()) {
                 timeTrigger += 86400000
             }
 
@@ -95,53 +96,52 @@ class MyAlarmReceiver : BroadcastReceiver() {
 
     private fun reSetProductAlarm(context: Context) {
         Log.i("Check2", "동작")
-        val mSharedPreferences = context.getSharedPreferences(Contents.PREFERENCE_NAME_TIME, Context.MODE_PRIVATE)
+        val mSharedPreferences =
+            context.getSharedPreferences(Contents.PREFERENCE_NAME_TIME, Context.MODE_PRIVATE)
 
-        val position = mSharedPreferences.getInt(Contents.PRODUCT_ALARM_KEY, -1)
-        if(position != -1) {
-            Log.i("CheckPosition", "${position}")
-            CoroutineScope(Dispatchers.IO).launch {
-                val mDao = MyDataBase.getDatabase(context)!!.getDao()
-                val shoesData = mDao.getAllShoesData()[position]
+        CoroutineScope(Dispatchers.IO).launch {
+            val mDao = MyDataBase.getDatabase(context)!!.getDao()
 
+            for (shoesData in mDao.getAllShoesData()) {
                 val preferenceKey = shoesData.shoesTitle
                 val timeTrigger = mSharedPreferences.getLong(preferenceKey, 0)
 
-                if(timeTrigger != 0L) {
+                if (timeTrigger != 0L) {
                     Log.i("CheckTime", "${timeTrigger}")
-                    if(timeTrigger < System.currentTimeMillis()) {
+                    val index = mDao.getAllShoesData().indexOf(shoesData)
+
+                    if (timeTrigger < System.currentTimeMillis()) {
                         mDao.deleteShoesData(shoesData)
                         return@launch
                     }
 
-                    val mAlarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+                    val mAlarmManager =
+                        context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
                     val reIntent = Intent(context, MyAlarmReceiver::class.java).apply {
                         action = Contents.INTENT_ACTION_PRODUCT_ALARM
-                        putExtra(Contents.INTENT_KEY_POSITION, position)
+                        putExtra(Contents.INTENT_KEY_POSITION, index)
                     }
 
                     val alarmPendingIntent = PendingIntent.getBroadcast(
                         context,
-                        position,
+                        index,
                         reIntent,
                         PendingIntent.FLAG_UPDATE_CURRENT
                     )
 
-                    withContext(Dispatchers.Main) {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                            mAlarmManager.setExactAndAllowWhileIdle(
-                                AlarmManager.RTC_WAKEUP,
-                                timeTrigger,
-                                alarmPendingIntent
-                            )
-                        } else {
-                            mAlarmManager.setExact(
-                                AlarmManager.RTC_WAKEUP,
-                                timeTrigger,
-                                alarmPendingIntent
-                            )
-                        }
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        mAlarmManager.setExactAndAllowWhileIdle(
+                            AlarmManager.RTC_WAKEUP,
+                            timeTrigger,
+                            alarmPendingIntent
+                        )
+                    } else {
+                        mAlarmManager.setExact(
+                            AlarmManager.RTC_WAKEUP,
+                            timeTrigger,
+                            alarmPendingIntent
+                        )
                     }
                 }
             }

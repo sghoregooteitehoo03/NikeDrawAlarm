@@ -34,15 +34,24 @@ class DrawListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // 인스턴스 설정
+        val mSharedPreference = activity?.getPreferences(Context.MODE_PRIVATE)
         // 뷰모델 설정
         mViewModel = ViewModelProvider(this)[MyViewModel::class.java]
 
         val mAdapter = DrawListAdapter(
             requireContext(),
-            activity?.getPreferences(Context.MODE_PRIVATE)
+            mSharedPreference
         )
         mViewModel.getAllShoesPagingData().observe(viewLifecycleOwner, Observer {
             mAdapter.submitList(it)
+
+            if(it.size == 0) {
+                with(mSharedPreference?.edit()) {
+                    this?.clear()
+                    this?.commit()
+                }
+            }
         })
 
         // id 설정

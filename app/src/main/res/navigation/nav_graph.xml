@@ -17,9 +17,9 @@
 
     <fragment
         android:id="@+id/mainFragment"
-        android:name="com.nikealarm.nikedrawalarm.ui.fragment.MainFragment"
+        android:name="com.nikealarm.nikedrawalarm.ui.fragment.WebFragment"
         android:label="fragment_main"
-        tools:layout="@layout/fragment_main">
+        tools:layout="@layout/fragment_web">
         <action
             android:id="@+id/action_mainFragment_to_settingScreenPreference"
             app:destination="@id/settingScreenPreference" />
