@@ -8,17 +8,17 @@ import androidx.room.PrimaryKey
 @Entity
 data class DrawShoesDataModel(
     @PrimaryKey(autoGenerate = true)
-    @ColumnInfo(name = "ShoesId")
+    @ColumnInfo(name = "DrawShoesId")
     val id: Int?,
-    @ColumnInfo(name = "ShoesSubTitle")
+    @ColumnInfo(name = "DrawShoesSubTitle")
     val shoesSubTitle: String,
-    @ColumnInfo(name = "ShoesTitle")
+    @ColumnInfo(name = "DrawShoesTitle")
     val shoesTitle: String,
     @ColumnInfo(name = "HowToEvent")
     val howToEvent: String? = null,
-    @ColumnInfo(name = "ShoesImage")
+    @ColumnInfo(name = "DrawShoesImage")
     val shoesImage: Bitmap? = null,
-    @ColumnInfo(name = "ShoesUrl")
+    @ColumnInfo(name = "DrawShoesUrl")
     val url: String? = null
     ) {
     override fun equals(other: Any?): Boolean {

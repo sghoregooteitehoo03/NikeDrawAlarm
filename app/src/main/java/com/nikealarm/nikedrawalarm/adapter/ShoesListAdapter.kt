@@ -15,21 +15,21 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
-import androidx.navigation.NavController
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.nikealarm.nikedrawalarm.component.MyAlarmReceiver
 import com.nikealarm.nikedrawalarm.R
-import com.nikealarm.nikedrawalarm.database.DrawShoesDataModel
+import com.nikealarm.nikedrawalarm.database.ShoesDataModel
 import com.nikealarm.nikedrawalarm.other.Contents
+import com.squareup.picasso.Picasso
 import java.util.*
 
-class DrawListAdapter(
+class ShoesListAdapter(
     private val mContext: Context,
     private val mSharedPreferences: SharedPreferences?
 ) :
-    PagedListAdapter<DrawShoesDataModel, DrawListAdapter.DrawListViewHolder>(
+    PagedListAdapter<ShoesDataModel, ShoesListAdapter.DrawListViewHolder>(
         diffCallback
     ) {
 
@@ -61,28 +61,34 @@ class DrawListAdapter(
         val allowAlarmBtn = itemView.findViewById<ImageButton>(R.id.drawList_allowAlarm_btn)
         val learnMoreText = itemView.findViewById<TextView>(R.id.drawList_learnMore_text)
 
-        fun bindView(data: DrawShoesDataModel?) {
-            shoesImage.setImageBitmap(data?.shoesImage)
+        fun bindView(data: ShoesDataModel?) {
+            Picasso.get().load(data?.shoesImageUrl).into(shoesImage)
             shoesSubTitleText.text = data?.shoesSubTitle
             shoesTitleText.text = data?.shoesTitle
-            howToEventText.text = data?.howToEvent
+            howToEventText.text = data?.shoesPrice
 
             learnMoreText.setOnClickListener {
-                mListener.onClickItem(data?.url)
+                mListener.onClickItem(data?.shoesUrl)
             }
 
-            if (isChecked(data?.shoesTitle)) {
-                allowAlarmBtn.setImageResource(R.drawable.ic_baseline_notifications_active)
+            if(data?.shoesCategory == ShoesDataModel.CATEGORY_DRAW) {
+                allowAlarmBtn.visibility = View.VISIBLE
 
-                allowAlarmBtn.setOnClickListener {
-                    removeNotification(data?.howToEvent, adapterPosition, data?.shoesTitle)
+                if (isChecked(data.shoesTitle)) {
+                    allowAlarmBtn.setImageResource(R.drawable.ic_baseline_notifications_active)
+
+                    allowAlarmBtn.setOnClickListener {
+                        removeNotification(data.shoesPrice, adapterPosition, data.shoesTitle)
+                    }
+                } else {
+                    allowAlarmBtn.setImageResource(R.drawable.ic_baseline_notifications_none)
+
+                    allowAlarmBtn.setOnClickListener {
+                        setNotification(data.shoesPrice, adapterPosition, data.shoesTitle)
+                    }
                 }
             } else {
-                allowAlarmBtn.setImageResource(R.drawable.ic_baseline_notifications_none)
-
-                allowAlarmBtn.setOnClickListener {
-                    setNotification(data?.howToEvent, adapterPosition, data?.shoesTitle)
-                }
+                allowAlarmBtn.visibility = View.GONE
             }
         }
 
@@ -256,16 +262,16 @@ class DrawListAdapter(
     }
 
     companion object {
-        private val diffCallback = object : DiffUtil.ItemCallback<DrawShoesDataModel>() {
+        private val diffCallback = object : DiffUtil.ItemCallback<ShoesDataModel>() {
             override fun areItemsTheSame(
-                oldItem: DrawShoesDataModel,
-                newItem: DrawShoesDataModel
+                oldItem: ShoesDataModel,
+                newItem: ShoesDataModel
             ): Boolean =
                 oldItem.shoesTitle == newItem.shoesTitle
 
             override fun areContentsTheSame(
-                oldItem: DrawShoesDataModel,
-                newItem: DrawShoesDataModel
+                oldItem: ShoesDataModel,
+                newItem: ShoesDataModel
             ): Boolean =
                 oldItem.id == newItem.id
         }

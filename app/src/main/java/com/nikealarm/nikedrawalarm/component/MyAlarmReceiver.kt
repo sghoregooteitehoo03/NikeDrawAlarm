@@ -16,7 +16,6 @@ import com.nikealarm.nikedrawalarm.other.Contents
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class MyAlarmReceiver : BroadcastReceiver() {
 
@@ -31,7 +30,7 @@ class MyAlarmReceiver : BroadcastReceiver() {
             if (intent.action == Contents.INTENT_ACTION_SYNC_ALARM) {
                 reSetAlarm(context)
 
-                val parsingWorkRequest = OneTimeWorkRequestBuilder<ParsingWorker>()
+                val parsingWorkRequest = OneTimeWorkRequestBuilder<FindDrawWorker>()
                     .build()
                 WorkManager.getInstance(context).enqueue(parsingWorkRequest)
             }
@@ -102,16 +101,16 @@ class MyAlarmReceiver : BroadcastReceiver() {
         CoroutineScope(Dispatchers.IO).launch {
             val mDao = MyDataBase.getDatabase(context)!!.getDao()
 
-            for (shoesData in mDao.getAllShoesData()) {
+            for (shoesData in mDao.getAllDrawShoesData()) {
                 val preferenceKey = shoesData.shoesTitle
                 val timeTrigger = mSharedPreferences.getLong(preferenceKey, 0)
 
                 if (timeTrigger != 0L) {
                     Log.i("CheckTime", "${timeTrigger}")
-                    val index = mDao.getAllShoesData().indexOf(shoesData)
+                    val index = mDao.getAllDrawShoesData().indexOf(shoesData)
 
                     if (timeTrigger < System.currentTimeMillis()) {
-                        mDao.deleteShoesData(shoesData)
+                        mDao.deleteDrawShoesData(shoesData)
                         return@launch
                     }
 

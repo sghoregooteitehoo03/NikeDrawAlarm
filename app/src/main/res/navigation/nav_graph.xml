@@ -13,39 +13,43 @@
     <action
         android:id="@+id/action_global_drawListFragment"
         app:destination="@id/drawListFragment"
-        app:launchSingleTop="true"/>
+        app:launchSingleTop="true" />
 
     <fragment
         android:id="@+id/mainFragment"
         android:name="com.nikealarm.nikedrawalarm.ui.fragment.WebFragment"
         android:label="fragment_main"
-        tools:layout="@layout/fragment_web"/>
+        tools:layout="@layout/fragment_web" />
     <fragment
         android:id="@+id/settingScreenPreference"
         android:name="com.nikealarm.nikedrawalarm.ui.fragment.SettingScreenPreference"
-        android:label="SettingScreenPreference">
-        <action
-            android:id="@+id/action_settingScreenPreference_to_drawListFragment"
-            app:popUpTo="@id/drawListFragment" />
-    </fragment>
+        android:label="SettingScreenPreference" />
     <fragment
         android:id="@+id/drawListFragment"
-        android:name="com.nikealarm.nikedrawalarm.ui.fragment.DrawListFragment"
+        android:name="com.nikealarm.nikedrawalarm.ui.fragment.ShoesListFragment"
         android:label="fragment_draw_list"
-        tools:layout="@layout/fragment_draw_list">
-        <action
-            android:id="@+id/action_drawListFragment_to_settingScreenPreference"
-            app:destination="@id/settingScreenPreference" />
+        tools:layout="@layout/fragment_shoes_list">
         <action
             android:id="@+id/action_drawListFragment_to_mainWebFragment"
             app:destination="@id/mainWebFragment" />
+        <action
+            android:id="@+id/action_drawListFragment_to_settingFragment"
+            app:destination="@id/settingFragment" />
     </fragment>
     <fragment
         android:id="@+id/mainWebFragment"
         android:name="com.nikealarm.nikedrawalarm.ui.fragment.MainWebFragment"
-        android:label="MainWebFragment" >
+        android:label="MainWebFragment">
         <action
             android:id="@+id/action_mainWebFragment_to_drawListFragment"
+            app:popUpTo="@id/drawListFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/settingFragment"
+        android:name="com.nikealarm.nikedrawalarm.ui.fragment.SettingFragment"
+        android:label="SettingFragment">
+        <action
+            android:id="@+id/action_settingFragment_to_drawListFragment"
             app:popUpTo="@id/drawListFragment" />
     </fragment>
 </navigation>

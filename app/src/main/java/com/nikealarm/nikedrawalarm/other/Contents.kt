@@ -16,4 +16,5 @@ object Contents {
     const val SYNC_ALARM_KEY = "SYNC_ALARM_KEY"
 
     const val WORKER_INPUT_DATA_KEY = "WORKER_INPUT_DATA_KEY"
+    const val WORKER_PARSING_DATA = "WORKER_PARSING_DATA"
 }

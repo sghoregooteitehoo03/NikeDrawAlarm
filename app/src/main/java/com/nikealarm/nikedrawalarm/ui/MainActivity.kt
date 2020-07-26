@@ -6,12 +6,17 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.navigation.fragment.findNavController
+import androidx.work.WorkManager
 import com.nikealarm.nikedrawalarm.R
+import com.nikealarm.nikedrawalarm.database.MyDataBase
 import com.nikealarm.nikedrawalarm.other.Contents
+import com.nikealarm.nikedrawalarm.ui.fragment.ShoesListFragment
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 /*
-* 카테고리별 신발 리스트 보여주기
 * UI 수정 및 최적화
 * 코드 최적화
 * */

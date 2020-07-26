@@ -30,7 +30,7 @@ class ProductNotifyWorker(context: Context, workerParams: WorkerParameters) : Wo
         val position = inputData.getInt(Contents.WORKER_INPUT_DATA_KEY, -1)
 
         if(position != -1) {
-            val data = mDao.getAllShoesData()[position]
+            val data = mDao.getAllDrawShoesData()[position]
 
             createNotification(data, applicationContext)
 
@@ -100,7 +100,7 @@ class ProductNotifyWorker(context: Context, workerParams: WorkerParameters) : Wo
         }
 
         CoroutineScope(Dispatchers.IO).launch {
-            mDao.deleteShoesData(data)
+            mDao.deleteDrawShoesData(data)
         }
     }
 }

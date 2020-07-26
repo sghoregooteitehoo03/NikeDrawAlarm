@@ -1,12 +1,11 @@
 package com.nikealarm.nikedrawalarm.viewmodel
 
 import android.app.Application
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.viewModelScope
+import androidx.arch.core.util.Function
+import androidx.lifecycle.*
 import androidx.paging.PagedList
 import com.nikealarm.nikedrawalarm.database.DrawShoesDataModel
+import com.nikealarm.nikedrawalarm.database.ShoesDataModel
 import kotlinx.coroutines.launch
 
 class MyViewModel(application: Application) : AndroidViewModel(application) {
@@ -15,17 +14,18 @@ class MyViewModel(application: Application) : AndroidViewModel(application) {
 
     // DRAW
     fun getAllShoesPagingData(): LiveData<PagedList<DrawShoesDataModel>> {
-        return repository.getAllShoesPagingData()
+        return repository.getAllDrawShoesPagingData()
     }
 
     fun insertShoesData(insertData: DrawShoesDataModel) = viewModelScope.launch {
-        repository.insertShoesData(insertData)
+        repository.insertDrawShoesData(insertData)
     }
 
-    fun clearShoesData() = viewModelScope.launch {
-        repository.clearShoesData()
+    fun clearDrawShoesData() = viewModelScope.launch {
+        repository.clearDrawShoesData()
     }
 
+    // 전체 목록
     private val url = MutableLiveData<String>()
 
     fun setUrl(url: String) {
@@ -34,5 +34,29 @@ class MyViewModel(application: Application) : AndroidViewModel(application) {
 
     fun getUrl(): MutableLiveData<String> {
         return url
+    }
+
+    private val shoesCategory = MutableLiveData<String>(ShoesDataModel.CATEGORY_RELEASED)
+
+    fun setShoesCategory(category: String) {
+        shoesCategory.value = category
+    }
+
+    fun getShoesCategory(): MutableLiveData<String> {
+        return shoesCategory
+    }
+
+    private val shoesList: LiveData<PagedList<ShoesDataModel>> = Transformations.switchMap(
+        shoesCategory, Function {
+            repository.getShoesData(it)
+        }
+    )
+
+    fun getShoesData(): LiveData<PagedList<ShoesDataModel>> {
+        return shoesList
+    }
+
+    fun clearShoesData() = viewModelScope.launch {
+        repository.clearShoesData()
     }
 }

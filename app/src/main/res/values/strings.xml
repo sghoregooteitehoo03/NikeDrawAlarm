@@ -6,4 +6,7 @@
     <!-- 키 -->
     <string name="setting_preference_switchKey">isAllowSync</string>
     <string name="setting_preference_showListPreferenceKey">showList</string>
+    
+    <string name="open_drawer">Open</string>
+    <string name="close_drawer">Close</string>
 </resources>

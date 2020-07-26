@@ -8,6 +8,7 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.ProgressBar
 import androidx.activity.OnBackPressedCallback
+import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -29,8 +30,8 @@ class MainWebFragment : Fragment() {
     ): View? {
         // Inflate the layout for this fragment
 
+        activity?.onBackPressedDispatcher?.addCallback(backPressedCallback)
         setHasOptionsMenu(true)
-        (activity as MainActivity).supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         return inflater.inflate(R.layout.fragment_web, container, false)
     }
@@ -39,6 +40,10 @@ class MainWebFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val toolbar = view.findViewById<Toolbar>(R.id.webFrag_toolbar).apply {
+            (activity as MainActivity).setSupportActionBar(this)
+            (activity as MainActivity).supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        }
         // 인스턴스 설정
         mViewModel = ViewModelProvider(requireActivity())[MyViewModel::class.java]
 
@@ -69,6 +74,7 @@ class MainWebFragment : Fragment() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             android.R.id.home -> {
+                backPressedCallback.isEnabled = false
                 findNavController().navigate(R.id.action_mainWebFragment_to_drawListFragment)
                 true
             }
