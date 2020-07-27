@@ -26,8 +26,7 @@ import com.squareup.picasso.Picasso
 import java.util.*
 
 class ShoesListAdapter(
-    private val mContext: Context,
-    private val mSharedPreferences: SharedPreferences?
+    private val mContext: Context
 ) :
     PagedListAdapter<ShoesDataModel, ShoesListAdapter.DrawListViewHolder>(
         diffCallback
@@ -78,7 +77,7 @@ class ShoesListAdapter(
                     allowAlarmBtn.setImageResource(R.drawable.ic_baseline_notifications_active)
 
                     allowAlarmBtn.setOnClickListener {
-                        removeNotification(data.shoesPrice, adapterPosition, data.shoesTitle)
+                        removeNotification(adapterPosition, data.shoesTitle)
                     }
                 } else {
                     allowAlarmBtn.setImageResource(R.drawable.ic_baseline_notifications_none)
@@ -92,8 +91,10 @@ class ShoesListAdapter(
             }
         }
 
-        private fun setPreference(preferenceKey: String?, timeTrigger: Long) {
+        private fun setPreference(preferenceKey: String?, timeTrigger: Long = 0L) {
             val isAllowAlarm = !isChecked(preferenceKey)
+
+            val allowAlarmPreference = mContext.getSharedPreferences(Contents.PREFERENCE_NAME_ALLOW_ALARM, Context.MODE_PRIVATE)
             val timeSharedPreference = mContext.getSharedPreferences(Contents.PREFERENCE_NAME_TIME, Context.MODE_PRIVATE)
 
             if(isAllowAlarm) {
@@ -102,9 +103,9 @@ class ShoesListAdapter(
                     commit()
                 }
 
-                with(mSharedPreferences?.edit()) {
-                    this?.putBoolean(preferenceKey, isAllowAlarm)
-                    this?.commit()
+                with(allowAlarmPreference.edit()) {
+                    this.putBoolean(preferenceKey, isAllowAlarm)
+                    this.commit()
                 }
             } else {
                 with(timeSharedPreference.edit()) {
@@ -112,27 +113,30 @@ class ShoesListAdapter(
                     commit()
                 }
 
-                with(mSharedPreferences?.edit()) {
-                    this?.remove(preferenceKey)
-                    this?.commit()
+                with(allowAlarmPreference.edit()) {
+                    this.remove(preferenceKey)
+                    this.commit()
                 }
             }
 
         }
 
         private fun isChecked(preferenceKey: String?): Boolean {
-            return mSharedPreferences!!.getBoolean(preferenceKey, false)
+            val allowAlarmPreference = mContext.getSharedPreferences(Contents.PREFERENCE_NAME_ALLOW_ALARM, Context.MODE_PRIVATE)
+            return allowAlarmPreference.getBoolean(preferenceKey, false)
         }
 
         // 알람을 설정함
         private fun setNotification(howToEvent: String?, requestCode: Int, preferenceKey: String?) {
+            val timeTrigger = getTimeInMillis(howToEvent)
             val dialog = createDialog()
+
             with(dialog) {
                 setMessage("이 상품의 알림을 설정하시겠습니까?")
                 show()
                 getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-                    setAlarm(howToEvent, requestCode)
-                    setPreference(preferenceKey, getTimeInMillis(howToEvent))
+                    setAlarm(timeTrigger, requestCode)
+                    setPreference(preferenceKey, timeTrigger)
 
                     notifyDataSetChanged()
                     dismiss()
@@ -140,8 +144,9 @@ class ShoesListAdapter(
             }
         }
 
-        private fun removeNotification(howToEvent: String?, requestCode: Int, preferenceKey: String?) {
+        private fun removeNotification(requestCode: Int, preferenceKey: String?) {
             val dialog = createDialog()
+
             with(dialog) {
                 setMessage("이 상품의 알림을 취소하시겠습니까?")
                 show()
@@ -149,7 +154,7 @@ class ShoesListAdapter(
                 getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
                     removeAlarm(requestCode)
 
-                    setPreference(preferenceKey, getTimeInMillis(howToEvent))
+                    setPreference(preferenceKey)
                     notifyDataSetChanged()
 
                     dismiss()
@@ -169,8 +174,7 @@ class ShoesListAdapter(
                 .create()
         }
 
-        private fun setAlarm(howToEvent: String?, requestCode: Int) {
-            val timeTrigger = getTimeInMillis(howToEvent)
+        private fun setAlarm(timeTrigger: Long, requestCode: Int) {
 
             val alarmIntent = Intent(mContext, MyAlarmReceiver::class.java).apply {
                 action = Contents.INTENT_ACTION_PRODUCT_ALARM

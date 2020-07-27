@@ -25,6 +25,7 @@ class WebFragment : Fragment() {
     ): View? {
         // Inflate the layout for this fragment
 
+        activity?.onBackPressedDispatcher?.addCallback(backPressedCallback)
         return inflater.inflate(R.layout.fragment_web, container, false)
     }
 
@@ -50,13 +51,6 @@ class WebFragment : Fragment() {
             }
         }
     }
-
-    // 메뉴 설정
-//    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-//        super.onCreateOptionsMenu(menu, inflater)
-//        inflater.inflate(R.menu.main_menu, menu)
-//    }
-//
 
     private val mWebChromeClient = object : WebChromeClient() {
         override fun onProgressChanged(view: WebView?, newProgress: Int) {

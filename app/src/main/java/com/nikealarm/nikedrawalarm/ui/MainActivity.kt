@@ -17,6 +17,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 /*
+* 신발리스트의 이미지뷰를 클릭 시 신발의 여러개의 이미즈를 보여줌
+* 로딩화면 추가
 * UI 수정 및 최적화
 * 코드 최적화
 * */
@@ -51,6 +53,7 @@ class MainActivity : AppCompatActivity() {
     private fun cancelNotification() {
         val closeChannelId = intent.getIntExtra(Contents.CHANNEL_ID, -1)
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
         if(closeChannelId != -1) {
             notificationManager.cancel(closeChannelId)
         } else {

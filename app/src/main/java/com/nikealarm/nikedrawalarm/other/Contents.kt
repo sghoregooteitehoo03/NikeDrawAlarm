@@ -11,6 +11,8 @@ object Contents {
     const val DRAW_URL = "drawUrl"
 
     const val PREFERENCE_NAME_TIME = "PREFERENCE_NAME_TIME"
+    const val PREFERENCE_NAME_ALLOW_ALARM = "PREFERENCE_NAME_ALLOW_ALARM"
+
     const val SYNC_ALARM_CODE = 2000
 
     const val SYNC_ALARM_KEY = "SYNC_ALARM_KEY"

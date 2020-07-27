@@ -50,6 +50,11 @@ class FindDrawWorker(context: Context, workerParams: WorkerParameters) : Worker(
                 .select("div.btn-box")
                 .select("span")
                 .text()
+
+            if(shoesInfo == "LEARN MORE") {
+                continue
+            }
+
             val shoesSubTitle = elementData.select("div.text-box")
                 .select("p.txt-subject")
                 .text()

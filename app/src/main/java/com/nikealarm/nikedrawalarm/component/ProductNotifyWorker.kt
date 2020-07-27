@@ -93,8 +93,15 @@ class ProductNotifyWorker(context: Context, workerParams: WorkerParameters) : Wo
 
     // 데이터를 지움
     private fun deleteShoesData(data: DrawShoesDataModel) {
-        val mSharedPreferences = applicationContext.getSharedPreferences(Contents.PREFERENCE_NAME_TIME, Context.MODE_PRIVATE)
-        with(mSharedPreferences.edit()) {
+        val timeSharedPreference = applicationContext.getSharedPreferences(Contents.PREFERENCE_NAME_TIME, Context.MODE_PRIVATE)
+        val allowAlarmPreference = applicationContext.getSharedPreferences(Contents.PREFERENCE_NAME_ALLOW_ALARM, Context.MODE_PRIVATE)
+
+        with(timeSharedPreference.edit()) {
+            remove(data.shoesTitle)
+            commit()
+        }
+
+        with(allowAlarmPreference.edit()) {
             remove(data.shoesTitle)
             commit()
         }

@@ -11,6 +11,8 @@ import android.util.Log
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
+import com.nikealarm.nikedrawalarm.database.Dao
+import com.nikealarm.nikedrawalarm.database.DrawShoesDataModel
 import com.nikealarm.nikedrawalarm.database.MyDataBase
 import com.nikealarm.nikedrawalarm.other.Contents
 import kotlinx.coroutines.CoroutineScope
@@ -18,6 +20,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class MyAlarmReceiver : BroadcastReceiver() {
+    private lateinit var mDao: Dao
 
     override fun onReceive(context: Context, intent: Intent) {
         // This method is called when the BroadcastReceiver is receiving an Intent broadcast.
@@ -59,7 +62,7 @@ class MyAlarmReceiver : BroadcastReceiver() {
         var timeTrigger = mSharedPreferences.getLong(Contents.SYNC_ALARM_KEY, 0)
 
         if (timeTrigger != 0.toLong()) {
-            if (timeTrigger < System.currentTimeMillis()) {
+            while(timeTrigger < System.currentTimeMillis()) {
                 timeTrigger += 86400000
             }
 
@@ -76,7 +79,7 @@ class MyAlarmReceiver : BroadcastReceiver() {
                 PendingIntent.FLAG_UPDATE_CURRENT
             )
 
-            setPreference(mSharedPreferences, timeTrigger, Contents.SYNC_ALARM_KEY)
+            setPreference(mSharedPreferences, timeTrigger)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 mAlarmManager.setExactAndAllowWhileIdle(
                     AlarmManager.RTC_WAKEUP,
@@ -97,22 +100,21 @@ class MyAlarmReceiver : BroadcastReceiver() {
         Log.i("Check2", "동작")
         val mSharedPreferences =
             context.getSharedPreferences(Contents.PREFERENCE_NAME_TIME, Context.MODE_PRIVATE)
+        mDao = MyDataBase.getDatabase(context)!!.getDao()
 
         CoroutineScope(Dispatchers.IO).launch {
-            val mDao = MyDataBase.getDatabase(context)!!.getDao()
-
             for (shoesData in mDao.getAllDrawShoesData()) {
                 val preferenceKey = shoesData.shoesTitle
                 val timeTrigger = mSharedPreferences.getLong(preferenceKey, 0)
 
                 if (timeTrigger != 0L) {
                     Log.i("CheckTime", "${timeTrigger}")
-                    val index = mDao.getAllDrawShoesData().indexOf(shoesData)
-
                     if (timeTrigger < System.currentTimeMillis()) {
-                        mDao.deleteDrawShoesData(shoesData)
-                        return@launch
+                        deleteDrawShoesData(mSharedPreferences, shoesData, context)
+                        continue
                     }
+
+                    val index = mDao.getAllDrawShoesData().indexOf(shoesData)
 
                     val mAlarmManager =
                         context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
@@ -147,10 +149,29 @@ class MyAlarmReceiver : BroadcastReceiver() {
         }
     }
 
-    private fun setPreference(preference: SharedPreferences, timeTrigger: Long, useKey: String) {
+    // 데이터베이스 설정
+    private fun setPreference(preference: SharedPreferences, timeTrigger: Long) {
         with(preference.edit()) {
-            putLong(useKey, timeTrigger)
+            putLong(Contents.SYNC_ALARM_KEY, timeTrigger)
             commit()
+        }
+    }
+
+    private fun deleteDrawShoesData(preference: SharedPreferences, shoesData: DrawShoesDataModel, context: Context) {
+        val allowAlarmPreference = context.getSharedPreferences(Contents.PREFERENCE_NAME_ALLOW_ALARM, Context.MODE_PRIVATE)
+
+        with(preference.edit()) {
+            remove(shoesData.shoesTitle)
+            commit()
+        }
+
+        with(allowAlarmPreference.edit()) {
+            remove(shoesData.shoesTitle)
+            commit()
+        }
+
+        CoroutineScope(Dispatchers.IO).launch {
+            mDao.deleteDrawShoesData(shoesData)
         }
     }
 }

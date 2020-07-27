@@ -67,12 +67,10 @@ class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
         }
 
         // 인스턴스 설정
-        val mSharedPreference = activity?.getPreferences(Context.MODE_PRIVATE)
         mViewModel = ViewModelProvider(requireActivity())[MyViewModel::class.java]
 
         val mAdapter = ShoesListAdapter(
-            requireContext(),
-            mSharedPreference
+            requireContext()
         ).apply {
             setOnItemClickListener(this@ShoesListFragment)
         }
@@ -191,7 +189,7 @@ class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
     private val backPressedCallback = object : OnBackPressedCallback(true) {
 
         override fun handleOnBackPressed() {
-            if(drawer.isDrawerOpen(GravityCompat.START)) {
+            if (drawer.isDrawerOpen(GravityCompat.START)) {
                 drawer.closeDrawer(GravityCompat.START)
             } else {
                 super.setEnabled(false)
