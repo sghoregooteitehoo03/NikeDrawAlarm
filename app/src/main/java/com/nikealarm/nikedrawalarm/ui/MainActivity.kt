@@ -17,7 +17,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 /*
-* 신발리스트의 이미지뷰를 클릭 시 신발의 여러개의 이미즈를 보여줌
+* 위치 버튼 클릭시 이미지 이동
 * 로딩화면 추가
 * UI 수정 및 최적화
 * 코드 최적화

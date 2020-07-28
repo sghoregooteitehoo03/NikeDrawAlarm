@@ -35,6 +35,9 @@
         <action
             android:id="@+id/action_drawListFragment_to_settingFragment"
             app:destination="@id/settingFragment" />
+        <action
+            android:id="@+id/action_drawListFragment_to_imageListFragment"
+            app:destination="@id/imageListFragment" />
     </fragment>
     <fragment
         android:id="@+id/mainWebFragment"
@@ -50,6 +53,14 @@
         android:label="SettingFragment">
         <action
             android:id="@+id/action_settingFragment_to_drawListFragment"
+            app:popUpTo="@id/drawListFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/imageListFragment"
+        android:name="com.nikealarm.nikedrawalarm.ui.fragment.ImageListFragment"
+        android:label="ImageListFragment" >
+        <action
+            android:id="@+id/action_imageListFragment_to_drawListFragment"
             app:popUpTo="@id/drawListFragment" />
     </fragment>
 </navigation>

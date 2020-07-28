@@ -25,7 +25,7 @@ import com.nikealarm.nikedrawalarm.ui.MainActivity
 import com.nikealarm.nikedrawalarm.viewmodel.MyViewModel
 
 class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
-    NavigationView.OnNavigationItemSelectedListener {
+    NavigationView.OnNavigationItemSelectedListener, ShoesListAdapter.ImageClickListener {
     private lateinit var mainLayout: ConstraintLayout
     private lateinit var loadingLayout: ConstraintLayout
     private lateinit var drawer: DrawerLayout
@@ -73,6 +73,7 @@ class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
             requireContext()
         ).apply {
             setOnItemClickListener(this@ShoesListFragment)
+            setOnImageClickListener(this@ShoesListFragment)
         }
 
         // 옵저버 설정
@@ -124,6 +125,11 @@ class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
     override fun onClickItem(newUrl: String?) {
         mViewModel.setUrl(newUrl ?: "https://www.nike.com/kr/launch/?type=feed")
         findNavController().navigate(R.id.action_drawListFragment_to_mainWebFragment)
+    }
+
+    override fun onClickImage(newUrl: String) {
+        mViewModel.setUrl(newUrl)
+        findNavController().navigate(R.id.action_drawListFragment_to_imageListFragment)
     }
 
     override fun onNavigationItemSelected(menuItem: MenuItem): Boolean {

@@ -5,7 +5,6 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
-import android.content.SharedPreferences
 import android.os.Build
 import android.util.Log
 import android.view.LayoutInflater
@@ -32,14 +31,23 @@ class ShoesListAdapter(
         diffCallback
     ) {
 
-    private lateinit var mListener: ItemClickListener
+    private lateinit var itemListener: ItemClickListener
+    private lateinit var imageListener: ImageClickListener
 
     interface ItemClickListener {
         fun onClickItem(newUrl: String?)
     }
 
+    interface ImageClickListener {
+        fun onClickImage(newUrl: String)
+    }
+
     fun setOnItemClickListener(listener: ItemClickListener) {
-        mListener = listener
+        itemListener = listener
+    }
+
+    fun setOnImageClickListener(listener: ImageClickListener) {
+        imageListener = listener
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DrawListViewHolder {
@@ -67,7 +75,11 @@ class ShoesListAdapter(
             howToEventText.text = data?.shoesPrice
 
             learnMoreText.setOnClickListener {
-                mListener.onClickItem(data?.shoesUrl)
+                itemListener.onClickItem(data?.shoesUrl)
+            }
+
+            shoesImage.setOnClickListener {
+                imageListener.onClickImage(data?.shoesUrl!!)
             }
 
             if(data?.shoesCategory == ShoesDataModel.CATEGORY_DRAW) {

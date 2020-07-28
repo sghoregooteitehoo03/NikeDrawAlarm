@@ -1,6 +1,7 @@
 package com.nikealarm.nikedrawalarm.component
 
 import android.content.Context
+import androidx.work.Data
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import com.nikealarm.nikedrawalarm.database.Dao
@@ -87,14 +88,26 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(
                         innerUrl,
                         ShoesDataModel.CATEGORY_DRAW
                     )
-                    //                howToEvent += "\n$shoesPrice"
+
+                    insertDrawData(
+                        DrawShoesDataModel(
+                            null,
+                            shoesSubTitle,
+                            shoesTitle,
+                            howToEvent,
+                            Picasso.get().load(shoesImageUrl).get(),
+                            innerUrl
+                        )
+                    )
                 }
                 "COMING SOON" -> {
+                    val launchDate = "${innerDoc.select("div.txt-date").text()}\n${shoesPrice}"
+
                     insertShoesData = ShoesDataModel(
                         null,
                         shoesSubTitle,
                         shoesTitle,
-                        shoesPrice,
+                        launchDate,
                         shoesImageUrl,
                         innerUrl,
                         ShoesDataModel.CATEGORY_COMING_SOON
@@ -121,6 +134,14 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(
     private fun insertData(shoesData: ShoesDataModel) {
         CoroutineScope(Dispatchers.IO).launch {
             mDao.insertShoesData(shoesData)
+        }
+    }
+
+    private fun insertDrawData(drawShoesData: DrawShoesDataModel) {
+        if (!mDao.getAllDrawShoesData().contains(drawShoesData)) {
+            CoroutineScope(Dispatchers.IO).launch {
+                mDao.insertDrawShoesData(drawShoesData)
+            }
         }
     }
 

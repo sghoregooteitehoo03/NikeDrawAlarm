@@ -26,16 +26,6 @@ class MyViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     // 전체 목록
-    private val url = MutableLiveData<String>()
-
-    fun setUrl(url: String) {
-        this.url.value = url
-    }
-
-    fun getUrl(): MutableLiveData<String> {
-        return url
-    }
-
     private val shoesCategory = MutableLiveData<String>(ShoesDataModel.CATEGORY_RELEASED)
 
     fun setShoesCategory(category: String) {
@@ -58,5 +48,16 @@ class MyViewModel(application: Application) : AndroidViewModel(application) {
 
     fun clearShoesData() = viewModelScope.launch {
         repository.clearShoesData()
+    }
+
+    // 특정 신발의 웹 주소
+    private val url = MutableLiveData<String>()
+
+    fun setUrl(url: String) {
+        this.url.value = url
+    }
+
+    fun getUrl(): MutableLiveData<String> {
+        return url
     }
 }
