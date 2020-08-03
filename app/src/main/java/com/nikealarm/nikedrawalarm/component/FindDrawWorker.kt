@@ -107,7 +107,7 @@ class FindDrawWorker(context: Context, workerParams: WorkerParameters) : Worker(
                             innerUrl
                         ), channelId)
                     // 데이터베이스에 추가함
-                    insertDatabase(
+                    insertDrawData(
                         DrawShoesDataModel(
                             null,
                             shoesSubTitle,
@@ -124,7 +124,7 @@ class FindDrawWorker(context: Context, workerParams: WorkerParameters) : Worker(
             channelId++
         }
 
-        checkDatabase()
+        checkDrawData()
     }
 
     // 알림 생성
@@ -175,13 +175,11 @@ class FindDrawWorker(context: Context, workerParams: WorkerParameters) : Worker(
     }
 
     // 데이터베이스 접근
-    private fun insertDatabase(insertShoesData: DrawShoesDataModel) {
-        CoroutineScope(IO).launch {
-            mDao.insertDrawShoesData(insertShoesData)
-        }
+    private fun insertDrawData(insertShoesData: DrawShoesDataModel) {
+        mDao.insertDrawShoesData(insertShoesData)
     }
 
-    private fun checkDatabase() {
+    private fun checkDrawData() {
         for(shoesData in mDao.getAllDrawShoesData()) {
             if(!notDrawShoesList.contains(shoesData)) {
                 deleteShoesData(shoesData)
@@ -190,8 +188,6 @@ class FindDrawWorker(context: Context, workerParams: WorkerParameters) : Worker(
     }
 
     private fun deleteShoesData(deleteData: DrawShoesDataModel) {
-        CoroutineScope(IO).launch {
-            mDao.deleteDrawShoesData(deleteData)
-        }
+        mDao.deleteDrawShoesData(deleteData)
     }
 }

@@ -1,10 +1,12 @@
 package com.nikealarm.nikedrawalarm.ui.fragment
 
 import android.content.Context
+import android.content.DialogInterface
 import android.os.Bundle
 import android.view.*
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.Toolbar
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.GravityCompat
@@ -20,38 +22,22 @@ import com.google.android.material.navigation.NavigationView
 import com.nikealarm.nikedrawalarm.adapter.ShoesListAdapter
 import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.component.ParsingWorker
+import com.nikealarm.nikedrawalarm.database.ShoesDataModel
 import com.nikealarm.nikedrawalarm.other.Contents
 import com.nikealarm.nikedrawalarm.ui.MainActivity
 import com.nikealarm.nikedrawalarm.viewmodel.MyViewModel
 
 class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
     NavigationView.OnNavigationItemSelectedListener, ShoesListAdapter.ImageClickListener {
-    private lateinit var mainLayout: ConstraintLayout
-    private lateinit var loadingLayout: ConstraintLayout
     private lateinit var drawer: DrawerLayout
 
     private lateinit var mViewModel: MyViewModel
-    private val parsingWork: OneTimeWorkRequest = OneTimeWorkRequestBuilder<ParsingWorker>()
-        .addTag(Contents.WORKER_PARSING_DATA)
-        .build()
-
-    companion object {
-        var isStarted = false
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-
-        if (!isStarted) {
-            WorkManager.getInstance(requireContext()).enqueueUniqueWork(
-                Contents.WORKER_PARSING_DATA,
-                ExistingWorkPolicy.KEEP,
-                parsingWork
-            )
-        }
 
         activity?.onBackPressedDispatcher?.addCallback(backPressedCallback)
         return inflater.inflate(R.layout.fragment_shoes_list, container, false)
@@ -77,14 +63,6 @@ class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
         }
 
         // 옵저버 설정
-        WorkManager.getInstance(requireContext())
-            .getWorkInfosByTagLiveData(Contents.WORKER_PARSING_DATA)
-            .observe(viewLifecycleOwner, Observer {
-                if (it[0].state == WorkInfo.State.SUCCEEDED) {
-                    isStarted = true
-                    appearList()
-                }
-            })
         mViewModel.getShoesCategory().observe(viewLifecycleOwner, Observer {
             mToolbar.title = it
         })
@@ -93,12 +71,6 @@ class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
         })
 
         // id 설정
-        mainLayout = view.findViewById(R.id.drawListFrag_mainLayout)
-        loadingLayout = view.findViewById<ConstraintLayout>(R.id.drawListFrag_loadingLayout).apply {
-            setOnTouchListener { v, event ->
-                true
-            }
-        }
         val listView = view.findViewById<RecyclerView>(R.id.drawListFrag_listView).apply {
             setHasFixedSize(true)
             layoutManager = LinearLayoutManager(context)
@@ -137,15 +109,15 @@ class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
 
         return when (menuItem.itemId) {
             R.id.mainMenu_draw -> {
-                setToolbarTitle(menuItem)
+                setToolbarTitle(ShoesDataModel.CATEGORY_DRAW)
                 true
             }
             R.id.mainMenu_comingSoon -> {
-                setToolbarTitle(menuItem)
+                setToolbarTitle(ShoesDataModel.CATEGORY_COMING_SOON)
                 true
             }
             R.id.mainMenu_released -> {
-                setToolbarTitle(menuItem)
+                setToolbarTitle(ShoesDataModel.CATEGORY_RELEASED)
                 true
             }
             R.id.mainMenu_setting -> {
@@ -166,30 +138,8 @@ class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
         backPressedCallback.isEnabled = false
     }
 
-    private fun setToolbarTitle(menuItem: MenuItem) {
-        mViewModel.setShoesCategory(menuItem.title.toString())
-    }
-
-    // 애니메이션 설정
-    private fun appearList() {
-        if (isStarted) {
-            with(mainLayout) {
-                animate().setDuration(200)
-                    .alpha(1f)
-                    .withLayer()
-            }
-            with(loadingLayout) {
-                animate().setDuration(200)
-                    .alpha(0f)
-                    .withLayer()
-
-                visibility = View.GONE
-            }
-        }
-    }
-
-    private fun disappearList() {
-
+    private fun setToolbarTitle(shoesCategory: String) {
+        mViewModel.setShoesCategory(shoesCategory)
     }
 
     private val backPressedCallback = object : OnBackPressedCallback(true) {
@@ -198,9 +148,21 @@ class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
             if (drawer.isDrawerOpen(GravityCompat.START)) {
                 drawer.closeDrawer(GravityCompat.START)
             } else {
-                super.setEnabled(false)
-                activity?.onBackPressed()
+                terminationApp()
             }
         }
+    }
+
+    private fun terminationApp() {
+        AlertDialog.Builder(requireContext())
+            .setTitle("종료")
+            .setMessage("앱을 종료하시겠습니까?")
+            .setNegativeButton("취소", DialogInterface.OnClickListener { dialog, which ->
+                dialog.cancel()
+            })
+            .setPositiveButton("확인", DialogInterface.OnClickListener { dialog, which ->
+                activity?.finish()
+            })
+            .show()
     }
 }

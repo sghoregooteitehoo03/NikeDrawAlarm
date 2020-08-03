@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/drawListFragment">
+    app:startDestination="@id/loadingFragment">
 
     <action
         android:id="@+id/action_global_mainFragment"
@@ -12,7 +12,7 @@
 
     <action
         android:id="@+id/action_global_drawListFragment"
-        app:destination="@id/drawListFragment"
+        app:destination="@id/loadingFragment"
         app:launchSingleTop="true" />
 
     <fragment
@@ -62,5 +62,13 @@
         <action
             android:id="@+id/action_imageListFragment_to_drawListFragment"
             app:popUpTo="@id/drawListFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/loadingFragment"
+        android:name="com.nikealarm.nikedrawalarm.ui.fragment.LoadingFragment"
+        android:label="LoadingFragment" >
+        <action
+            android:id="@+id/action_loadingFragment_to_drawListFragment"
+            app:destination="@id/drawListFragment" />
     </fragment>
 </navigation>

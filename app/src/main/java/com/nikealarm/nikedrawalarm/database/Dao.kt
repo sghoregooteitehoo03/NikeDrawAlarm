@@ -15,21 +15,30 @@ interface Dao {
     fun getAllDrawShoesPagingData(): DataSource.Factory<Int, DrawShoesDataModel>
 
     @Insert(entity = DrawShoesDataModel::class)
-    suspend fun insertDrawShoesData(insertData: DrawShoesDataModel)
+    fun insertDrawShoesData(insertData: DrawShoesDataModel)
 
     @Query("DELETE FROM DrawShoesDataModel")
-    suspend fun clearDrawShoesData()
+    fun clearDrawShoesData()
 
     @Delete(entity = DrawShoesDataModel::class)
-    suspend fun deleteDrawShoesData(deleteData: DrawShoesDataModel)
+    fun deleteDrawShoesData(deleteData: DrawShoesDataModel)
 
     // 전체 목록
     @Query("SELECT * FROM ShoesDataModel WHERE ShoesCategory = :shoesCategory")
     fun getShoesData(shoesCategory: String): DataSource.Factory<Int, ShoesDataModel>
 
+    @Query("SELECT * FROM ShoesDataModel")
+    fun getAllShoesData(): List<ShoesDataModel>
+
+    @Query("UPDATE ShoesDataModel SET ShoesPrice = :updatePrice, ShoesCategory = :updateCategory WHERE ShoesTitle = :shoesTitle AND ShoesSubTitle = :shoesSubTitle")
+    fun updateShoesData(updatePrice: String?, updateCategory: String?, shoesTitle: String, shoesSubTitle: String)
+
     @Insert(entity = ShoesDataModel::class)
-    suspend fun insertShoesData(insertData: ShoesDataModel)
+    fun insertShoesData(insertData: ShoesDataModel)
+
+    @Delete(entity = ShoesDataModel::class)
+    fun deleteShoesData(deleteData: ShoesDataModel)
 
     @Query("DELETE FROM ShoesDataModel")
-    suspend fun clearShoesData()
+    fun clearShoesData()
 }

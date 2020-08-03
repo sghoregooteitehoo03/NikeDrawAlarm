@@ -17,7 +17,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 /*
-* 위치 버튼 클릭시 이미지 이동
+* 위치 버튼 클릭시 이미지 이동(보류)
 * 로딩화면 추가
 * UI 수정 및 최적화
 * 코드 최적화

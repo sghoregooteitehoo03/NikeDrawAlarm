@@ -106,8 +106,6 @@ class ProductNotifyWorker(context: Context, workerParams: WorkerParameters) : Wo
             commit()
         }
 
-        CoroutineScope(Dispatchers.IO).launch {
-            mDao.deleteDrawShoesData(data)
-        }
+        mDao.deleteDrawShoesData(data)
     }
 }

@@ -1,7 +1,7 @@
 package com.nikealarm.nikedrawalarm.component
 
 import android.content.Context
-import androidx.work.Data
+import android.util.Log
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import com.nikealarm.nikedrawalarm.database.Dao
@@ -9,10 +9,8 @@ import com.nikealarm.nikedrawalarm.database.DrawShoesDataModel
 import com.nikealarm.nikedrawalarm.database.MyDataBase
 import com.nikealarm.nikedrawalarm.database.ShoesDataModel
 import com.squareup.picasso.Picasso
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import org.jsoup.Jsoup
+import org.jsoup.nodes.Element
 
 class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(
     context,
@@ -20,11 +18,20 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(
 ) {
     private lateinit var mDao: Dao
 
+    private val allShoesList = mutableListOf<ShoesDataModel>()
+    private val notDrawShoesList = mutableListOf<DrawShoesDataModel>()
+
     override fun doWork(): Result {
         mDao = MyDataBase.getDatabase(applicationContext)!!.getDao()
 
-        clearData()
+        var size = mDao.getAllShoesData().size
+        Log.i("CheckSize", "$size")
+        Log.i("CheckDrawSize", "${mDao.getAllDrawShoesData().size}")
+
         parsingData()
+
+        size = mDao.getAllShoesData().size
+        Log.i("CheckSize", "$size")
         return Result.success()
     }
 
@@ -53,101 +60,155 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(
                 .select("p.txt-description")
                 .text()
 
-            val innerUrl =
-                "https://www.nike.com" + elementData.select("a").attr("href") // 해당 draw 링크창을 읽어옴
-            val innerDoc = Jsoup.connect(innerUrl)
-                .userAgent("Mozilla")
-                .get()
+            if (mDao.getAllShoesData().contains(ShoesDataModel(0, shoesSubTitle, shoesTitle))) {
+                val category = when (shoesInfo) {
+                    "THE DRAW 진행예정", "THE DRAW 응모하기", "THE DRAW 응모 마감", "THE DRAW 당첨 결과 확인", "THE DRAW 종료" -> ShoesDataModel.CATEGORY_DRAW
+                    "COMING SOON" -> ShoesDataModel.CATEGORY_COMING_SOON
+                    else -> ShoesDataModel.CATEGORY_RELEASED
+                }
 
-            // 신발 정보를 가져옴
-            val shoesPrice = innerDoc.select("div.price") // draw 신발 가격
-                .text()
-            val shoesImageUrl = innerDoc.select("li.uk-width-1-2") // draw 신발 이미지
-                .select("img")
-                .eq(0)
-                .attr("src")
+                updateData(ShoesDataModel(0, shoesSubTitle, shoesTitle, null, null, null, category))
+            } else {
+                val innerUrl =
+                    "https://www.nike.com" + elementData.select("a").attr("href") // 해당 신발의 링크창을 읽어옴
+                val innerDoc = Jsoup.connect(innerUrl)
+                    .userAgent("Mozilla")
+                    .get()
 
-            val insertShoesData: ShoesDataModel
-            when (shoesInfo) {
-                "THE DRAW 진행예정" -> {
-                    val innerElementData = innerDoc.select("span.uk-text-bold")
+                // 신발 정보를 가져옴
+                val shoesPrice = innerDoc.select("div.price") // 신발 가격
+                    .text()
 
-                    var howToEvent = "" // 이벤트 참여방법
-                    for (j in 0..2) {
-                        howToEvent += innerElementData.select("p")
-                            .eq(j)
-                            .text() + "\n"
-                    }
+                val shoesImageUrl = innerDoc.select("li.uk-width-1-2") // 신발 이미지
+                    .select("img")
+                    .eq(0)
+                    .attr("src")
 
-                    insertShoesData = ShoesDataModel(
-                        null,
-                        shoesSubTitle,
-                        shoesTitle,
-                        howToEvent,
-                        shoesImageUrl,
-                        innerUrl,
-                        ShoesDataModel.CATEGORY_DRAW
-                    )
+                val insertShoesData: ShoesDataModel
+                when (shoesInfo) {
+                    "THE DRAW 진행예정", "THE DRAW 응모하기", "THE DRAW 응모 마감", "THE DRAW 당첨 결과 확인", "THE DRAW 종료" -> {
+                        val innerElementData = innerDoc.select("span.uk-text-bold")
 
-                    insertDrawData(
-                        DrawShoesDataModel(
+                        var howToEvent = "" // 이벤트 참여방법
+                        for (j in 0..2) {
+                            howToEvent += innerElementData.select("p")
+                                .eq(j)
+                                .text() + "\n"
+                        }
+
+                        insertShoesData = ShoesDataModel(
                             null,
                             shoesSubTitle,
                             shoesTitle,
                             howToEvent,
-                            Picasso.get().load(shoesImageUrl).get(),
-                            innerUrl
+                            shoesImageUrl,
+                            innerUrl,
+                            ShoesDataModel.CATEGORY_DRAW
                         )
-                    )
-                }
-                "COMING SOON" -> {
-                    val launchDate = "${innerDoc.select("div.txt-date").text()}\n${shoesPrice}"
 
-                    insertShoesData = ShoesDataModel(
-                        null,
-                        shoesSubTitle,
-                        shoesTitle,
-                        launchDate,
-                        shoesImageUrl,
-                        innerUrl,
-                        ShoesDataModel.CATEGORY_COMING_SOON
-                    )
+                        if(!mDao.getAllDrawShoesData().contains(DrawShoesDataModel(0, shoesSubTitle, shoesTitle))) {
+                            insertDrawData(
+                                DrawShoesDataModel(
+                                    null,
+                                    shoesSubTitle,
+                                    shoesTitle,
+                                    howToEvent,
+                                    Picasso.get().load(shoesImageUrl).get(),
+                                    innerUrl
+                                )
+                            )
+                        }
+                    }
+                    "COMING SOON" -> {
+                        val launchDate = "${innerDoc.select("div.txt-date").text()}\n${shoesPrice}"
+
+                        insertShoesData = ShoesDataModel(
+                            null,
+                            shoesSubTitle,
+                            shoesTitle,
+                            launchDate,
+                            shoesImageUrl,
+                            innerUrl,
+                            ShoesDataModel.CATEGORY_COMING_SOON
+                        )
+                    }
+                    else -> {
+                        insertShoesData = ShoesDataModel(
+                            null,
+                            shoesSubTitle,
+                            shoesTitle,
+                            shoesPrice,
+                            shoesImageUrl,
+                            innerUrl,
+                            ShoesDataModel.CATEGORY_RELEASED
+                        )
+                    }
                 }
-                else -> {
-                    insertShoesData = ShoesDataModel(
-                        null,
-                        shoesSubTitle,
-                        shoesTitle,
-                        shoesPrice,
-                        shoesImageUrl,
-                        innerUrl,
-                        ShoesDataModel.CATEGORY_RELEASED
-                    )
-                }
+
+                insertData(insertShoesData)
             }
 
-            insertData(insertShoesData)
+            allShoesList.add(ShoesDataModel(0, shoesSubTitle, shoesTitle))
+            notDrawShoesList.add(DrawShoesDataModel(0, shoesSubTitle, shoesTitle))
         }
+
+        checkShoesData()
+        checkDrawData()
     }
 
     // 데이터베이스 설정
     private fun insertData(shoesData: ShoesDataModel) {
-        CoroutineScope(Dispatchers.IO).launch {
-            mDao.insertShoesData(shoesData)
-        }
+        mDao.insertShoesData(shoesData)
     }
 
-    private fun insertDrawData(drawShoesData: DrawShoesDataModel) {
-        if (!mDao.getAllDrawShoesData().contains(drawShoesData)) {
-            CoroutineScope(Dispatchers.IO).launch {
-                mDao.insertDrawShoesData(drawShoesData)
-            }
+    private fun updateData(newShoesData: ShoesDataModel) {
+        val index = mDao.getAllShoesData()
+            .indexOf(ShoesDataModel(0, newShoesData.shoesSubTitle, newShoesData.shoesTitle))
+        val ordinaryData = mDao.getAllShoesData()[index]
+
+        if (newShoesData.shoesCategory != ordinaryData.shoesCategory) {
+            val newShoesPrice = ordinaryData.shoesPrice?.split("\n")?.get(1) // 신발 가격
+
+            mDao.updateShoesData(
+                newShoesPrice,
+                newShoesData.shoesCategory,
+                newShoesData.shoesTitle,
+                newShoesData.shoesSubTitle
+            )
         }
     }
 
     private fun clearData() {
-        CoroutineScope(Dispatchers.IO).launch {
-            mDao.clearShoesData()
+        mDao.clearShoesData()
+    }
+
+    private fun checkShoesData() {
+
+        if (allShoesList.size < mDao.getAllShoesData().size) {
+            for (shoesData in mDao.getAllShoesData()) {
+
+                if (!allShoesList.contains(shoesData)) {
+                    mDao.deleteShoesData(shoesData)
+                }
+            }
         }
     }
+
+    private fun insertDrawData(drawShoesData: DrawShoesDataModel) {
+        mDao.insertDrawShoesData(drawShoesData)
+    }
+
+    private fun checkDrawData() {
+        for (shoesData in mDao.getAllDrawShoesData()) {
+
+            if (!notDrawShoesList.contains(shoesData)) {
+                deleteDrawData(shoesData)
+            }
+        }
+    }
+
+    private fun deleteDrawData(deleteShoes: DrawShoesDataModel) {
+        mDao.deleteDrawShoesData(deleteShoes)
+    }
+
 }

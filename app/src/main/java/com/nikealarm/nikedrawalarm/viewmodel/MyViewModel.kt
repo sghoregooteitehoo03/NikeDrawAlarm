@@ -12,19 +12,6 @@ class MyViewModel(application: Application) : AndroidViewModel(application) {
     private val repository =
         MyRepository(application)
 
-    // DRAW
-    fun getAllShoesPagingData(): LiveData<PagedList<DrawShoesDataModel>> {
-        return repository.getAllDrawShoesPagingData()
-    }
-
-    fun insertShoesData(insertData: DrawShoesDataModel) = viewModelScope.launch {
-        repository.insertDrawShoesData(insertData)
-    }
-
-    fun clearDrawShoesData() = viewModelScope.launch {
-        repository.clearDrawShoesData()
-    }
-
     // 전체 목록
     private val shoesCategory = MutableLiveData<String>(ShoesDataModel.CATEGORY_RELEASED)
 
@@ -44,10 +31,6 @@ class MyViewModel(application: Application) : AndroidViewModel(application) {
 
     fun getShoesData(): LiveData<PagedList<ShoesDataModel>> {
         return shoesList
-    }
-
-    fun clearShoesData() = viewModelScope.launch {
-        repository.clearShoesData()
     }
 
     // 특정 신발의 웹 주소

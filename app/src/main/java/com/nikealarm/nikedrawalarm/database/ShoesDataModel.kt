@@ -25,7 +25,7 @@ data class ShoesDataModel(
 ) {
     override fun equals(other: Any?): Boolean {
         other as ShoesDataModel
-        return shoesSubTitle == other.shoesSubTitle && shoesTitle == other.shoesSubTitle
+        return shoesSubTitle == other.shoesSubTitle && shoesTitle == other.shoesTitle
     }
 
     companion object {

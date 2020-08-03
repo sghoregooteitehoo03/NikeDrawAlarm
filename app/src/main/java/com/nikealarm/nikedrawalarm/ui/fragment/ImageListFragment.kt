@@ -5,13 +5,16 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.Toast
 import androidx.collection.arraySetOf
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.findNavController
 import androidx.viewpager.widget.ViewPager
 import androidx.viewpager2.widget.ViewPager2
 import androidx.work.*
@@ -53,6 +56,11 @@ class ImageListFragment : Fragment() {
         // id 설정
         viewPager = view.findViewById(R.id.imageListFrag_viewpager)
         sliderDotspanel = view.findViewById(R.id.imageListFrag_sliderDots)
+        val cancelBtn = view.findViewById<ImageButton>(R.id.imageListFrag_cancelBtn).apply {
+            setOnClickListener {
+                findNavController().navigate(R.id.action_imageListFragment_to_drawListFragment)
+            }
+        }
 
         // 옵저버 설정
         WorkManager.getInstance(requireContext())
