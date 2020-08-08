@@ -39,7 +39,7 @@ class FindDrawWorker(context: Context, workerParams: WorkerParameters) : Worker(
     private fun parsingData() {
         val url = "https://www.nike.com/kr/launch/?type=feed"
         val doc = Jsoup.connect(url) // nike SNKRS창을 읽어옴
-            .userAgent("Mozilla")
+            .userAgent("19.0.1.84.52")
             .get()
 
         val elementsData = doc.select("div.launch-list-item") // 여러개의 신발
@@ -96,26 +96,15 @@ class FindDrawWorker(context: Context, workerParams: WorkerParameters) : Worker(
                             shoesTitle
                         )
                     )) {
+                    val drawData = DrawShoesDataModel(null, shoesSubTitle, shoesTitle, howToEvent, shoesBitmap, innerUrl)
                     // 알림생성
                     createNotification(
-                        DrawShoesDataModel(
-                            0,
-                            shoesSubTitle,
-                            shoesTitle,
-                            howToEvent,
-                            shoesBitmap,
-                            innerUrl
-                        ), channelId)
+                        drawData,
+                        channelId
+                    )
                     // 데이터베이스에 추가함
                     insertDrawData(
-                        DrawShoesDataModel(
-                            null,
-                            shoesSubTitle,
-                            shoesTitle,
-                            howToEvent,
-                            shoesBitmap,
-                            innerUrl
-                        )
+                        drawData
                     )
                 }
             }

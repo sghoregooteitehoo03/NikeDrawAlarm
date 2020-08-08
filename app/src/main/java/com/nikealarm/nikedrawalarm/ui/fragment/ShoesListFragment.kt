@@ -25,7 +25,9 @@ import com.nikealarm.nikedrawalarm.component.ParsingWorker
 import com.nikealarm.nikedrawalarm.database.ShoesDataModel
 import com.nikealarm.nikedrawalarm.other.Contents
 import com.nikealarm.nikedrawalarm.ui.MainActivity
+import com.nikealarm.nikedrawalarm.ui.dialog.ExitDialog
 import com.nikealarm.nikedrawalarm.viewmodel.MyViewModel
+import kotlinx.android.synthetic.main.fragment_shoes_list.*
 
 class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
     NavigationView.OnNavigationItemSelectedListener, ShoesListAdapter.ImageClickListener {
@@ -56,7 +58,8 @@ class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
         mViewModel = ViewModelProvider(requireActivity())[MyViewModel::class.java]
 
         val mAdapter = ShoesListAdapter(
-            requireContext()
+            requireContext(),
+            requireActivity().supportFragmentManager
         ).apply {
             setOnItemClickListener(this@ShoesListFragment)
             setOnImageClickListener(this@ShoesListFragment)
@@ -68,6 +71,13 @@ class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
         })
         mViewModel.getShoesData().observe(viewLifecycleOwner, Observer {
             mAdapter.submitList(it)
+            if (it.size == 0) {
+                appearText()
+            } else {
+                if (drawListFrag_noItem_text.visibility == View.VISIBLE) {
+                    disappearText()
+                }
+            }
         })
 
         // id 설정
@@ -154,15 +164,19 @@ class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
     }
 
     private fun terminationApp() {
-        AlertDialog.Builder(requireContext())
-            .setTitle("종료")
-            .setMessage("앱을 종료하시겠습니까?")
-            .setNegativeButton("취소", DialogInterface.OnClickListener { dialog, which ->
-                dialog.cancel()
-            })
-            .setPositiveButton("확인", DialogInterface.OnClickListener { dialog, which ->
-                activity?.finish()
-            })
-            .show()
+        ExitDialog.getExitDialog().show(requireActivity().supportFragmentManager, ExitDialog.EXIT_DIALOG_TAG)
+    }
+
+    // 애니메이션 설정
+    private fun appearText() {
+        with(drawListFrag_noItem_text) {
+            visibility = View.VISIBLE
+        }
+    }
+
+    private fun disappearText() {
+        with(drawListFrag_noItem_text) {
+            visibility = View.GONE
+        }
     }
 }

@@ -1,6 +1,7 @@
 package com.nikealarm.nikedrawalarm.adapter
 
 import android.app.AlarmManager
+import android.app.Dialog
 import android.app.PendingIntent
 import android.content.Context
 import android.content.DialogInterface
@@ -14,6 +15,7 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
+import androidx.fragment.app.FragmentManager
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
@@ -21,11 +23,13 @@ import com.nikealarm.nikedrawalarm.component.MyAlarmReceiver
 import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.database.ShoesDataModel
 import com.nikealarm.nikedrawalarm.other.Contents
+import com.nikealarm.nikedrawalarm.ui.dialog.AlarmDialog
 import com.squareup.picasso.Picasso
 import java.util.*
 
 class ShoesListAdapter(
-    private val mContext: Context
+    private val mContext: Context,
+    private val fragmentManager: FragmentManager
 ) :
     PagedListAdapter<ShoesDataModel, ShoesListAdapter.DrawListViewHolder>(
         diffCallback
@@ -82,7 +86,7 @@ class ShoesListAdapter(
                 imageListener.onClickImage(data?.shoesUrl!!)
             }
 
-            if(data?.shoesCategory == ShoesDataModel.CATEGORY_DRAW) {
+            if (data?.shoesCategory == ShoesDataModel.CATEGORY_DRAW) {
                 allowAlarmBtn.visibility = View.VISIBLE
 
                 if (isChecked(data.shoesTitle)) {
@@ -106,10 +110,14 @@ class ShoesListAdapter(
         private fun setPreference(preferenceKey: String?, timeTrigger: Long = 0L) {
             val isAllowAlarm = !isChecked(preferenceKey)
 
-            val allowAlarmPreference = mContext.getSharedPreferences(Contents.PREFERENCE_NAME_ALLOW_ALARM, Context.MODE_PRIVATE)
-            val timeSharedPreference = mContext.getSharedPreferences(Contents.PREFERENCE_NAME_TIME, Context.MODE_PRIVATE)
+            val allowAlarmPreference = mContext.getSharedPreferences(
+                Contents.PREFERENCE_NAME_ALLOW_ALARM,
+                Context.MODE_PRIVATE
+            )
+            val timeSharedPreference =
+                mContext.getSharedPreferences(Contents.PREFERENCE_NAME_TIME, Context.MODE_PRIVATE)
 
-            if(isAllowAlarm) {
+            if (isAllowAlarm) {
                 with(timeSharedPreference.edit()) {
                     putLong(preferenceKey, timeTrigger)
                     commit()
@@ -134,57 +142,82 @@ class ShoesListAdapter(
         }
 
         private fun isChecked(preferenceKey: String?): Boolean {
-            val allowAlarmPreference = mContext.getSharedPreferences(Contents.PREFERENCE_NAME_ALLOW_ALARM, Context.MODE_PRIVATE)
+            val allowAlarmPreference = mContext.getSharedPreferences(
+                Contents.PREFERENCE_NAME_ALLOW_ALARM,
+                Context.MODE_PRIVATE
+            )
             return allowAlarmPreference.getBoolean(preferenceKey, false)
         }
 
         // 알람을 설정함
         private fun setNotification(howToEvent: String?, requestCode: Int, preferenceKey: String?) {
             val timeTrigger = getTimeInMillis(howToEvent)
-            val dialog = createDialog()
+            AlarmDialog.getAlarmDialog("알림 설정", "이 상품의 알림을 설정하시겠습니까?")
+                .show(fragmentManager, AlarmDialog.ALARM_DIALOG_TAG)
 
-            with(dialog) {
-                setMessage("이 상품의 알림을 설정하시겠습니까?")
-                show()
-                getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+            AlarmDialog.setOnCheckClickListener(object : AlarmDialog.CheckClickListener {
+                override fun onCheckClickListener(dialog: Dialog) {
                     setAlarm(timeTrigger, requestCode)
                     setPreference(preferenceKey, timeTrigger)
 
                     notifyDataSetChanged()
-                    dismiss()
+                    dialog.dismiss()
                 }
-            }
+            })
+//            with(dialog) {
+//                setMessage("이 상품의 알림을 설정하시겠습니까?")
+//                show()
+//                getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+//                    setAlarm(timeTrigger, requestCode)
+//                    setPreference(preferenceKey, timeTrigger)
+//
+//                    notifyDataSetChanged()
+//                    dismiss()
+//                }
+//            }
         }
 
         private fun removeNotification(requestCode: Int, preferenceKey: String?) {
-            val dialog = createDialog()
+            AlarmDialog.getAlarmDialog("알림 설정", "이 상품의 알림을 취소하시겠습니까?")
+                .show(fragmentManager, AlarmDialog.ALARM_DIALOG_TAG)
 
-            with(dialog) {
-                setMessage("이 상품의 알림을 취소하시겠습니까?")
-                show()
-
-                getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+            AlarmDialog.setOnCheckClickListener(object : AlarmDialog.CheckClickListener {
+                override fun onCheckClickListener(dialog: Dialog) {
                     removeAlarm(requestCode)
 
                     setPreference(preferenceKey)
                     notifyDataSetChanged()
 
-                    dismiss()
+                    dialog.dismiss()
                 }
-            }
+            })
+
+//            with(dialog) {
+//                setMessage("이 상품의 알림을 취소하시겠습니까?")
+//                show()
+//
+//                getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+//                    removeAlarm(requestCode)
+//
+//                    setPreference(preferenceKey)
+//                    notifyDataSetChanged()
+//
+//                    dismiss()
+//                }
+//            }
         }
 
-        private fun createDialog(): AlertDialog {
-
-            return AlertDialog.Builder(mContext)
-                .setTitle("알림")
-                .setPositiveButton("확인", DialogInterface.OnClickListener { dialog, which ->
-                })
-                .setNegativeButton("취소", DialogInterface.OnClickListener { dialog, which ->
-                    dialog.cancel()
-                })
-                .create()
-        }
+//        private fun createDialog(): AlertDialog {
+//
+//            return AlertDialog.Builder(mContext)
+//                .setTitle("알림")
+//                .setPositiveButton("확인", DialogInterface.OnClickListener { dialog, which ->
+//                })
+//                .setNegativeButton("취소", DialogInterface.OnClickListener { dialog, which ->
+//                    dialog.cancel()
+//                })
+//                .create()
+//        }
 
         private fun setAlarm(timeTrigger: Long, requestCode: Int) {
 
