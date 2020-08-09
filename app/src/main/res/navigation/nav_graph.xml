@@ -31,10 +31,14 @@
         tools:layout="@layout/fragment_shoes_list">
         <action
             android:id="@+id/action_drawListFragment_to_mainWebFragment"
-            app:destination="@id/mainWebFragment" />
+            app:destination="@id/mainWebFragment"
+            app:enterAnim="@animator/slide_in_bottom"
+            app:exitAnim="@animator/slide_out_high"
+            app:popEnterAnim="@animator/slide_in_high"
+            app:popExitAnim="@animator/slide_out_bottom" />
         <action
             android:id="@+id/action_drawListFragment_to_settingFragment"
-            app:destination="@id/settingFragment" />
+            app:destination="@id/settingFragment"/>
         <action
             android:id="@+id/action_drawListFragment_to_imageListFragment"
             app:destination="@id/imageListFragment" />
@@ -58,7 +62,7 @@
     <fragment
         android:id="@+id/imageListFragment"
         android:name="com.nikealarm.nikedrawalarm.ui.fragment.ImageListFragment"
-        android:label="ImageListFragment" >
+        android:label="ImageListFragment">
         <action
             android:id="@+id/action_imageListFragment_to_drawListFragment"
             app:popUpTo="@id/drawListFragment" />
@@ -66,7 +70,7 @@
     <fragment
         android:id="@+id/loadingFragment"
         android:name="com.nikealarm.nikedrawalarm.ui.fragment.LoadingFragment"
-        android:label="LoadingFragment" >
+        android:label="LoadingFragment">
         <action
             android:id="@+id/action_loadingFragment_to_drawListFragment"
             app:destination="@id/drawListFragment" />

@@ -3,7 +3,9 @@ package com.nikealarm.nikedrawalarm.ui.fragment
 import android.content.Context
 import android.content.DialogInterface
 import android.os.Bundle
+import android.transition.TransitionInflater
 import android.view.*
+import android.widget.ImageView
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AlertDialog
@@ -14,6 +16,7 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -68,13 +71,18 @@ class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
         // 옵저버 설정
         mViewModel.getShoesCategory().observe(viewLifecycleOwner, Observer {
             mToolbar.title = it
+
+            if(drawListFrag_scrollUp_Button.isEnabled) {
+                disappearButton()
+            }
+//            disappearButton()
         })
         mViewModel.getShoesData().observe(viewLifecycleOwner, Observer {
             mAdapter.submitList(it)
             if (it.size == 0) {
                 appearText()
             } else {
-                if (drawListFrag_noItem_text.visibility == View.VISIBLE) {
+                if (drawListFrag_noItem_text.isEnabled) {
                     disappearText()
                 }
             }
@@ -85,6 +93,24 @@ class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
             setHasFixedSize(true)
             layoutManager = LinearLayoutManager(context)
             adapter = mAdapter
+
+            addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                    super.onScrollStateChanged(recyclerView, newState)
+
+                    if (recyclerView.computeVerticalScrollOffset() == 0) {
+                        disappearButton()
+                    } else {
+                        appearButton()
+                    }
+                }
+            })
+        }
+        with(drawListFrag_scrollUp_Button) {
+            isEnabled = false
+            setOnClickListener {
+                listView.smoothScrollToPosition(0)
+            }
         }
         val navView = view.findViewById<NavigationView>(R.id.drawListFrag_navView).apply {
             setCheckedItem(R.id.mainMenu_released)
@@ -115,23 +141,28 @@ class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
     }
 
     override fun onNavigationItemSelected(menuItem: MenuItem): Boolean {
-        drawer.closeDrawer(GravityCompat.START)
-
         return when (menuItem.itemId) {
             R.id.mainMenu_draw -> {
+                drawer.closeDrawer(GravityCompat.START)
+
                 setToolbarTitle(ShoesDataModel.CATEGORY_DRAW)
                 true
             }
             R.id.mainMenu_comingSoon -> {
+                drawer.closeDrawer(GravityCompat.START)
+
                 setToolbarTitle(ShoesDataModel.CATEGORY_COMING_SOON)
                 true
             }
             R.id.mainMenu_released -> {
+                drawer.closeDrawer(GravityCompat.START)
+
                 setToolbarTitle(ShoesDataModel.CATEGORY_RELEASED)
                 true
             }
             R.id.mainMenu_setting -> {
                 findNavController().navigate(R.id.action_drawListFragment_to_settingFragment)
+                drawer.closeDrawer(GravityCompat.START)
                 true
             }
             else -> false
@@ -164,19 +195,46 @@ class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
     }
 
     private fun terminationApp() {
-        ExitDialog.getExitDialog().show(requireActivity().supportFragmentManager, ExitDialog.EXIT_DIALOG_TAG)
+        ExitDialog.getExitDialog()
+            .show(requireActivity().supportFragmentManager, ExitDialog.EXIT_DIALOG_TAG)
     }
 
     // 애니메이션 설정
     private fun appearText() {
         with(drawListFrag_noItem_text) {
-            visibility = View.VISIBLE
+            isEnabled = true
+
+            animate().setDuration(350)
+                .alpha(1f)
+                .withLayer()
         }
     }
 
     private fun disappearText() {
         with(drawListFrag_noItem_text) {
-            visibility = View.GONE
+            isEnabled = false
+
+            animate().setDuration(100)
+                .alpha(0f)
+                .withLayer()
+        }
+    }
+
+    private fun appearButton() {
+        with(drawListFrag_scrollUp_Button) {
+            isEnabled = true
+            animate().setDuration(100)
+                .alpha(1f)
+                .withLayer()
+        }
+    }
+
+    private fun disappearButton() {
+        with(drawListFrag_scrollUp_Button) {
+            isEnabled = false
+            animate().setDuration(100)
+                .alpha(0f)
+                .withLayer()
         }
     }
 }

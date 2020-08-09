@@ -22,6 +22,7 @@
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="match_parent"
         android:layout_height="2dp"
+        android:backgroundTint="@android:color/holo_blue_light"
         android:max="100"
         android:visibility="gone" />
 

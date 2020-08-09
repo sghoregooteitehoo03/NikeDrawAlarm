@@ -1,6 +1,7 @@
 package com.nikealarm.nikedrawalarm.ui.fragment
 
 import android.os.Bundle
+import android.transition.TransitionInflater
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -23,6 +24,7 @@ import com.nikealarm.nikedrawalarm.adapter.ImageListPagerAdapter
 import com.nikealarm.nikedrawalarm.component.GetImageWorker
 import com.nikealarm.nikedrawalarm.other.Contents
 import com.nikealarm.nikedrawalarm.viewmodel.MyViewModel
+import kotlinx.android.synthetic.main.fragment_image_list.*
 import kotlinx.android.synthetic.main.fragment_image_list.view.*
 
 class ImageListFragment : Fragment() {
@@ -67,7 +69,8 @@ class ImageListFragment : Fragment() {
             .getWorkInfosByTagLiveData(Contents.WORKER_GET_IMAGE)
             .observe(viewLifecycleOwner, Observer {
                 if (it[0].state == WorkInfo.State.SUCCEEDED) {
-                    val imageList = it[0].outputData.getStringArray(Contents.WORKER_GET_IMAGE_OUTPUT_KEY)
+                    val imageList =
+                        it[0].outputData.getStringArray(Contents.WORKER_GET_IMAGE_OUTPUT_KEY)
                     val dotsCount = imageList!!.size
 
                     Log.i("Check", "${imageList.size}")
@@ -82,26 +85,44 @@ class ImageListFragment : Fragment() {
     private fun setDots(size: Int) {
         dots = arrayOfNulls(size)
 
-        for(i in 0 until size) {
+        for (i in 0 until size) {
             dots[i] = ImageView(requireContext())
-            dots[i]?.setImageDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.non_active_dot_shape))
+            dots[i]?.setImageDrawable(
+                ContextCompat.getDrawable(
+                    requireContext(),
+                    R.drawable.non_active_dot_shape
+                )
+            )
 
-            val params = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply {
+            val params = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
                 setMargins(8, 0, 8, 0)
             }
 
             sliderDotspanel.addView(dots[i], params)
         }
 
-        viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback(){
+        viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
 
             override fun onPageSelected(position: Int) {
                 super.onPageSelected(position)
-                for(i in 0 until size) {
-                    dots[i]?.setImageDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.non_active_dot_shape))
+                for (i in 0 until size) {
+                    dots[i]?.setImageDrawable(
+                        ContextCompat.getDrawable(
+                            requireContext(),
+                            R.drawable.non_active_dot_shape
+                        )
+                    )
                 }
 
-                dots[position]?.setImageDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.active_dot_shape))
+                dots[position]?.setImageDrawable(
+                    ContextCompat.getDrawable(
+                        requireContext(),
+                        R.drawable.active_dot_shape
+                    )
+                )
             }
         })
     }
