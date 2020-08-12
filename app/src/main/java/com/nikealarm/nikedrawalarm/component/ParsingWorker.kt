@@ -10,7 +10,6 @@ import com.nikealarm.nikedrawalarm.database.MyDataBase
 import com.nikealarm.nikedrawalarm.database.ShoesDataModel
 import com.squareup.picasso.Picasso
 import org.jsoup.Jsoup
-import org.jsoup.nodes.Element
 
 class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(
     context,
@@ -59,6 +58,8 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(
             val shoesTitle = elementData.select("div.text-box")
                 .select("p.txt-description")
                 .text()
+            val innerUrl =
+                "https://www.nike.com" + elementData.select("a").attr("href") // 해당 신발의 링크창을 읽어옴
 
             if (mDao.getAllShoesData().contains(ShoesDataModel(0, shoesSubTitle, shoesTitle))) {
                 val category = when (shoesInfo) {
@@ -67,10 +68,8 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(
                     else -> ShoesDataModel.CATEGORY_RELEASED
                 }
 
-                updateData(ShoesDataModel(0, shoesSubTitle, shoesTitle, null, null, null, category))
+                updateData(ShoesDataModel(0, shoesSubTitle, shoesTitle, null, null, innerUrl, category))
             } else {
-                val innerUrl =
-                    "https://www.nike.com" + elementData.select("a").attr("href") // 해당 신발의 링크창을 읽어옴
                 val innerDoc = Jsoup.connect(innerUrl)
                     .userAgent("Mozilla")
                     .get()
@@ -169,9 +168,17 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(
         if (newShoesData.shoesCategory != ordinaryData.shoesCategory) {
             val newShoesPrice = ordinaryData.shoesPrice?.split("\n")?.get(1) // 신발 가격
 
-            mDao.updateShoesData(
+            mDao.updateShoesCategory(
                 newShoesPrice,
                 newShoesData.shoesCategory,
+                newShoesData.shoesTitle,
+                newShoesData.shoesSubTitle
+            )
+        }
+
+        if(newShoesData.shoesUrl != ordinaryData.shoesUrl) {
+            mDao.updateShoesUrl(
+                newShoesData.shoesUrl,
                 newShoesData.shoesTitle,
                 newShoesData.shoesSubTitle
             )

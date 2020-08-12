@@ -29,7 +29,7 @@ class GetImageWorker(context: Context, workerParams: WorkerParameters) : Worker(
 
     private fun parsing(url: String) {
         val doc = Jsoup.connect(url)
-            .userAgent("Mozilla")
+            .userAgent("19.0.1.84.52")
             .get()
 
         val elementsData = doc.select("li.uk-width-1-2")

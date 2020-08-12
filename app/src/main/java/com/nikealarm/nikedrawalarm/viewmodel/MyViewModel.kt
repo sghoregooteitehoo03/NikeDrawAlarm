@@ -1,6 +1,7 @@
 package com.nikealarm.nikedrawalarm.viewmodel
 
 import android.app.Application
+import android.graphics.Bitmap
 import androidx.arch.core.util.Function
 import androidx.lifecycle.*
 import androidx.paging.PagedList
@@ -43,4 +44,6 @@ class MyViewModel(application: Application) : AndroidViewModel(application) {
     fun getUrl(): MutableLiveData<String> {
         return url
     }
+
+    val shoesImageUrl = MutableLiveData<String>()
 }

@@ -5,6 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.nikealarm.nikedrawalarm.R
 import com.squareup.picasso.Picasso
 
@@ -24,6 +25,7 @@ class ImageListPagerAdapter(private val imageList: Array<String>) : RecyclerView
     }
 
     override fun onBindViewHolder(holder: ImageListViewHolder, position: Int) {
-        Picasso.get().load(imageList[position]).into(holder.shoesImageView)
+//        Picasso.get().load(imageList[position]).into(holder.shoesImageView)
+        Glide.with(holder.itemView).load(imageList[position]).into(holder.shoesImageView)
     }
 }

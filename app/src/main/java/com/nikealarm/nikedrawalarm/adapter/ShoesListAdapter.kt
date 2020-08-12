@@ -6,6 +6,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
+import android.graphics.Bitmap
 import android.os.Build
 import android.util.Log
 import android.view.LayoutInflater
@@ -15,10 +16,12 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
+import androidx.core.view.ViewCompat
 import androidx.fragment.app.FragmentManager
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.nikealarm.nikedrawalarm.component.MyAlarmReceiver
 import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.database.ShoesDataModel
@@ -43,7 +46,7 @@ class ShoesListAdapter(
     }
 
     interface ImageClickListener {
-        fun onClickImage(newUrl: String)
+        fun onClickImage(newUrl: String, shoesImageUrl: String, imageView: ImageView)
     }
 
     fun setOnItemClickListener(listener: ItemClickListener) {
@@ -73,17 +76,25 @@ class ShoesListAdapter(
         val learnMoreText = itemView.findViewById<TextView>(R.id.drawList_learnMore_text)
 
         fun bindView(data: ShoesDataModel?) {
-            Picasso.get().load(data?.shoesImageUrl).into(shoesImage)
+            with(shoesImage) {
+//                Picasso.get().load(data?.shoesImageUrl).into(this)
+                Glide.with(mContext).load(data?.shoesImageUrl).into(this)
+                transitionName = data?.shoesUrl
+
+                setOnClickListener {
+                    imageListener.onClickImage(
+                        data?.shoesUrl!!,
+                        data.shoesImageUrl!!,
+                        shoesImage
+                    )
+                }
+            }
             shoesSubTitleText.text = data?.shoesSubTitle
             shoesTitleText.text = data?.shoesTitle
             howToEventText.text = data?.shoesPrice
 
             learnMoreText.setOnClickListener {
                 itemListener.onClickItem(data?.shoesUrl)
-            }
-
-            shoesImage.setOnClickListener {
-                imageListener.onClickImage(data?.shoesUrl!!)
             }
 
             if (data?.shoesCategory == ShoesDataModel.CATEGORY_DRAW) {

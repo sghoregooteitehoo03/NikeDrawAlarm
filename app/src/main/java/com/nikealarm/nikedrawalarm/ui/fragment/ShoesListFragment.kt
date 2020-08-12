@@ -1,17 +1,14 @@
 package com.nikealarm.nikedrawalarm.ui.fragment
 
-import android.content.Context
-import android.content.DialogInterface
 import android.os.Bundle
-import android.transition.TransitionInflater
 import android.view.*
 import android.widget.ImageView
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.ActionBarDrawerToggle
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.Toolbar
-import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.app.SharedElementCallback
 import androidx.core.view.GravityCompat
+import androidx.core.view.doOnPreDraw
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -20,13 +17,11 @@ import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.work.*
+import androidx.transition.TransitionInflater
 import com.google.android.material.navigation.NavigationView
 import com.nikealarm.nikedrawalarm.adapter.ShoesListAdapter
 import com.nikealarm.nikedrawalarm.R
-import com.nikealarm.nikedrawalarm.component.ParsingWorker
 import com.nikealarm.nikedrawalarm.database.ShoesDataModel
-import com.nikealarm.nikedrawalarm.other.Contents
 import com.nikealarm.nikedrawalarm.ui.MainActivity
 import com.nikealarm.nikedrawalarm.ui.dialog.ExitDialog
 import com.nikealarm.nikedrawalarm.viewmodel.MyViewModel
@@ -45,6 +40,9 @@ class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
         // Inflate the layout for this fragment
 
         activity?.onBackPressedDispatcher?.addCallback(backPressedCallback)
+
+        sharedElementReturnTransition = TransitionInflater.from(requireContext())
+            .inflateTransition(android.R.transition.move)
         return inflater.inflate(R.layout.fragment_shoes_list, container, false)
     }
 
@@ -72,7 +70,7 @@ class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
         mViewModel.getShoesCategory().observe(viewLifecycleOwner, Observer {
             mToolbar.title = it
 
-            if(drawListFrag_scrollUp_Button.isEnabled) {
+            if (drawListFrag_scrollUp_Button.isEnabled) {
                 disappearButton()
             }
 //            disappearButton()
@@ -128,6 +126,11 @@ class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
         )
         drawer.addDrawerListener(toggle)
         toggle.syncState()
+
+        postponeEnterTransition()
+        listView.doOnPreDraw {
+            startPostponedEnterTransition()
+        }
     }
 
     override fun onClickItem(newUrl: String?) {
@@ -135,9 +138,19 @@ class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
         findNavController().navigate(R.id.action_drawListFragment_to_mainWebFragment)
     }
 
-    override fun onClickImage(newUrl: String) {
+    override fun onClickImage(newUrl: String, shoesImageUrl: String, imageView: ImageView) {
         mViewModel.setUrl(newUrl)
-        findNavController().navigate(R.id.action_drawListFragment_to_imageListFragment)
+        mViewModel.shoesImageUrl.postValue(shoesImageUrl)
+
+        val extras = FragmentNavigatorExtras(
+            imageView to newUrl
+        )
+        findNavController().navigate(
+            R.id.action_drawListFragment_to_imageListFragment,
+            null,
+            null,
+            extras
+        )
     }
 
     override fun onNavigationItemSelected(menuItem: MenuItem): Boolean {

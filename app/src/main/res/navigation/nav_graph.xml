@@ -41,7 +41,7 @@
             app:destination="@id/settingFragment"/>
         <action
             android:id="@+id/action_drawListFragment_to_imageListFragment"
-            app:destination="@id/imageListFragment" />
+            app:destination="@id/imageListFragment"/>
     </fragment>
     <fragment
         android:id="@+id/mainWebFragment"

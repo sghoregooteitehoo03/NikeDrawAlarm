@@ -17,6 +17,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 /*
+* 앱 출시
+* 프로파일 체크
+* 로고 만들기
+* 스크린샷 만들기
+* 그래픽이미지 만들기
+* */
+
+/*
 * 위치 버튼 클릭시 이미지 이동(보류)
 * 카테고리 변경시 스크롤바 위치 고치기
 * 신발 리스트 다 가져오기(Jsoup으로 불가)

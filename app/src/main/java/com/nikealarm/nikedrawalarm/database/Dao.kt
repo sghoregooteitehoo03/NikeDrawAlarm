@@ -31,7 +31,10 @@ interface Dao {
     fun getAllShoesData(): List<ShoesDataModel>
 
     @Query("UPDATE ShoesDataModel SET ShoesPrice = :updatePrice, ShoesCategory = :updateCategory WHERE ShoesTitle = :shoesTitle AND ShoesSubTitle = :shoesSubTitle")
-    fun updateShoesData(updatePrice: String?, updateCategory: String?, shoesTitle: String, shoesSubTitle: String)
+    fun updateShoesCategory(updatePrice: String?, updateCategory: String?, shoesTitle: String, shoesSubTitle: String)
+
+    @Query("UPDATE ShoesDataModel SET ShoesUrl = :updateUrl WHERE ShoesTitle = :shoesTitle AND ShoesSubTitle = :shoesSubTitle")
+    fun updateShoesUrl(updateUrl: String?, shoesTitle: String, shoesSubTitle: String)
 
     @Insert(entity = ShoesDataModel::class)
     fun insertShoesData(insertData: ShoesDataModel)

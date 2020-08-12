@@ -1,7 +1,6 @@
 package com.nikealarm.nikedrawalarm.ui.fragment
 
 import android.os.Bundle
-import android.transition.TransitionInflater
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -9,23 +8,25 @@ import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
-import android.widget.Toast
-import androidx.collection.arraySetOf
+import androidx.activity.OnBackPressedCallback
 import androidx.core.content.ContextCompat
+import androidx.core.view.doOnPreDraw
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
-import androidx.viewpager.widget.ViewPager
+import androidx.navigation.fragment.findNavController
+import androidx.transition.TransitionInflater
 import androidx.viewpager2.widget.ViewPager2
 import androidx.work.*
+import com.bumptech.glide.Glide
 import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.adapter.ImageListPagerAdapter
 import com.nikealarm.nikedrawalarm.component.GetImageWorker
 import com.nikealarm.nikedrawalarm.other.Contents
 import com.nikealarm.nikedrawalarm.viewmodel.MyViewModel
+import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.fragment_image_list.*
-import kotlinx.android.synthetic.main.fragment_image_list.view.*
 
 class ImageListFragment : Fragment() {
     private lateinit var mViewModel: MyViewModel
@@ -33,6 +34,14 @@ class ImageListFragment : Fragment() {
 
     private lateinit var viewPager: ViewPager2
     private lateinit var sliderDotspanel: LinearLayout
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        sharedElementEnterTransition =
+            TransitionInflater.from(requireContext()).inflateTransition(R.transition.image_shared_element_transition)
+        sharedElementReturnTransition =
+            TransitionInflater.from(requireContext()).inflateTransition(R.transition.image_shared_return_element_transition)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -48,6 +57,7 @@ class ImageListFragment : Fragment() {
         WorkManager.getInstance(requireContext())
             .enqueueUniqueWork(Contents.WORKER_GET_IMAGE, ExistingWorkPolicy.KEEP, getImageWork)
 
+        activity?.onBackPressedDispatcher?.addCallback(backPressed)
         return inflater.inflate(R.layout.fragment_image_list, container, false)
     }
 
@@ -56,11 +66,16 @@ class ImageListFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         // id 설정
+        with(imageListFrag_firstImage) {
+//            Picasso.get().load(mViewModel.shoesImageUrl.value).into(this)
+            Glide.with(context).load(mViewModel.shoesImageUrl.value).into(this)
+            transitionName = mViewModel.getUrl().value
+        }
         viewPager = view.findViewById(R.id.imageListFrag_viewpager)
         sliderDotspanel = view.findViewById(R.id.imageListFrag_sliderDots)
         val cancelBtn = view.findViewById<ImageButton>(R.id.imageListFrag_cancelBtn).apply {
             setOnClickListener {
-                findNavController().navigate(R.id.action_imageListFragment_to_drawListFragment)
+                exitFragment()
             }
         }
 
@@ -78,8 +93,20 @@ class ImageListFragment : Fragment() {
                     val viewPagerAdapter = ImageListPagerAdapter(imageList as Array<String>)
 
                     viewPager.adapter = viewPagerAdapter
+                    setData()
                 }
             })
+    }
+
+    // 데이터가 준비 되었을 시
+    private fun setData() {
+        imageListFrag_firstImage.visibility = View.GONE
+        imageListFrag_layout.visibility = View.VISIBLE
+    }
+
+    private fun resetData() {
+        imageListFrag_firstImage.visibility = View.VISIBLE
+        imageListFrag_layout.visibility = View.GONE
     }
 
     private fun setDots(size: Int) {
@@ -125,5 +152,20 @@ class ImageListFragment : Fragment() {
                 )
             }
         })
+    }
+
+    private fun exitFragment() {
+        backPressed.isEnabled = false
+
+        resetData()
+        findNavController().navigateUp()
+    }
+
+    private val backPressed = object : OnBackPressedCallback(true) {
+
+        override fun handleOnBackPressed() {
+            exitFragment()
+        }
+
     }
 }
