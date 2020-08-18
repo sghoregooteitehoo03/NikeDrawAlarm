@@ -38,7 +38,9 @@
             app:popExitAnim="@animator/slide_out_bottom" />
         <action
             android:id="@+id/action_drawListFragment_to_settingFragment"
-            app:destination="@id/settingFragment"/>
+            app:destination="@id/settingFragment"
+            app:popEnterAnim="@animator/fade_out_settings"
+            app:popExitAnim="@animator/slide_out_bottom"/>
         <action
             android:id="@+id/action_drawListFragment_to_imageListFragment"
             app:destination="@id/imageListFragment"/>

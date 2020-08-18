@@ -5,12 +5,16 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
+import androidx.preference.DropDownPreference
+import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreferenceCompat
 import androidx.work.OneTimeWorkRequestBuilder
@@ -25,7 +29,6 @@ import java.util.*
 
 class SettingScreenPreference : PreferenceFragmentCompat() {
     private lateinit var mAlarmManager: AlarmManager
-    private lateinit var mViewModel: MyViewModel
     private lateinit var mSharedPreference: SharedPreferences
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
@@ -33,8 +36,10 @@ class SettingScreenPreference : PreferenceFragmentCompat() {
 
         // 인스턴스 설정
         mAlarmManager = context?.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        mViewModel = ViewModelProvider(this)[MyViewModel::class.java]
-        mSharedPreference = requireContext().getSharedPreferences(Contents.PREFERENCE_NAME_TIME, Context.MODE_PRIVATE)
+        mSharedPreference = requireContext().getSharedPreferences(
+            Contents.PREFERENCE_NAME_TIME,
+            Context.MODE_PRIVATE
+        )
 
         // 알람 설정 스위치
         val allowAlarmSwitch =
@@ -45,6 +50,20 @@ class SettingScreenPreference : PreferenceFragmentCompat() {
                     } else {
                         removeAlarm()
                     }
+                    true
+                }
+            }
+//        val shareDropDownPreference =
+//            findPreference<Preference>(getString(R.string.setting_preference_share))?.apply {
+//                setOnPreferenceClickListener {
+//                    shareIntent()
+//                    true
+//                }
+//            }
+        val emailDropDownPreference =
+            findPreference<Preference>(getString(R.string.setting_preference_email))?.apply {
+                setOnPreferenceClickListener {
+                    emailIntent()
                     true
                 }
             }
@@ -83,7 +102,7 @@ class SettingScreenPreference : PreferenceFragmentCompat() {
                 timeTrigger,
                 alarmPendingIntent
             )
-        }  else {
+        } else {
             mAlarmManager.setExact(
                 AlarmManager.RTC_WAKEUP,
                 timeTrigger,
@@ -154,6 +173,23 @@ class SettingScreenPreference : PreferenceFragmentCompat() {
         with(mSharedPreference.edit()) {
             this.remove(Contents.SYNC_ALARM_KEY)
             commit()
+        }
+    }
+
+    // 출시 후 수정하기
+    private fun shareIntent() {
+
+    }
+
+    private fun emailIntent() {
+        val intent = Intent(Intent.ACTION_SENDTO).apply {
+            val email = arrayOf(getString(R.string.developer_email))
+            data = Uri.parse("mailto:")
+            putExtra(Intent.EXTRA_EMAIL, email)
+        }
+
+        if (intent.resolveActivity(requireContext().packageManager) != null) {
+            startActivity(intent)
         }
     }
 }

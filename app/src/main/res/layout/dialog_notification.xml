@@ -28,7 +28,9 @@
             android:id="@+id/notifyDialogFrag_messageText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="14dp"
             android:layout_marginTop="20dp"
+            android:layout_marginEnd="14dp"
             android:layout_marginBottom="20dp"
             android:textSize="20sp"
             android:textStyle="bold"
@@ -41,7 +43,7 @@
         <View
             android:id="@+id/notifyDialogFrag_view"
             android:layout_width="match_parent"
-            android:layout_height="2dp"
+            android:layout_height="1dp"
             android:layout_marginTop="10dp"
             android:background="#eeeeee"
             app:layout_constraintEnd_toEndOf="parent"

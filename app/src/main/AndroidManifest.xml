@@ -5,6 +5,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
+    <!-- https://icon-library.net/icon/shoes-icon-9.html 앱 로고 -->
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"

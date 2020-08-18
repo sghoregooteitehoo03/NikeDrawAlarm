@@ -327,13 +327,13 @@ class ShoesListAdapter(
                 oldItem: ShoesDataModel,
                 newItem: ShoesDataModel
             ): Boolean =
-                oldItem.shoesTitle == newItem.shoesTitle
+                oldItem.id == newItem.id
 
             override fun areContentsTheSame(
                 oldItem: ShoesDataModel,
                 newItem: ShoesDataModel
             ): Boolean =
-                oldItem.id == newItem.id
+                oldItem.shoesTitle == newItem.shoesTitle
         }
     }
 }
