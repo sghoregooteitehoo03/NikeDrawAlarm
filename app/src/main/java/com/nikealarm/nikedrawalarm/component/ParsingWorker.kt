@@ -215,7 +215,7 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(
     }
 
     private fun deleteDrawData(deleteShoes: DrawShoesDataModel) {
-        mDao.deleteDrawShoesData(deleteShoes)
+        mDao.deleteDrawShoesData(deleteShoes.shoesTitle, deleteShoes.shoesSubTitle)
     }
 
 }

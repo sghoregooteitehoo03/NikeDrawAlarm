@@ -14,6 +14,7 @@ import androidx.work.workDataOf
 import com.nikealarm.nikedrawalarm.database.Dao
 import com.nikealarm.nikedrawalarm.database.DrawShoesDataModel
 import com.nikealarm.nikedrawalarm.database.MyDataBase
+import com.nikealarm.nikedrawalarm.database.ShoesDataModel
 import com.nikealarm.nikedrawalarm.other.Contents
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -44,6 +45,7 @@ class MyAlarmReceiver : BroadcastReceiver() {
                 Log.i("Check3", "동작")
 
                 if (dataPosition != -1) {
+                    Log.i("Check4", "동작 ${dataPosition}")
                     val productNotifyWorkRequest = OneTimeWorkRequestBuilder<ProductNotifyWorker>()
                         .setInputData(workDataOf(Contents.WORKER_INPUT_DATA_KEY to dataPosition))
                         .build()
@@ -62,6 +64,7 @@ class MyAlarmReceiver : BroadcastReceiver() {
         var timeTrigger = mSharedPreferences.getLong(Contents.SYNC_ALARM_KEY, 0)
 
         if (timeTrigger != 0.toLong()) {
+            Log.i("Check", "재설정")
             while(timeTrigger < System.currentTimeMillis()) {
                 timeTrigger += 86400000
             }
@@ -104,7 +107,7 @@ class MyAlarmReceiver : BroadcastReceiver() {
 
         CoroutineScope(Dispatchers.IO).launch {
             for (shoesData in mDao.getAllDrawShoesData()) {
-                val preferenceKey = shoesData.shoesTitle
+                val preferenceKey = "${shoesData.shoesTitle}-${shoesData.shoesSubTitle}"
                 val timeTrigger = mSharedPreferences.getLong(preferenceKey, 0)
 
                 if (timeTrigger != 0L) {
@@ -114,14 +117,15 @@ class MyAlarmReceiver : BroadcastReceiver() {
                         continue
                     }
 
-                    val index = mDao.getAllDrawShoesData().indexOf(shoesData)
+                    val index = mDao.getAllShoesData().indexOf(ShoesDataModel(0, shoesData.shoesSubTitle, shoesData.shoesTitle))
+                    val id = mDao.getAllShoesData()[index].id
 
                     val mAlarmManager =
                         context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
                     val reIntent = Intent(context, MyAlarmReceiver::class.java).apply {
                         action = Contents.INTENT_ACTION_PRODUCT_ALARM
-                        putExtra(Contents.INTENT_KEY_POSITION, index)
+                        putExtra(Contents.INTENT_KEY_POSITION, id)
                     }
 
                     val alarmPendingIntent = PendingIntent.getBroadcast(
@@ -161,17 +165,17 @@ class MyAlarmReceiver : BroadcastReceiver() {
         val allowAlarmPreference = context.getSharedPreferences(Contents.PREFERENCE_NAME_ALLOW_ALARM, Context.MODE_PRIVATE)
 
         with(preference.edit()) {
-            remove(shoesData.shoesTitle)
+            remove("${shoesData.shoesTitle}-${shoesData.shoesSubTitle}")
             commit()
         }
 
         with(allowAlarmPreference.edit()) {
-            remove(shoesData.shoesTitle)
+            remove("${shoesData.shoesTitle}-${shoesData.shoesSubTitle}")
             commit()
         }
 
         CoroutineScope(Dispatchers.IO).launch {
-            mDao.deleteDrawShoesData(shoesData)
+            mDao.deleteDrawShoesData(shoesData.shoesTitle, shoesData.shoesSubTitle)
         }
     }
 }

@@ -100,17 +100,21 @@ class ShoesListAdapter(
             if (data?.shoesCategory == ShoesDataModel.CATEGORY_DRAW) {
                 allowAlarmBtn.visibility = View.VISIBLE
 
-                if (isChecked(data.shoesTitle)) {
+                if (isChecked("${data.shoesTitle}-${data.shoesSubTitle}")) {
                     allowAlarmBtn.setImageResource(R.drawable.ic_baseline_notifications_active)
 
                     allowAlarmBtn.setOnClickListener {
-                        removeNotification(adapterPosition, data.shoesTitle)
+                        removeNotification(data.id!!, "${data.shoesTitle}-${data.shoesSubTitle}")
                     }
                 } else {
                     allowAlarmBtn.setImageResource(R.drawable.ic_baseline_notifications_none)
 
                     allowAlarmBtn.setOnClickListener {
-                        setNotification(data.shoesPrice, adapterPosition, data.shoesTitle)
+                        setNotification(
+                            data.shoesPrice,
+                            data.id!!,
+                            "${data.shoesTitle}-${data.shoesSubTitle}"
+                        )
                     }
                 }
             } else {
@@ -175,17 +179,6 @@ class ShoesListAdapter(
                     dialog.dismiss()
                 }
             })
-//            with(dialog) {
-//                setMessage("이 상품의 알림을 설정하시겠습니까?")
-//                show()
-//                getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-//                    setAlarm(timeTrigger, requestCode)
-//                    setPreference(preferenceKey, timeTrigger)
-//
-//                    notifyDataSetChanged()
-//                    dismiss()
-//                }
-//            }
         }
 
         private fun removeNotification(requestCode: Int, preferenceKey: String?) {
@@ -202,33 +195,7 @@ class ShoesListAdapter(
                     dialog.dismiss()
                 }
             })
-
-//            with(dialog) {
-//                setMessage("이 상품의 알림을 취소하시겠습니까?")
-//                show()
-//
-//                getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-//                    removeAlarm(requestCode)
-//
-//                    setPreference(preferenceKey)
-//                    notifyDataSetChanged()
-//
-//                    dismiss()
-//                }
-//            }
         }
-
-//        private fun createDialog(): AlertDialog {
-//
-//            return AlertDialog.Builder(mContext)
-//                .setTitle("알림")
-//                .setPositiveButton("확인", DialogInterface.OnClickListener { dialog, which ->
-//                })
-//                .setNegativeButton("취소", DialogInterface.OnClickListener { dialog, which ->
-//                    dialog.cancel()
-//                })
-//                .create()
-//        }
 
         private fun setAlarm(timeTrigger: Long, requestCode: Int) {
 
@@ -301,10 +268,25 @@ class ShoesListAdapter(
         }
 
         private fun getTimeInMillis(howToEvent: String?): Long {
-            val month = howToEvent?.substring(6, 8)?.toInt() ?: -1
-            val day = howToEvent?.substring(9, 11)?.toInt() ?: -1
-            val hour = howToEvent?.substring(15, 17)?.toInt() ?: -1
-            val minute = howToEvent?.substring(18, 20)?.toInt() ?: -1
+            val builder: StringBuilder = StringBuilder(howToEvent!!)
+
+            if (builder.toString().substring(8, 10).contains("/")) {
+                builder.insert(8, "0")
+            }
+            if (builder.toString().substring(11, 13).contains("(")) {
+                builder.insert(11, "0")
+            }
+            val getTime = builder.toString()
+
+//            val test1 = "응모 기간 : 08/21(금) 10:00 ~ 10:30 (30분)\n"
+//            val test2 = "응모 기간 : 8/1(금) 10:00 ~ 10:30 (30분)\n"
+//            val test3 = "응모 기간 : 12/1(금) 10:00 ~ 10:30 (30분)\n"
+//            val test4 = "응모 기간 : 12/21(금) 10:00 ~ 10:30 (30분)\n"
+
+            val month = getTime.substring(8, 10).toInt() ?: -1
+            val day = getTime.substring(11, 13).toInt() ?: -1
+            val hour = getTime.substring(17, 19).toInt() ?: -1
+            val minute = getTime.substring(20, 22).toInt() ?: -1
 
             val mCalendar = Calendar.getInstance().apply {
                 if (month != -1 && day != -1 && hour != -1 && minute != -1) {

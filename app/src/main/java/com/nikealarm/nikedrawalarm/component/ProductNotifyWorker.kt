@@ -6,6 +6,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.work.Worker
@@ -16,11 +17,10 @@ import com.nikealarm.nikedrawalarm.database.DrawShoesDataModel
 import com.nikealarm.nikedrawalarm.database.MyDataBase
 import com.nikealarm.nikedrawalarm.other.Contents
 import com.nikealarm.nikedrawalarm.ui.MainActivity
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import com.squareup.picasso.Picasso
 
-class ProductNotifyWorker(context: Context, workerParams: WorkerParameters) : Worker(context,
+class ProductNotifyWorker(context: Context, workerParams: WorkerParameters) : Worker(
+    context,
     workerParams
 ) {
     private lateinit var mDao: Dao
@@ -29,13 +29,22 @@ class ProductNotifyWorker(context: Context, workerParams: WorkerParameters) : Wo
         mDao = MyDataBase.getDatabase(applicationContext)!!.getDao()
         val position = inputData.getInt(Contents.WORKER_INPUT_DATA_KEY, -1)
 
-        if(position != -1) {
-            val data = mDao.getAllDrawShoesData()[position]
+        Log.i("Check5", "position: ${position}")
+        if (position != -1) {
+            val shoesData = mDao.getShoesDataById(position)
+            val drawData = DrawShoesDataModel(
+                0,
+                shoesData.shoesSubTitle,
+                shoesData.shoesTitle,
+                shoesData.shoesPrice,
+                Picasso.get().load(shoesData.shoesImageUrl).get(),
+                shoesData.shoesUrl
+            )
 
-            createNotification(data, applicationContext)
+            createNotification(drawData, applicationContext)
 
             // 알림 후 해당 상품을 db에서 지움
-            deleteShoesData(data)
+            deleteShoesData(drawData)
         }
 
         return Result.success()
@@ -93,19 +102,25 @@ class ProductNotifyWorker(context: Context, workerParams: WorkerParameters) : Wo
 
     // 데이터를 지움
     private fun deleteShoesData(data: DrawShoesDataModel) {
-        val timeSharedPreference = applicationContext.getSharedPreferences(Contents.PREFERENCE_NAME_TIME, Context.MODE_PRIVATE)
-        val allowAlarmPreference = applicationContext.getSharedPreferences(Contents.PREFERENCE_NAME_ALLOW_ALARM, Context.MODE_PRIVATE)
+        val timeSharedPreference = applicationContext.getSharedPreferences(
+            Contents.PREFERENCE_NAME_TIME,
+            Context.MODE_PRIVATE
+        )
+        val allowAlarmPreference = applicationContext.getSharedPreferences(
+            Contents.PREFERENCE_NAME_ALLOW_ALARM,
+            Context.MODE_PRIVATE
+        )
 
         with(timeSharedPreference.edit()) {
-            remove(data.shoesTitle)
+            remove("${data.shoesTitle}-${data.shoesSubTitle}")
             commit()
         }
 
+        mDao.deleteDrawShoesData(data.shoesTitle, data.shoesSubTitle)
         with(allowAlarmPreference.edit()) {
-            remove(data.shoesTitle)
+            remove("${data.shoesTitle}-${data.shoesSubTitle}")
             commit()
         }
 
-        mDao.deleteDrawShoesData(data)
     }
 }

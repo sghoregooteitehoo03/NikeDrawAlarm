@@ -20,8 +20,8 @@ interface Dao {
     @Query("DELETE FROM DrawShoesDataModel")
     fun clearDrawShoesData()
 
-    @Delete(entity = DrawShoesDataModel::class)
-    fun deleteDrawShoesData(deleteData: DrawShoesDataModel)
+    @Query("DELETE FROM DrawShoesDataModel WHERE DrawShoesTitle = :shoesTitle AND DrawShoesSubTitle = :shoesSubTitle")
+    fun deleteDrawShoesData(shoesTitle: String, shoesSubTitle: String)
 
     // 전체 목록
     @Query("SELECT * FROM ShoesDataModel WHERE ShoesCategory = :shoesCategory")
@@ -44,4 +44,7 @@ interface Dao {
 
     @Query("DELETE FROM ShoesDataModel")
     fun clearShoesData()
+
+    @Query("SELECT * FROM ShoesDataModel WHERE ShoesId = :id")
+    fun getShoesDataById(id: Int?): ShoesDataModel
 }

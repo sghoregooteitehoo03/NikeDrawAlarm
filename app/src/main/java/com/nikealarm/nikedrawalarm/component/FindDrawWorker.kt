@@ -177,6 +177,6 @@ class FindDrawWorker(context: Context, workerParams: WorkerParameters) : Worker(
     }
 
     private fun deleteShoesData(deleteData: DrawShoesDataModel) {
-        mDao.deleteDrawShoesData(deleteData)
+        mDao.deleteDrawShoesData(deleteData.shoesTitle, deleteData.shoesSubTitle)
     }
 }
