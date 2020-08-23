@@ -1,6 +1,7 @@
 package com.nikealarm.nikedrawalarm.ui.fragment
 
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import android.widget.ImageView
 import androidx.activity.OnBackPressedCallback
@@ -45,8 +46,8 @@ class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
 
         activity?.onBackPressedDispatcher?.addCallback(backPressedCallback)
 
-        sharedElementReturnTransition = TransitionInflater.from(requireContext())
-            .inflateTransition(android.R.transition.move)
+//        sharedElementReturnTransition = TransitionInflater.from(requireContext())
+//            .inflateTransition(android.R.transition.move)
         return inflater.inflate(R.layout.fragment_shoes_list, container, false)
     }
 
@@ -144,7 +145,7 @@ class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
 
     override fun onClickImage(newUrl: String, shoesImageUrl: String, imageView: ImageView) {
         mViewModel.setUrl(newUrl)
-        mViewModel.shoesImageUrl.postValue(shoesImageUrl)
+        mViewModel.shoesImageUrl.value = shoesImageUrl
 
         val extras = FragmentNavigatorExtras(
             imageView to newUrl
@@ -158,22 +159,18 @@ class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
     }
 
     override fun onNavigationItemSelected(menuItem: MenuItem): Boolean {
+        drawer.closeDrawer(GravityCompat.START)
+
         return when (menuItem.itemId) {
             R.id.mainMenu_draw -> {
-                drawer.closeDrawer(GravityCompat.START)
-
                 setToolbarTitle(ShoesDataModel.CATEGORY_DRAW)
                 true
             }
             R.id.mainMenu_comingSoon -> {
-                drawer.closeDrawer(GravityCompat.START)
-
                 setToolbarTitle(ShoesDataModel.CATEGORY_COMING_SOON)
                 true
             }
             R.id.mainMenu_released -> {
-                drawer.closeDrawer(GravityCompat.START)
-
                 setToolbarTitle(ShoesDataModel.CATEGORY_RELEASED)
                 true
             }
@@ -183,7 +180,6 @@ class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
 //                    mDao.clearDrawShoesData()
 //                }
                 findNavController().navigate(R.id.action_drawListFragment_to_settingFragment)
-                drawer.closeDrawer(GravityCompat.START)
                 true
             }
             else -> false

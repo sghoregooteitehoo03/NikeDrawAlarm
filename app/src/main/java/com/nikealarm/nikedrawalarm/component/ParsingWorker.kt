@@ -71,7 +71,7 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(
                 updateData(ShoesDataModel(0, shoesSubTitle, shoesTitle, null, null, innerUrl, category))
             } else {
                 val innerDoc = Jsoup.connect(innerUrl)
-                    .userAgent("Mozilla")
+                    .userAgent("19.0.1.84.52")
                     .get()
 
                 // 신발 정보를 가져옴

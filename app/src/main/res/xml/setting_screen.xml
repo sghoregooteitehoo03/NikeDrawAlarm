@@ -29,7 +29,7 @@
         <Preference
             app:enabled="false"
             app:iconSpaceReserved="false"
-            app:summary="2.0.0"
+            app:summary="@string/app_version"
             app:title="버전" />
     </PreferenceCategory>
 </PreferenceScreen>

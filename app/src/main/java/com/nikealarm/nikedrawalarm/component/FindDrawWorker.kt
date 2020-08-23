@@ -66,7 +66,7 @@ class FindDrawWorker(context: Context, workerParams: WorkerParameters) : Worker(
             if(shoesInfo == "THE DRAW 진행예정") {
                 val innerUrl = "https://www.nike.com" + elementData.select("a").attr("href") // 해당 draw 링크창을 읽어옴
                 val innerDoc = Jsoup.connect(innerUrl)
-                    .userAgent("Mozilla")
+                    .userAgent("19.0.1.84.52")
                     .get()
 
                 // 신발 정보를 가져옴
