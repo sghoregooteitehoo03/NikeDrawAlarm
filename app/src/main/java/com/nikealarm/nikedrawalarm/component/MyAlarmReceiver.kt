@@ -66,7 +66,7 @@ class MyAlarmReceiver : BroadcastReceiver() {
         if (timeTrigger != 0.toLong()) {
             Log.i("Check", "재설정")
             while(timeTrigger < System.currentTimeMillis()) {
-                timeTrigger += 86400000
+                timeTrigger += 10800000
             }
 
             val mAlarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager

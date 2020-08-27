@@ -76,17 +76,18 @@ class SettingScreenPreference : PreferenceFragmentCompat() {
         }
 
         val mCalendar = Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, 8)
+            val time = if(this.get(Calendar.HOUR_OF_DAY) == 24) {
+                3
+            } else {
+                this.get(Calendar.HOUR_OF_DAY) + 3
+            }
+            set(Calendar.HOUR_OF_DAY, time)
             set(Calendar.MINUTE, 0)
             set(Calendar.SECOND, 0)
             set(Calendar.MILLISECOND, 0)
         }
 
-        val timeTrigger = if (System.currentTimeMillis() > mCalendar.timeInMillis) {
-            mCalendar.timeInMillis + 86400000
-        } else {
-            mCalendar.timeInMillis
-        }
+        val timeTrigger = mCalendar.timeInMillis
 
         val alarmPendingIntent = PendingIntent.getBroadcast(
             context,

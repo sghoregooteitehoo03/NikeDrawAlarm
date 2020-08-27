@@ -14,7 +14,6 @@ object Contents {
     const val PREFERENCE_NAME_ALLOW_ALARM = "PREFERENCE_NAME_ALLOW_ALARM"
 
     const val SYNC_ALARM_CODE = 2000
-
     const val SYNC_ALARM_KEY = "SYNC_ALARM_KEY"
 
     const val WORKER_INPUT_DATA_KEY = "WORKER_INPUT_DATA_KEY"
