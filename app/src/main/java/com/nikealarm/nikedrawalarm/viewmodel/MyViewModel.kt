@@ -1,13 +1,10 @@
 package com.nikealarm.nikedrawalarm.viewmodel
 
 import android.app.Application
-import android.graphics.Bitmap
 import androidx.arch.core.util.Function
 import androidx.lifecycle.*
 import androidx.paging.PagedList
-import com.nikealarm.nikedrawalarm.database.DrawShoesDataModel
 import com.nikealarm.nikedrawalarm.database.ShoesDataModel
-import kotlinx.coroutines.launch
 
 class MyViewModel(application: Application) : AndroidViewModel(application) {
     private val repository =

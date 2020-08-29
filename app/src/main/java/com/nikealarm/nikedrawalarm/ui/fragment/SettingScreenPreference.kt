@@ -5,26 +5,16 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
-import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.view.MenuItem
-import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.fragment.findNavController
-import androidx.preference.DropDownPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreferenceCompat
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
 import com.nikealarm.nikedrawalarm.component.MyAlarmReceiver
 import com.nikealarm.nikedrawalarm.R
-import com.nikealarm.nikedrawalarm.component.FindDrawWorker
 import com.nikealarm.nikedrawalarm.other.Contents
-import com.nikealarm.nikedrawalarm.ui.MainActivity
-import com.nikealarm.nikedrawalarm.viewmodel.MyViewModel
 import java.util.*
 
 class SettingScreenPreference : PreferenceFragmentCompat() {

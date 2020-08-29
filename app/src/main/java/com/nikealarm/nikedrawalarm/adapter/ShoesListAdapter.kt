@@ -4,9 +4,7 @@ import android.app.AlarmManager
 import android.app.Dialog
 import android.app.PendingIntent
 import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
-import android.graphics.Bitmap
 import android.os.Build
 import android.util.Log
 import android.view.LayoutInflater
@@ -15,8 +13,6 @@ import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
-import androidx.core.view.ViewCompat
 import androidx.fragment.app.FragmentManager
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
@@ -27,7 +23,6 @@ import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.database.ShoesDataModel
 import com.nikealarm.nikedrawalarm.other.Contents
 import com.nikealarm.nikedrawalarm.ui.dialog.AlarmDialog
-import com.squareup.picasso.Picasso
 import java.util.*
 
 class ShoesListAdapter(

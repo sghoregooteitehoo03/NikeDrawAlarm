@@ -1,13 +1,11 @@
 package com.nikealarm.nikedrawalarm.ui.fragment
 
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import android.widget.ImageView
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.widget.Toolbar
-import androidx.core.app.SharedElementCallback
 import androidx.core.view.GravityCompat
 import androidx.core.view.doOnPreDraw
 import androidx.drawerlayout.widget.DrawerLayout
@@ -18,19 +16,14 @@ import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.transition.TransitionInflater
 import com.google.android.material.navigation.NavigationView
 import com.nikealarm.nikedrawalarm.adapter.ShoesListAdapter
 import com.nikealarm.nikedrawalarm.R
-import com.nikealarm.nikedrawalarm.database.MyDataBase
 import com.nikealarm.nikedrawalarm.database.ShoesDataModel
 import com.nikealarm.nikedrawalarm.ui.MainActivity
 import com.nikealarm.nikedrawalarm.ui.dialog.ExitDialog
 import com.nikealarm.nikedrawalarm.viewmodel.MyViewModel
 import kotlinx.android.synthetic.main.fragment_shoes_list.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
     NavigationView.OnNavigationItemSelectedListener, ShoesListAdapter.ImageClickListener {

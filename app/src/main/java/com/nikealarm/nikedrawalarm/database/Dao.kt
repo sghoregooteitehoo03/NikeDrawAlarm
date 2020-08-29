@@ -1,6 +1,5 @@
 package com.nikealarm.nikedrawalarm.database
 
-import androidx.lifecycle.LiveData
 import androidx.paging.DataSource
 import androidx.room.*
 import androidx.room.Dao

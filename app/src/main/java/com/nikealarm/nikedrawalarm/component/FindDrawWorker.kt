@@ -16,9 +16,6 @@ import com.nikealarm.nikedrawalarm.database.MyDataBase
 import com.nikealarm.nikedrawalarm.other.Contents
 import com.nikealarm.nikedrawalarm.ui.MainActivity
 import com.squareup.picasso.Picasso
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers.IO
-import kotlinx.coroutines.launch
 import org.jsoup.Jsoup
 
 class FindDrawWorker(context: Context, workerParams: WorkerParameters) : Worker(context,

@@ -8,11 +8,9 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.ProgressBar
 import androidx.activity.OnBackPressedCallback
-import androidx.navigation.fragment.findNavController
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.other.Contents
-import com.nikealarm.nikedrawalarm.ui.MainActivity
 
 class WebFragment : Fragment() {
     private lateinit var mainWebView: WebView

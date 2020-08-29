@@ -10,11 +10,9 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import androidx.activity.OnBackPressedCallback
 import androidx.core.content.ContextCompat
-import androidx.core.view.doOnPreDraw
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import androidx.transition.TransitionInflater
 import androidx.viewpager2.widget.ViewPager2
@@ -25,7 +23,6 @@ import com.nikealarm.nikedrawalarm.adapter.ImageListPagerAdapter
 import com.nikealarm.nikedrawalarm.component.GetImageWorker
 import com.nikealarm.nikedrawalarm.other.Contents
 import com.nikealarm.nikedrawalarm.viewmodel.MyViewModel
-import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.fragment_image_list.*
 
 class ImageListFragment : Fragment() {
