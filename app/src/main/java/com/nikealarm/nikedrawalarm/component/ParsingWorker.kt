@@ -63,12 +63,23 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(
 
             if (mDao.getAllShoesData().contains(ShoesDataModel(0, shoesSubTitle, shoesTitle))) {
                 val category = when (shoesInfo) {
-                    "THE DRAW 진행예정", "THE DRAW 응모하기", "THE DRAW 응모 마감", "THE DRAW 당첨 결과 확인", "THE DRAW 종료" -> ShoesDataModel.CATEGORY_DRAW
+                    "THE DRAW 진행예정", "THE DRAW 응모하기" -> ShoesDataModel.CATEGORY_DRAW
+                    "THE DRAW 응모 마감", "THE DRAW 당첨 결과 확인", "THE DRAW 종료" -> ShoesDataModel.CATEGORY_DRAW_END
                     "COMING SOON" -> ShoesDataModel.CATEGORY_COMING_SOON
                     else -> ShoesDataModel.CATEGORY_RELEASED
                 }
 
-                updateData(ShoesDataModel(0, shoesSubTitle, shoesTitle, null, null, innerUrl, category))
+                updateData(
+                    ShoesDataModel(
+                        0,
+                        shoesSubTitle,
+                        shoesTitle,
+                        null,
+                        null,
+                        innerUrl,
+                        category
+                    )
+                )
             } else {
                 val innerDoc = Jsoup.connect(innerUrl)
                     .userAgent("19.0.1.84.52")
@@ -85,7 +96,7 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(
 
                 val insertShoesData: ShoesDataModel
                 when (shoesInfo) {
-                    "THE DRAW 진행예정", "THE DRAW 응모하기", "THE DRAW 응모 마감", "THE DRAW 당첨 결과 확인", "THE DRAW 종료" -> {
+                    "THE DRAW 진행예정", "THE DRAW 응모하기" -> {
                         val innerElementData = innerDoc.select("span.uk-text-bold")
 
                         var howToEvent = "" // 이벤트 참여방법
@@ -105,7 +116,9 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(
                             ShoesDataModel.CATEGORY_DRAW
                         )
 
-                        if(!mDao.getAllDrawShoesData().contains(DrawShoesDataModel(0, shoesSubTitle, shoesTitle))) {
+                        if (!mDao.getAllDrawShoesData()
+                                .contains(DrawShoesDataModel(0, shoesSubTitle, shoesTitle))
+                        ) {
                             insertDrawData(
                                 DrawShoesDataModel(
                                     null,
@@ -117,6 +130,17 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(
                                 )
                             )
                         }
+                    }
+                    "THE DRAW 응모 마감", "THE DRAW 당첨 결과 확인", "THE DRAW 종료" -> {
+                        insertShoesData = ShoesDataModel(
+                            null,
+                            shoesSubTitle,
+                            shoesTitle,
+                            "DRAW가 종료 되었습니다.",
+                            shoesImageUrl,
+                            innerUrl,
+                            ShoesDataModel.CATEGORY_DRAW_END
+                        )
                     }
                     "COMING SOON" -> {
                         val launchDate = "${innerDoc.select("div.txt-date").text()}\n${shoesPrice}"
@@ -166,17 +190,28 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(
         val ordinaryData = mDao.getAllShoesData()[index]
 
         if (newShoesData.shoesCategory != ordinaryData.shoesCategory) {
-            val newShoesPrice = ordinaryData.shoesPrice?.split("\n")?.get(1) // 신발 가격
+            if (ordinaryData.shoesCategory == ShoesDataModel.CATEGORY_COMING_SOON) {
+                val newShoesPrice = ordinaryData.shoesPrice?.split("\n")?.get(1) // 신발 가격
 
-            mDao.updateShoesCategory(
-                newShoesPrice,
-                newShoesData.shoesCategory,
-                newShoesData.shoesTitle,
-                newShoesData.shoesSubTitle
-            )
+                mDao.updateShoesCategory(
+                    newShoesPrice,
+                    newShoesData.shoesCategory,
+                    newShoesData.shoesTitle,
+                    newShoesData.shoesSubTitle
+                )
+            } else if (ordinaryData.shoesCategory == ShoesDataModel.CATEGORY_DRAW) {
+                val newShoesPrice = "DRAW가 종료 되었습니다."
+
+                mDao.updateShoesCategory(
+                    newShoesPrice,
+                    newShoesData.shoesCategory,
+                    newShoesData.shoesTitle,
+                    newShoesData.shoesSubTitle
+                )
+            }
         }
 
-        if(newShoesData.shoesUrl != ordinaryData.shoesUrl) {
+        if (newShoesData.shoesUrl != ordinaryData.shoesUrl) {
             mDao.updateShoesUrl(
                 newShoesData.shoesUrl,
                 newShoesData.shoesTitle,

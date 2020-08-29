@@ -12,6 +12,9 @@
     
     <string name="open_drawer">Open</string>
     <string name="close_drawer">Close</string>
+    <string name="appbar_scrolling_view_behavior" translatable="false">
+        com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior
+    </string>
 
     <string name="developer_email">sghoregoodeveloper@gmail.com</string>
 </resources>

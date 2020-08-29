@@ -30,6 +30,7 @@ data class ShoesDataModel(
 
     companion object {
         const val CATEGORY_DRAW = "DRAW"
+        const val CATEGORY_DRAW_END = "CATEGORY_DRAW_END"
         const val CATEGORY_COMING_SOON = "COMING SOON"
         const val CATEGORY_RELEASED = "RELEASED"
     }

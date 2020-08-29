@@ -34,7 +34,7 @@
                     android:layout_height="200dp"
                     android:layout_marginBottom="8dp"
                     android:scaleType="centerCrop"
-                    tools:src="@drawable/ic_launcher_foreground" />
+                    tools:src="@drawable/test" />
 
                 <TextView
                     android:id="@+id/drawList_shoesSubTitle_text"
