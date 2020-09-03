@@ -3,6 +3,7 @@ package com.nikealarm.nikedrawalarm.ui.fragment
 import android.os.Bundle
 import android.view.*
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.widget.Toolbar
@@ -28,8 +29,11 @@ import kotlinx.android.synthetic.main.fragment_shoes_list.*
 class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
     NavigationView.OnNavigationItemSelectedListener, ShoesListAdapter.ImageClickListener {
     private lateinit var drawer: DrawerLayout
+    private lateinit var backToast: Toast
 
     private lateinit var mViewModel: MyViewModel
+    private val FINISH_INTERVAL_TIME = 2000L
+    private var backPressedTime = 0L
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -39,8 +43,6 @@ class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
 
         activity?.onBackPressedDispatcher?.addCallback(backPressedCallback)
 
-//        sharedElementReturnTransition = TransitionInflater.from(requireContext())
-//            .inflateTransition(android.R.transition.move)
         return inflater.inflate(R.layout.fragment_shoes_list, container, false)
     }
 
@@ -199,7 +201,19 @@ class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
             if (drawer.isDrawerOpen(GravityCompat.START)) {
                 drawer.closeDrawer(GravityCompat.START)
             } else {
-                terminationApp()
+//                terminationApp()
+                val tempTime = System.currentTimeMillis()
+                val intervalTime = tempTime - backPressedTime
+
+                if(0 <= intervalTime && FINISH_INTERVAL_TIME >= intervalTime) {
+                    requireActivity().finish()
+                    backToast.cancel()
+                } else {
+                    backPressedTime = tempTime
+                    backToast = Toast.makeText(requireContext(), "뒤로 가기 버튼을 한 번 더 누르면 종료됩니다.", Toast.LENGTH_SHORT).apply {
+                        show()
+                    }
+                }
             }
         }
     }
