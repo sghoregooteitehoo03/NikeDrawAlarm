@@ -4,26 +4,33 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <item android:title="카테고리">
-        <group android:checkableBehavior="single">
-            <item
-                android:id="@+id/mainMenu_released"
-                android:icon="@drawable/ic_releases"
-                android:title="RELEASED" />
+        <menu>
+            <group android:checkableBehavior="single">
+                <item
+                    android:id="@+id/mainMenu_released"
+                    android:icon="@drawable/ic_releases"
+                    android:title="RELEASED" />
 
-            <item
-                android:id="@+id/mainMenu_comingSoon"
-                android:icon="@drawable/ic_coming_soon"
-                android:title="COMING SOON" />
+                <item
+                    android:id="@+id/mainMenu_comingSoon"
+                    android:icon="@drawable/ic_coming_soon"
+                    android:title="COMING SOON" />
 
-            <item
-                android:id="@+id/mainMenu_draw"
-                android:icon="@drawable/ic_draw"
-                android:title="DRAW" />
-        </group>
+                <item
+                    android:id="@+id/mainMenu_draw"
+                    android:icon="@drawable/ic_draw"
+                    android:title="DRAW" />
+            </group>
+        </menu>
     </item>
 
-    <item android:title="설정">
+    <item android:title="기타">
         <menu>
+            <item
+                android:id="@+id/mainMenu_upcoming"
+                android:icon="@drawable/ic_calendar"
+                android:title="UPCOMING" />
+
             <item
                 android:id="@+id/mainMenu_setting"
                 android:icon="@drawable/ic_baseline_settings"

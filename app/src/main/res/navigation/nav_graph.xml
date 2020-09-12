@@ -46,6 +46,13 @@
         <action
             android:id="@+id/action_drawListFragment_to_imageListFragment"
             app:destination="@id/imageListFragment" />
+        <action
+            android:id="@+id/action_drawListFragment_to_upcomingListFragment"
+            app:destination="@id/upcomingListFragment"
+            app:enterAnim="@animator/slide_in_bottom"
+            app:exitAnim="@animator/slide_out_high"
+            app:popEnterAnim="@animator/slide_in_high"
+            app:popExitAnim="@animator/slide_out_bottom" />
     </fragment>
     <fragment
         android:id="@+id/mainWebFragment"
@@ -79,4 +86,8 @@
             android:id="@+id/action_loadingFragment_to_drawListFragment"
             app:destination="@id/drawListFragment" />
     </fragment>
+    <fragment
+        android:id="@+id/upcomingListFragment"
+        android:name="com.nikealarm.nikedrawalarm.ui.fragment.UpcomingListFragment"
+        android:label="UpcomingListFragment" />
 </navigation>

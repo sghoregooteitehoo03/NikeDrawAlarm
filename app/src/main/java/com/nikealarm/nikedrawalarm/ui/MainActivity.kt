@@ -17,7 +17,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 /*
-* 캘린더 구현(출시 후)
+* 캘린더 구현(드롭다운 애니메이션 구현)
 * UI 수정 및 최적화
 * 코드 최적화
 * */

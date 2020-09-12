@@ -36,7 +36,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/drawListFrag_toolbar"
-            tools:listitem="@layout/drawlist_item" />
+            tools:listitem="@layout/shoes_listitem" />
 
         <TextView
             android:id="@+id/drawListFrag_noItem_text"

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="10dp"
+    android:layout_marginTop="5dp"
+    android:layout_marginEnd="10dp"
+    android:layout_marginBottom="5dp"
+    app:cardCornerRadius="15dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView
+                android:id="@+id/drawList_imgItem"
+                android:layout_width="match_parent"
+                android:layout_height="220dp"
+                android:layout_marginBottom="8dp"
+                android:scaleType="centerCrop"
+                tools:src="@drawable/test" />
+
+            <TextView
+                android:id="@+id/drawList_shoesSubTitle_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:textStyle="bold"
+                tools:text="우먼스 에어 조던 4" />
+
+            <TextView
+                android:id="@+id/drawList_shoesTitle_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginBottom="15dp"
+                android:gravity="center"
+                android:textColor="#000000"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                tools:text="OPTI YELLOW" />
+
+            <TextView
+                android:id="@+id/drawList_howToEvent_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:maxLines="3"
+                android:scrollbars="none"
+                android:textColor="#000000"
+                android:textStyle="bold"
+                tools:text="응모 기간 07/25(토) 11:00 ~ 12:00 (1시간)\n당첨자 발표 07/25(토) 13:00
+            \n당첨자 구매 기간 07/25(토) 13:00 ~ 15:00 (2시간)" />
+
+            <TextView
+                android:id="@+id/drawList_learnMore_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="10dp"
+                android:gravity="center"
+                android:text="자세히 보기"
+                android:textColor="@android:color/holo_blue_light"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.cardview.widget.CardView>

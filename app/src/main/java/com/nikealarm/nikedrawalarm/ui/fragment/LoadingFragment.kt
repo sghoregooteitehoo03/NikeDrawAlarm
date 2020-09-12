@@ -14,6 +14,7 @@ import androidx.work.*
 import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.component.ParsingWorker
 import com.nikealarm.nikedrawalarm.other.Contents
+import kotlinx.android.synthetic.main.fragment_loading.*
 
 class LoadingFragment : Fragment() {
     private lateinit var explainText: TextView
@@ -39,7 +40,7 @@ class LoadingFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         // id 설정
-        explainText = view.findViewById(R.id.loadingFrag_explainText)
+        explainText = view.findViewById(R.id.loadingFrag_errorText)
         restartBtn = view.findViewById<Button>(R.id.loadingFrag_restart_btn).apply {
             setOnClickListener {
                 startWorkAnimation()
@@ -57,6 +58,11 @@ class LoadingFragment : Fragment() {
                     findNavController().navigate(R.id.action_loadingFragment_to_drawListFragment)
                 } else if(it[0].state == WorkInfo.State.FAILED) {
                     failedWorkAnimation()
+                } else if(it[0] != null) {
+                    val progress = it[0].progress
+                    val value = progress.getInt(Contents.WORKER_PARSING_DATA_OUTPUT_KEY, 0)
+
+                    loadingFrag_percent_textView.text = "$value%"
                 }
             })
     }
@@ -77,19 +83,19 @@ class LoadingFragment : Fragment() {
 
     // 애니메이션 설정
     private fun failedWorkAnimation() {
-        with(explainText) {
-            animate().setDuration(200)
-                .alpha(1f)
-                .withLayer()
-        }
-        with(restartBtn) {
+        with(loadingFrag_errorLayout) {
             animate().setDuration(200)
                 .alpha(1f)
                 .withLayer()
 
-            isEnabled = true
+            restartBtn.isEnabled = true
         }
-        with(progressBar) {
+        with(loadingFrag_mainLayout) {
+            animate().setDuration(200)
+                .alpha(0f)
+                .withLayer()
+        }
+        with(loadingFrag_explainText) {
             animate().setDuration(200)
                 .alpha(0f)
                 .withLayer()
@@ -97,19 +103,19 @@ class LoadingFragment : Fragment() {
     }
 
     private fun startWorkAnimation() {
-        with(explainText) {
-            animate().setDuration(200)
-                .alpha(0f)
-                .withLayer()
-        }
-        with(restartBtn) {
+        with(loadingFrag_errorLayout) {
             animate().setDuration(200)
                 .alpha(0f)
                 .withLayer()
 
-            isEnabled = false
+            restartBtn.isEnabled = false
         }
-        with(progressBar) {
+        with(loadingFrag_mainLayout) {
+            animate().setDuration(200)
+                .alpha(1f)
+                .withLayer()
+        }
+        with(loadingFrag_explainText) {
             animate().setDuration(200)
                 .alpha(1f)
                 .withLayer()

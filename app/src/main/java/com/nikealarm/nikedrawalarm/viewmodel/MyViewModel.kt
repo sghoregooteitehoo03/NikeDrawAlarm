@@ -43,4 +43,7 @@ class MyViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     val shoesImageUrl = MutableLiveData<String>()
+
+    // Special 목록
+    val specialShoesList = repository.getAllSpecialShoesData()
 }

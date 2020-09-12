@@ -20,11 +20,16 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.navigation.NavigationView
 import com.nikealarm.nikedrawalarm.adapter.ShoesListAdapter
 import com.nikealarm.nikedrawalarm.R
+import com.nikealarm.nikedrawalarm.database.MyDataBase
 import com.nikealarm.nikedrawalarm.database.ShoesDataModel
 import com.nikealarm.nikedrawalarm.ui.MainActivity
 import com.nikealarm.nikedrawalarm.ui.dialog.ExitDialog
 import com.nikealarm.nikedrawalarm.viewmodel.MyViewModel
 import kotlinx.android.synthetic.main.fragment_shoes_list.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
     NavigationView.OnNavigationItemSelectedListener, ShoesListAdapter.ImageClickListener {
@@ -169,12 +174,19 @@ class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
                 setToolbarTitle(ShoesDataModel.CATEGORY_RELEASED)
                 true
             }
+            R.id.mainMenu_upcoming -> {
+                CoroutineScope(Dispatchers.IO).launch {
+                    delay(230)
+                    findNavController().navigate(R.id.action_drawListFragment_to_upcomingListFragment)
+                }
+                true
+            }
             R.id.mainMenu_setting -> {
-//                CoroutineScope(Dispatchers.IO).launch {
-//                    val mDao = MyDataBase.getDatabase(requireContext())?.getDao()!!
-//                    mDao.clearDrawShoesData()
-//                }
-                findNavController().navigate(R.id.action_drawListFragment_to_settingFragment)
+                CoroutineScope(Dispatchers.IO).launch {
+                    delay(230)
+                    findNavController().navigate(R.id.action_drawListFragment_to_settingFragment)
+                }
+
                 true
             }
             else -> false

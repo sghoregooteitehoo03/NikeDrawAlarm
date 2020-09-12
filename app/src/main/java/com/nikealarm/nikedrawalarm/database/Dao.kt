@@ -7,20 +7,20 @@ import androidx.room.Dao
 @Dao
 interface Dao {
     // Draw 목록
-    @Query("SELECT * FROM DrawShoesDataModel")
-    fun getAllDrawShoesData(): List<DrawShoesDataModel>
+    @Query("SELECT * FROM SpecialShoesDataModel")
+    fun getAllSpecialShoesData(): List<SpecialShoesDataModel>
 
-    @Query("SELECT * FROM DrawShoesDataModel")
-    fun getAllDrawShoesPagingData(): DataSource.Factory<Int, DrawShoesDataModel>
+    @Query("SELECT * FROM SpecialShoesDataModel")
+    fun getAllSpecialShoesPagingData(): DataSource.Factory<Int, SpecialShoesDataModel>
 
-    @Insert(entity = DrawShoesDataModel::class)
-    fun insertDrawShoesData(insertData: DrawShoesDataModel)
+    @Insert(entity = SpecialShoesDataModel::class)
+    fun insertSpecialShoesData(insertData: SpecialShoesDataModel)
 
-    @Query("DELETE FROM DrawShoesDataModel")
-    fun clearDrawShoesData()
+    @Query("DELETE FROM SpecialShoesDataModel")
+    fun clearSpecialShoesData()
 
-    @Query("DELETE FROM DrawShoesDataModel WHERE DrawShoesTitle = :shoesTitle AND DrawShoesSubTitle = :shoesSubTitle")
-    fun deleteDrawShoesData(shoesTitle: String, shoesSubTitle: String)
+    @Query("DELETE FROM SpecialShoesDataModel WHERE SpecialShoesTitle = :shoesTitle AND SpecialShoesSubTitle = :shoesSubTitle")
+    fun deleteSpecialShoesData(shoesTitle: String, shoesSubTitle: String)
 
     // 전체 목록
     @Query("SELECT * FROM ShoesDataModel WHERE ShoesCategory = :shoesCategory")

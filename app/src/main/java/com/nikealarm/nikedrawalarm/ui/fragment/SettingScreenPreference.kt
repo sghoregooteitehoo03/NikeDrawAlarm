@@ -12,8 +12,11 @@ import android.util.Log
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreferenceCompat
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.nikealarm.nikedrawalarm.component.MyAlarmReceiver
 import com.nikealarm.nikedrawalarm.R
+import com.nikealarm.nikedrawalarm.component.FindDrawWorker
 import com.nikealarm.nikedrawalarm.other.Contents
 import java.util.*
 
@@ -152,11 +155,11 @@ class SettingScreenPreference : PreferenceFragmentCompat() {
             PendingIntent.FLAG_NO_CREATE
         )
 
-        if (alarmPendingIntent != null) {
-            return true
+        return alarmPendingIntent?.let {
+            true
+        }?:let {
+            false
         }
-
-        return false
     }
 
     // 등록한 알람시간을 데이터베이스에서 지움
