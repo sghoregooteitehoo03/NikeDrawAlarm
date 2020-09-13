@@ -54,7 +54,7 @@ class UpcomingListFragment : Fragment() {
             adapter = mAdapter
             layoutManager = LinearLayoutManager(requireContext())
             setHasFixedSize(true)
-//            (itemAnimator as SimpleItemAnimator).supportsChangeAnimations = false
+            (itemAnimator as SimpleItemAnimator).supportsChangeAnimations = false
         }
     }
 

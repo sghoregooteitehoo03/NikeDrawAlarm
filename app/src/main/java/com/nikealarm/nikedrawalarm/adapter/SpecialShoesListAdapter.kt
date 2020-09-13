@@ -10,6 +10,8 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.Animation
+import android.view.animation.Transformation
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
@@ -65,28 +67,30 @@ class SpecialShoesListAdapter(private val context: Context, private val fragment
             Glide.with(itemView.context).load(data?.shoesImage).into(shoesImageView)
 
             if(data?.isOpened!!) { // 레이아웃 확장
-                subLayout.visibility = View.VISIBLE
+                if(subLayout.visibility == View.GONE) {
+                    expand()
+                }
             } else {
-                subLayout.visibility = View.GONE
+                collapse()
             }
 
             mainLayout.setOnClickListener {
                 data.isOpened = !data.isOpened
 
-                if(previousPosition != -1 && previousPosition != adapterPosition) {
+                if(previousPosition != -1 && previousPosition != adapterPosition) { // 다른 리스트를 눌렀을 때
                     currentList?.get(previousPosition)?.isOpened = !currentList?.get(previousPosition)!!.isOpened
                     notifyItemChanged(previousPosition)
                 }
 
                 notifyItemChanged(adapterPosition)
-                previousPosition = if(previousPosition == adapterPosition) {
+                previousPosition = if(previousPosition == adapterPosition) { // 같은 리스트를 눌렀을 때
                     -1
-                } else {
+                } else { // 다른 리스트를 눌렀을 때
                     adapterPosition
                 }
             }
 
-            if (isChecked("${data!!.shoesTitle}-${data.shoesSubTitle}")) {
+            if (isChecked("${data.shoesTitle}-${data.shoesSubTitle}")) {
                 alarmImageButton.setImageResource(R.drawable.ic_baseline_notifications_active)
 
                 alarmImageButton.setOnClickListener {
@@ -107,13 +111,62 @@ class SpecialShoesListAdapter(private val context: Context, private val fragment
 
         // 애니메이션 설정
         private fun expand() {
-            with(subLayout) {
-                measure(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-                val mHeight = measuredHeight
+            with(moreInfoButton) {
+                animate().setDuration(200)
+                    .rotation(-180f)
+                    .withLayer()
+            }
 
-                /* 이 부분 부터 시작 */
+            with(subLayout) {
+                measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED)
+                val actualHeight = measuredHeight
+
                 layoutParams.height = 0
                 visibility = View.VISIBLE
+
+                val animation = object : Animation() {
+                    override fun applyTransformation(interpolatedTime: Float, t: Transformation?) {
+                        super.applyTransformation(interpolatedTime, t)
+
+                        layoutParams.height = if(interpolatedTime.toInt() == 1) {
+                            ViewGroup.LayoutParams.WRAP_CONTENT
+                        } else {
+                            (actualHeight * interpolatedTime).toInt()
+                        }
+                        requestLayout()
+                    }
+                }
+
+                animation.duration = (actualHeight / context.resources.displayMetrics.density).toLong()
+                startAnimation(animation)
+            }
+        }
+
+        private fun collapse() {
+            with(moreInfoButton) {
+                animate().setDuration(200)
+                    .rotation(0f)
+                    .withLayer()
+            }
+
+            with(subLayout) {
+                val actualHeight = measuredHeight
+
+                val animation = object : Animation() {
+                    override fun applyTransformation(interpolatedTime: Float, t: Transformation?) {
+                        super.applyTransformation(interpolatedTime, t)
+
+                        if(interpolatedTime.toInt() == 1) {
+                            visibility = View.GONE
+                        } else {
+                            layoutParams.height = actualHeight - (actualHeight * interpolatedTime).toInt()
+                            requestLayout()
+                        }
+                    }
+                }
+
+                animation.duration = (actualHeight / context.resources.displayMetrics.density).toLong()
+                startAnimation(animation)
             }
         }
 
