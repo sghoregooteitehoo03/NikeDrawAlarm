@@ -12,17 +12,16 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.animation.Animation
 import android.view.animation.Transformation
+import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.cardview.widget.CardView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.FragmentManager
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import androidx.transition.AutoTransition
-import androidx.transition.TransitionManager
+import androidx.viewpager2.widget.ViewPager2
 import com.bumptech.glide.Glide
 import com.chauthai.swipereveallayout.SwipeRevealLayout
 import com.chauthai.swipereveallayout.ViewBinderHelper
@@ -55,7 +54,7 @@ class SpecialShoesListAdapter(private val context: Context, private val fragment
         val moreInfoButton = itemView.findViewById<ImageButton>(R.id.upcomingList_moreInfo_imageButton)
 
         val mainLayout = itemView.findViewById<ConstraintLayout>(R.id.upcomingList_mainLayout)
-        val subLayout = itemView.findViewById<ConstraintLayout>(R.id.upcomingList_subLayout)
+        val subLayout = itemView.findViewById<FrameLayout>(R.id.upcomingList_subLayout)
         val swipeLayout = itemView.findViewById<SwipeRevealLayout>(R.id.upcomingList_swipeLayout)
 
         fun bindView(data: SpecialShoesDataModel?) {
@@ -109,8 +108,18 @@ class SpecialShoesListAdapter(private val context: Context, private val fragment
             }
         }
 
-        // 애니메이션 설정
+        // 레이아웃 확장
         private fun expand() {
+            expandAnimation()
+        }
+
+        // 레이아웃 축소
+        private fun collapse() {
+            collapseAnimation()
+        }
+
+        // 애니메이션 설정
+        private fun expandAnimation() {
             with(moreInfoButton) {
                 animate().setDuration(200)
                     .rotation(-180f)
@@ -142,7 +151,7 @@ class SpecialShoesListAdapter(private val context: Context, private val fragment
             }
         }
 
-        private fun collapse() {
+        private fun collapseAnimation() {
             with(moreInfoButton) {
                 animate().setDuration(200)
                     .rotation(0f)
@@ -356,6 +365,15 @@ class SpecialShoesListAdapter(private val context: Context, private val fragment
 
     override fun getItemId(position: Int): Long {
         return currentList?.get(position)?.id?.toLong()!!
+    }
+
+    fun scrollClose() { // 스크롤시 레이아웃 축소 시킴
+        if(previousPosition != -1) { // 레이아웃이 확장 되있을 시
+            getItem(previousPosition)!!.isOpened = false
+            notifyItemChanged(previousPosition)
+
+            previousPosition = -1
+        }
     }
 
     companion object {
