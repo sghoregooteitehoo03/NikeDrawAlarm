@@ -1,6 +1,5 @@
 package com.nikealarm.nikedrawalarm.database
 
-import android.graphics.Bitmap
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Ignore

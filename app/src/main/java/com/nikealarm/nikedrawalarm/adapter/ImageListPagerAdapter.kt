@@ -7,7 +7,6 @@ import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.nikealarm.nikedrawalarm.R
-import com.squareup.picasso.Picasso
 
 class ImageListPagerAdapter(private val imageList: Array<String>) : RecyclerView.Adapter<ImageListPagerAdapter.ImageListViewHolder>() {
 

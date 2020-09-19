@@ -20,10 +20,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.navigation.NavigationView
 import com.nikealarm.nikedrawalarm.adapter.ShoesListAdapter
 import com.nikealarm.nikedrawalarm.R
-import com.nikealarm.nikedrawalarm.database.MyDataBase
 import com.nikealarm.nikedrawalarm.database.ShoesDataModel
 import com.nikealarm.nikedrawalarm.ui.MainActivity
-import com.nikealarm.nikedrawalarm.ui.dialog.ExitDialog
 import com.nikealarm.nikedrawalarm.viewmodel.MyViewModel
 import kotlinx.android.synthetic.main.fragment_shoes_list.*
 import kotlinx.coroutines.CoroutineScope
@@ -228,11 +226,6 @@ class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
                 }
             }
         }
-    }
-
-    private fun terminationApp() {
-        ExitDialog.getExitDialog()
-            .show(requireActivity().supportFragmentManager, ExitDialog.EXIT_DIALOG_TAG)
     }
 
     // 애니메이션 설정

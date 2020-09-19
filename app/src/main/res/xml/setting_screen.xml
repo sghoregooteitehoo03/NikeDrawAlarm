@@ -8,8 +8,8 @@
         <SwitchPreferenceCompat
             app:iconSpaceReserved="false"
             app:key="@string/setting_preference_switchKey"
-            app:summary="새로운 Draw가 생길 시 알림으로 알려줍니다."
-            app:title="Draw 정보 받기" />
+            app:summary="새로운 DRAW가 생길 시 알림으로 알려줍니다."
+            app:title="DRAW 정보 받기" />
     </PreferenceCategory>
 
     <PreferenceCategory

@@ -14,7 +14,6 @@ import androidx.work.workDataOf
 import com.nikealarm.nikedrawalarm.database.Dao
 import com.nikealarm.nikedrawalarm.database.SpecialShoesDataModel
 import com.nikealarm.nikedrawalarm.database.MyDataBase
-import com.nikealarm.nikedrawalarm.database.ShoesDataModel
 import com.nikealarm.nikedrawalarm.other.Contents
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

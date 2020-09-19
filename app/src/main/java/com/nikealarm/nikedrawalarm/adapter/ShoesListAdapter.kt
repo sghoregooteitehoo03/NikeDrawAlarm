@@ -1,12 +1,6 @@
 package com.nikealarm.nikedrawalarm.adapter
 
-import android.app.AlarmManager
-import android.app.Dialog
-import android.app.PendingIntent
 import android.content.Context
-import android.content.Intent
-import android.os.Build
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -17,12 +11,8 @@ import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.nikealarm.nikedrawalarm.component.MyAlarmReceiver
 import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.database.ShoesDataModel
-import com.nikealarm.nikedrawalarm.other.Contents
-import com.nikealarm.nikedrawalarm.ui.dialog.AlarmDialog
-import java.util.*
 
 class ShoesListAdapter(
     private val mContext: Context,
