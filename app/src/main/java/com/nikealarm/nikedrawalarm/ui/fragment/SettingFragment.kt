@@ -37,7 +37,7 @@ class SettingFragment : Fragment() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when(item.itemId) {
             android.R.id.home -> {
-                findNavController().navigate(R.id.action_settingFragment_to_drawListFragment)
+                findNavController().navigateUp()
                 true
             }
             else -> false

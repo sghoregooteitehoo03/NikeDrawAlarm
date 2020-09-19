@@ -32,52 +32,40 @@
         <action
             android:id="@+id/action_drawListFragment_to_mainWebFragment"
             app:destination="@id/mainWebFragment"
-            app:enterAnim="@animator/slide_in_bottom"
-            app:exitAnim="@animator/slide_out_high"
-            app:popEnterAnim="@animator/slide_in_high"
-            app:popExitAnim="@animator/slide_out_bottom" />
+            app:enterAnim="@animator/anim_enter"
+            app:exitAnim="@animator/anim_exit"
+            app:popEnterAnim="@animator/anim_pop_enter"
+            app:popExitAnim="@animator/anim_pop_exit" />
         <action
             android:id="@+id/action_drawListFragment_to_settingFragment"
             app:destination="@id/settingFragment"
-            app:enterAnim="@animator/slide_in_bottom"
-            app:exitAnim="@animator/slide_out_high"
-            app:popEnterAnim="@animator/slide_in_high"
-            app:popExitAnim="@animator/slide_out_bottom" />
+            app:enterAnim="@animator/anim_enter"
+            app:exitAnim="@animator/anim_exit"
+            app:popEnterAnim="@animator/anim_pop_enter"
+            app:popExitAnim="@animator/anim_pop_exit" />
         <action
             android:id="@+id/action_drawListFragment_to_imageListFragment"
             app:destination="@id/imageListFragment" />
         <action
             android:id="@+id/action_drawListFragment_to_upcomingListFragment"
             app:destination="@id/upcomingListFragment"
-            app:enterAnim="@animator/slide_in_bottom"
-            app:exitAnim="@animator/slide_out_high"
-            app:popEnterAnim="@animator/slide_in_high"
-            app:popExitAnim="@animator/slide_out_bottom" />
+            app:enterAnim="@animator/anim_enter"
+            app:exitAnim="@animator/anim_exit"
+            app:popEnterAnim="@animator/anim_pop_enter"
+            app:popExitAnim="@animator/anim_pop_exit" />
     </fragment>
     <fragment
         android:id="@+id/mainWebFragment"
         android:name="com.nikealarm.nikedrawalarm.ui.fragment.MainWebFragment"
-        android:label="MainWebFragment">
-        <action
-            android:id="@+id/action_mainWebFragment_to_drawListFragment"
-            app:popUpTo="@id/drawListFragment" />
-    </fragment>
+        android:label="MainWebFragment" />
     <fragment
         android:id="@+id/settingFragment"
         android:name="com.nikealarm.nikedrawalarm.ui.fragment.SettingFragment"
-        android:label="SettingFragment">
-        <action
-            android:id="@+id/action_settingFragment_to_drawListFragment"
-            app:popUpTo="@id/drawListFragment" />
-    </fragment>
+        android:label="SettingFragment" />
     <fragment
         android:id="@+id/imageListFragment"
         android:name="com.nikealarm.nikedrawalarm.ui.fragment.ImageListFragment"
-        android:label="ImageListFragment">
-        <action
-            android:id="@+id/action_imageListFragment_to_drawListFragment"
-            app:popUpTo="@id/drawListFragment" />
-    </fragment>
+        android:label="ImageListFragment" />
     <fragment
         android:id="@+id/loadingFragment"
         android:name="com.nikealarm.nikedrawalarm.ui.fragment.LoadingFragment"

@@ -68,7 +68,7 @@ class MainWebFragment : Fragment() {
         return when (item.itemId) {
             android.R.id.home -> {
                 backPressedCallback.isEnabled = false
-                findNavController().navigate(R.id.action_mainWebFragment_to_drawListFragment)
+                findNavController().navigateUp()
                 true
             }
             else -> false
