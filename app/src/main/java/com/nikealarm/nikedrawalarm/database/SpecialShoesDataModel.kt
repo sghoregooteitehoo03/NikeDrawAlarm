@@ -26,7 +26,9 @@ data class SpecialShoesDataModel(
     @ColumnInfo(name = "SpecialShoesDay")
     val shoesDay: String? = null,
     @ColumnInfo(name = "SpecialShoesWhenEvent")
-    val shoesWhenEvent: String? = null
+    val shoesWhenEvent: String? = null,
+    @ColumnInfo(name = "SpecialShoesOrder")
+    val shoesOrder: Int? = null
     ) {
     @Ignore
     var isOpened = false

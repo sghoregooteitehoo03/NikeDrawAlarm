@@ -8,7 +8,7 @@ import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
-@Database(entities = [SpecialShoesDataModel::class, ShoesDataModel::class], version = 2)
+@Database(entities = [SpecialShoesDataModel::class, ShoesDataModel::class], version = 3)
 @TypeConverters(Converter::class)
 abstract class MyDataBase : RoomDatabase() {
     abstract fun getDao(): Dao

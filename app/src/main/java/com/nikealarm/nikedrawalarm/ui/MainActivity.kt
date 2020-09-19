@@ -17,7 +17,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 /*
-* 캘린더 구현(viewpager 구현)
+* 프래그먼트 애니메이션 수정
 * UI 수정 및 최적화
 * 코드 최적화
 * */

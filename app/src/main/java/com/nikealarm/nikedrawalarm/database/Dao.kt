@@ -7,10 +7,10 @@ import androidx.room.Dao
 @Dao
 interface Dao {
     // Draw 목록
-    @Query("SELECT * FROM SpecialShoesDataModel")
+    @Query("SELECT * FROM SpecialShoesDataModel ORDER BY SpecialShoesOrder ASC")
     fun getAllSpecialShoesData(): List<SpecialShoesDataModel>
 
-    @Query("SELECT * FROM SpecialShoesDataModel")
+    @Query("SELECT * FROM SpecialShoesDataModel ORDER BY SpecialShoesOrder ASC")
     fun getAllSpecialShoesPagingData(): DataSource.Factory<Int, SpecialShoesDataModel>
 
     @Insert(entity = SpecialShoesDataModel::class)

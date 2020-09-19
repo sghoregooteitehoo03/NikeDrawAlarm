@@ -238,6 +238,7 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(
                         .select("div.date")
                         .select("span.day")
                         .text()
+                    val order = "${month.split("월")[0]}${day}".toInt()
 
                     val specialShoesData = SpecialShoesDataModel(
                         null,
@@ -248,7 +249,8 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(
                         data.shoesImage,
                         month,
                         day,
-                        whenStartEvent
+                        whenStartEvent,
+                        order
                     )
 
                     if(!mDao.getAllSpecialShoesData().contains(specialShoesData)) {
