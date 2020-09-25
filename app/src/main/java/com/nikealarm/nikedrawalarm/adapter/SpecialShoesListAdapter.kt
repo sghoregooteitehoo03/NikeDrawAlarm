@@ -327,7 +327,11 @@ class SpecialShoesListAdapter(private val context: Context, private val fragment
         }
 
         private fun getTimeInMillis(eventDay: EventDay): Long {
-            val month = eventDay.eventMonth[0].toString().toIntOrNull()
+            val month = if(eventDay.eventMonth[1].toString() != "월") {
+                "${eventDay.eventMonth[0]}${eventDay.eventMonth[1]}".toIntOrNull() // 10월, 11월, 12월 처리
+            } else {
+                eventDay.eventMonth[0].toString().toIntOrNull()
+            }
             val day = eventDay.eventDay.toIntOrNull()
 
             val time = eventDay.eventTime.substring(2, 8).trim().split(":")

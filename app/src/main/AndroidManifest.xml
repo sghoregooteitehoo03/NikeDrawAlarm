@@ -5,7 +5,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
-    <!-- https://free-icon-rainbow.com/sneaker-shoe-free-icon-5/ 앱 로고 -->
+    <!-- 아이콘 제작자 <a href="https://www.flaticon.com/kr/authors/freepik" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/kr/" title="Flaticon"> www.flaticon.com</a> -->
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
