@@ -11,6 +11,7 @@ import com.nikealarm.nikedrawalarm.other.Contents
 import kotlinx.android.synthetic.main.activity_main.*
 
 /*
+* 데이터베이스 JOIN으로 수정하기
 * UI 수정 및 최적화
 * 코드 최적화
 * */
