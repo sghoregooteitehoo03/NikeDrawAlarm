@@ -182,7 +182,6 @@ class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
             }
             R.id.mainMenu_setting -> {
                 CoroutineScope(Dispatchers.IO).launch {
-                    MyDataBase.getDatabase(requireContext())!!.getDao().clearSpecialData()
                     delay(230)
                     findNavController().navigate(R.id.action_drawListFragment_to_settingFragment)
                 }
