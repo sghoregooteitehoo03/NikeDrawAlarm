@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.navigation.NavigationView
 import com.nikealarm.nikedrawalarm.adapter.ShoesListAdapter
 import com.nikealarm.nikedrawalarm.R
+import com.nikealarm.nikedrawalarm.database.MyDataBase
 import com.nikealarm.nikedrawalarm.database.ShoesDataModel
 import com.nikealarm.nikedrawalarm.ui.MainActivity
 import com.nikealarm.nikedrawalarm.viewmodel.MyViewModel
@@ -181,6 +182,7 @@ class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
             }
             R.id.mainMenu_setting -> {
                 CoroutineScope(Dispatchers.IO).launch {
+                    MyDataBase.getDatabase(requireContext())!!.getDao().clearSpecialData()
                     delay(230)
                     findNavController().navigate(R.id.action_drawListFragment_to_settingFragment)
                 }

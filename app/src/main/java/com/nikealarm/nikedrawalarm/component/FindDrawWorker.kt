@@ -11,9 +11,10 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import com.nikealarm.nikedrawalarm.R
-import com.nikealarm.nikedrawalarm.database.SpecialShoesDataModel
+import com.nikealarm.nikedrawalarm.database.SpecialDataModel
 import com.nikealarm.nikedrawalarm.database.MyDataBase
 import com.nikealarm.nikedrawalarm.database.ShoesDataModel
+import com.nikealarm.nikedrawalarm.database.SpecialShoesDataModel
 import com.nikealarm.nikedrawalarm.other.Contents
 import com.nikealarm.nikedrawalarm.ui.MainActivity
 import com.squareup.picasso.Picasso
@@ -27,7 +28,6 @@ class FindDrawWorker(context: Context, workerParams: WorkerParameters) : Worker(
     private val mDao = MyDataBase.getDatabase(mContext)!!.getDao()
 
     private val allShoesList = mutableListOf<ShoesDataModel>()
-    private val specialShoesList = mutableListOf<SpecialShoesDataModel>()
 
     override fun doWork(): Result {
         parseData()
@@ -39,10 +39,12 @@ class FindDrawWorker(context: Context, workerParams: WorkerParameters) : Worker(
     private fun parseData() {
         parseReleasedData()
         parseSpecialData()
+//        repeatNotification()
 
-        checkDrawData()
+        checkSpecialData()
     }
 
+    // FEED 파싱
     private fun parseReleasedData() {
         val url = "https://www.nike.com/kr/launch/?type=feed"
         val doc = Jsoup.connect(url) // nike UPCOMING 창을 읽어옴
@@ -50,7 +52,6 @@ class FindDrawWorker(context: Context, workerParams: WorkerParameters) : Worker(
             .get()
         val elementsData = doc.select("div.launch-list-item")
 
-        var channelId = 0
         for (elementData in elementsData) {
             val shoesInfo = elementData.select("div.info-sect") // 신발 정보
                 .select("div.btn-box")
@@ -67,19 +68,12 @@ class FindDrawWorker(context: Context, workerParams: WorkerParameters) : Worker(
             val shoesTitle = elementData.select("div.text-box")
                 .select("p.txt-description")
                 .text()
+            val innerUrl = "https://www.nike.com" + elementData.select("a")
+                .attr("href") // 해당 draw 링크창을 읽어옴
 
             // draw가 없을 시
-            if (!mDao.getAllSpecialShoesData().contains(
-                    SpecialShoesDataModel(
-                        0,
-                        shoesSubTitle,
-                        shoesTitle
-                    )
-                )
-            ) {
+            if (!mDao.getAllShoesData().contains(ShoesDataModel(0, shoesSubTitle, shoesTitle))) {
                 if (shoesInfo == "THE DRAW 진행예정") {
-                    val innerUrl = "https://www.nike.com" + elementData.select("a")
-                        .attr("href") // 해당 draw 링크창을 읽어옴
                     val innerDoc = Jsoup.connect(innerUrl)
                         .userAgent("19.0.1.84.52")
                         .get()
@@ -103,89 +97,88 @@ class FindDrawWorker(context: Context, workerParams: WorkerParameters) : Worker(
 
                     howToEvent += "\n$shoesPrice"
 
-                    val drawData = SpecialShoesDataModel(
-                        null,
-                        shoesSubTitle,
-                        shoesTitle,
-                        howToEvent,
-                        innerUrl,
-                        shoesImageUrl
-                    )
+                    val shoesData =
+                        ShoesDataModel(
+                            null,
+                            shoesSubTitle,
+                            shoesTitle,
+                            howToEvent,
+                            shoesImageUrl,
+                            innerUrl,
+                            ShoesDataModel.CATEGORY_DRAW
+                        )
 
-                    specialShoesList.add(drawData)
+                    insertShoesData(shoesData)
                 }
             }
 
-            channelId++
-            allShoesList.add(ShoesDataModel(0, shoesSubTitle, shoesTitle))
+            allShoesList.add(ShoesDataModel(0, shoesSubTitle, shoesTitle, null, null, innerUrl))
         }
     }
 
+    // UPCOMING 파싱
     private fun parseSpecialData() {
         val url = "https://www.nike.com/kr/launch/?type=upcoming&activeDate=date-filter:AFTER"
         val doc = Jsoup.connect(url) // nike UPCOMING창을 읽어옴
             .userAgent("19.0.1.84.52")
             .get()
         val elementsData = doc.select("div.launch-list-item")
+        var channelId = 0
 
         for (elementData in elementsData) {
             val category = elementData.select("div.info-sect")
                 .select("div.btn-box")
                 .select("span.btn-link")
                 .text()
+            val specialUrl = "https://www.nike.com" + elementData.select("a").attr("href")
 
-            if (category != "THE DRAW 진행예정") { // DRAW만 읽어옴
+            if (category != "THE DRAW 진행예정" || mDao.getAllSpecialData()
+                    .contains(SpecialDataModel(0, specialUrl))
+            ) { // DRAW가 아니고 이미 데이터가 존재할 시
                 continue
             }
 
-            val shoesSubTitle = elementData.select("div.info-sect")
-                .select("div.text-box")
-                .select("p.txt-description")
+            val month = elementData.select("div.img-sect")
+                .select("div.date")
+                .select("span.month")
                 .text()
+            val day = elementData.select("div.img-sect")
+                .select("div.date")
+                .select("span.day")
+                .text()
+            val whenStartEvent = elementData.select("div.info-sect")
+                .select("div.text-box")
+                .select("p.txt-subject")
+                .text()
+            val order = "${month.split("월")[0]}${day}".toInt()
 
-            var position = 0
-            for (data in specialShoesList) {
-                if (data.shoesSubTitle == shoesSubTitle) {
-                    val whenStartEvent = elementData.select("div.info-sect")
-                        .select("div.text-box")
-                        .select("p.txt-subject")
-                        .text()
-                    val month = elementData.select("div.img-sect")
-                        .select("div.date")
-                        .select("span.month")
-                        .text()
-                    val day = elementData.select("div.img-sect")
-                        .select("div.date")
-                        .select("span.day")
-                        .text()
-                    val order = "${month.split("월")[0]}${day}".toInt()
+            val specialShoesData = SpecialDataModel(
+                null,
+                specialUrl,
+                month,
+                day,
+                whenStartEvent,
+                order
+            )
 
-                    val specialShoesData = SpecialShoesDataModel(
-                        null,
-                        data.shoesSubTitle,
-                        data.shoesTitle,
-                        data.howToEvent,
-                        data.shoesUrl,
-                        data.shoesImage,
-                        month,
-                        day,
-                        whenStartEvent,
-                        order
-                    )
+            insertSpecialShoesData(specialShoesData)
 
-                    if (!mDao.getAllSpecialShoesData().contains(specialShoesData)){
-                        insertSpecialShoesData(specialShoesData)
-                        createNotification(specialShoesData, position)
-                    }
-                }
+            val index = mDao.getAllSpecialShoesData().indexOf(SpecialShoesDataModel(0, "", "", null, null, specialUrl))
+            createNotification(mDao.getAllSpecialShoesData()[index], channelId)
 
-                position++
-            }
+            channelId++
+        }
+    }
+
+    private fun repeatNotification() { // DRAW 데이터들을 알림 생성 메서드로 보냄
+        for (channelId in mDao.getAllSpecialShoesData().indices) {
+            val specialShoes = mDao.getAllSpecialShoesData()[channelId]
+            createNotification(specialShoes, channelId)
         }
     }
 
     // 알림 생성
-    private fun createNotification(shoesData: SpecialShoesDataModel, channelId: Int) {
+    private fun createNotification(data: SpecialShoesDataModel, channelId: Int) {
         val vibrate = LongArray(4).apply {
             set(0, 0)
             set(1, 100)
@@ -197,7 +190,7 @@ class FindDrawWorker(context: Context, workerParams: WorkerParameters) : Worker(
         val learnMoreIntent = Intent(mContext, MainActivity::class.java).apply {
             action = Contents.INTENT_ACTION_GOTO_WEBSITE
             putExtra(Contents.CHANNEL_ID, channelId)
-            putExtra(Contents.DRAW_URL, shoesData.shoesUrl)
+            putExtra(Contents.DRAW_URL, data.ShoesUrl)
         }
         val setAlarmIntent = Intent(mContext, MainActivity::class.java).apply { // 알림 설정하기
             action = Contents.INTENT_ACTION_GOTO_DRAWLIST
@@ -212,10 +205,10 @@ class FindDrawWorker(context: Context, workerParams: WorkerParameters) : Worker(
         val setAlarmPendingIntent =
             PendingIntent.getActivity(mContext, 100, setAlarmIntent, PendingIntent.FLAG_ONE_SHOT)
 
-        val bitmap = Picasso.get().load(shoesData.shoesImage).get()
+        val bitmap = Picasso.get().load(data.ShoesImageUrl).get()
         val notificationBuilder = NotificationCompat.Builder(mContext, "Default")
             .setSmallIcon(R.mipmap.ic_launcher)
-            .setContentTitle("${shoesData.shoesSubTitle} - ${shoesData.shoesTitle}")
+            .setContentTitle("${data.ShoesSubTitle} - ${data.ShoesTitle}")
             .setVibrate(vibrate)
             .setLargeIcon(bitmap)
             .setStyle(NotificationCompat.BigTextStyle())
@@ -224,7 +217,7 @@ class FindDrawWorker(context: Context, workerParams: WorkerParameters) : Worker(
                     .bigPicture(bitmap)
                     .bigLargeIcon(null)
             )
-            .setContentText(shoesData.howToEvent!!.split("\n")[0])
+            .setContentText(data.ShoesPrice!!.split("\n")[0])
             .setAutoCancel(true)
             .addAction(0, "자세히 보기", learnMorePendingIntent)
             .addAction(0, "알림 설정하기", setAlarmPendingIntent)
@@ -232,7 +225,7 @@ class FindDrawWorker(context: Context, workerParams: WorkerParameters) : Worker(
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 "Default",
-                shoesData.shoesTitle,
+                data.ShoesTitle,
                 NotificationManager.IMPORTANCE_DEFAULT
             )
             val notificationManager =
@@ -247,19 +240,31 @@ class FindDrawWorker(context: Context, workerParams: WorkerParameters) : Worker(
     }
 
     // 데이터베이스 접근
-    private fun insertSpecialShoesData(insertShoesData: SpecialShoesDataModel) {
-        mDao.insertSpecialShoesData(insertShoesData)
+    private fun insertSpecialShoesData(insertData: SpecialDataModel) {
+        mDao.insertSpecialData(insertData)
     }
 
-    private fun checkDrawData() {
+    private fun insertShoesData(insertData: ShoesDataModel) {
+        mDao.insertShoesData(insertData)
+    }
+
+    private fun checkSpecialData() {
         for (shoesData in mDao.getAllSpecialShoesData()) {
-            if (!allShoesList.contains(ShoesDataModel(0, shoesData.shoesSubTitle, shoesData.shoesTitle))) {
+            if (!allShoesList.contains(
+                    ShoesDataModel(
+                        0,
+                        shoesData.ShoesSubTitle,
+                        shoesData.ShoesTitle
+                    )
+                ) && shoesData.ShoesCategory == ShoesDataModel.CATEGORY_DRAW
+            ) {
                 deleteShoesData(shoesData)
             }
         }
     }
 
     private fun deleteShoesData(deleteData: SpecialShoesDataModel) {
-        mDao.deleteSpecialShoesData(deleteData.shoesTitle, deleteData.shoesSubTitle)
+        mDao.deleteShoesData(deleteData.ShoesTitle, deleteData.ShoesSubTitle)
+        mDao.deleteSpecialData(deleteData.ShoesUrl!!)
     }
 }

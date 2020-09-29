@@ -6,23 +6,30 @@ import androidx.room.Dao
 
 @Dao
 interface Dao {
-    // Draw 목록
-    @Query("SELECT * FROM SpecialShoesDataModel ORDER BY SpecialShoesOrder ASC")
+    // SpecialShoesData
+    @Query("SELECT ShoesId, ShoesSubTitle, ShoesTitle, ShoesPrice, ShoesImageUrl, ShoesUrl, ShoesCategory, SpecialMonth, SpecialDay, SpecialWhenEvent, SpecialOrder FROM ShoesDataModel INNER JOIN SpecialDataModel ON ShoesUrl = SpecialUrl ORDER BY SpecialOrder ASC")
     fun getAllSpecialShoesData(): List<SpecialShoesDataModel>
 
-    @Query("SELECT * FROM SpecialShoesDataModel ORDER BY SpecialShoesOrder ASC")
+    @Query("SELECT ShoesId, ShoesSubTitle, ShoesTitle, ShoesPrice, ShoesImageUrl, ShoesUrl, ShoesCategory, SpecialMonth, SpecialDay, SpecialWhenEvent, SpecialOrder FROM ShoesDataModel INNER JOIN SpecialDataModel ON ShoesUrl = SpecialUrl ORDER BY SpecialOrder ASC")
     fun getAllSpecialShoesPagingData(): DataSource.Factory<Int, SpecialShoesDataModel>
 
-    @Insert(entity = SpecialShoesDataModel::class)
-    fun insertSpecialShoesData(insertData: SpecialShoesDataModel)
+    // SpecialData
+    @Query("SELECT * FROM SpecialDataModel")
+    fun getAllSpecialData(): List<SpecialDataModel>
 
-    @Query("DELETE FROM SpecialShoesDataModel")
-    fun clearSpecialShoesData()
+    @Insert(entity = SpecialDataModel::class)
+    fun insertSpecialData(insertData: SpecialDataModel)
 
-    @Query("DELETE FROM SpecialShoesDataModel WHERE SpecialShoesTitle = :shoesTitle AND SpecialShoesSubTitle = :shoesSubTitle")
-    fun deleteSpecialShoesData(shoesTitle: String, shoesSubTitle: String)
+    @Query("UPDATE SpecialDataModel SET SpecialUrl = :specialNewUrl WHERE SpecialUrl = :specialOldUrl")
+    fun updateSpecialDataUrl(specialNewUrl: String, specialOldUrl: String)
 
-    // 전체 목록
+    @Query("DELETE FROM SpecialDataModel")
+    fun clearSpecialData()
+
+    @Query("DELETE FROM SpecialDataModel WHERE SpecialUrl = :specialUrl")
+    fun deleteSpecialData(specialUrl: String)
+
+    // ShoesData
     @Query("SELECT * FROM ShoesDataModel WHERE ShoesCategory = :shoesCategory")
     fun getShoesData(shoesCategory: String): DataSource.Factory<Int, ShoesDataModel>
 
@@ -38,8 +45,8 @@ interface Dao {
     @Insert(entity = ShoesDataModel::class)
     fun insertShoesData(insertData: ShoesDataModel)
 
-    @Delete(entity = ShoesDataModel::class)
-    fun deleteShoesData(deleteData: ShoesDataModel)
+    @Query("DELETE FROM ShoesDataModel WHERE ShoesTitle = :shoesTitle AND ShoesSubTitle = :shoesSubTitle")
+    fun deleteShoesData(shoesTitle: String, shoesSubTitle: String)
 
     @Query("DELETE FROM ShoesDataModel")
     fun clearShoesData()

@@ -6,7 +6,7 @@ import androidx.work.Worker
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import com.nikealarm.nikedrawalarm.database.Dao
-import com.nikealarm.nikedrawalarm.database.SpecialShoesDataModel
+import com.nikealarm.nikedrawalarm.database.SpecialDataModel
 import com.nikealarm.nikedrawalarm.database.MyDataBase
 import com.nikealarm.nikedrawalarm.database.ShoesDataModel
 import com.nikealarm.nikedrawalarm.other.Contents
@@ -19,17 +19,16 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(
     private lateinit var mDao: Dao
 
     private val allShoesList = mutableListOf<ShoesDataModel>()
-    private val specialShoesList = mutableListOf<SpecialShoesDataModel>()
 
     override fun doWork(): Result {
         mDao = MyDataBase.getDatabase(applicationContext)!!.getDao()
 
-        parsingData()
-        syncData()
+        parsingData() // 데이터를 파싱함
+        syncData() // 데이터를 갱신함
 
-        val size = mDao.getAllShoesData().size
-        Log.i("CheckSize", "$size")
-        Log.i("CheckDrawSize", "${mDao.getAllSpecialShoesData().size}")
+
+        Log.i("CheckSize", "${mDao.getAllShoesData().size}")
+        Log.i("CheckDrawSize", "${mDao.getAllSpecialData().size}")
         return Result.success()
     }
 
@@ -131,17 +130,6 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(
                             innerUrl,
                             ShoesDataModel.CATEGORY_DRAW
                         )
-
-                        specialShoesList.add(
-                            SpecialShoesDataModel(
-                                0,
-                                shoesSubTitle,
-                                shoesTitle,
-                                howToEvent,
-                                innerUrl,
-                                shoesImageUrl
-                            )
-                        )
                     }
                     "THE DRAW 응모 마감", "THE DRAW 당첨 결과 확인", "THE DRAW 종료" -> {
                         insertShoesData = ShoesDataModel(
@@ -166,17 +154,6 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(
                             innerUrl,
                             ShoesDataModel.CATEGORY_COMING_SOON
                         )
-
-                        specialShoesList.add(
-                            SpecialShoesDataModel(
-                                0,
-                                shoesSubTitle,
-                                shoesTitle,
-                                launchDate,
-                                innerUrl,
-                                shoesImageUrl
-                            )
-                        )
                     }
                     else -> {
                         insertShoesData = ShoesDataModel(
@@ -197,7 +174,7 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(
             progress += 2.5
 
             setProgressAsync(workDataOf(Contents.WORKER_PARSING_DATA_OUTPUT_KEY to progress.toInt()))
-            allShoesList.add(ShoesDataModel(0, shoesSubTitle, shoesTitle))
+            allShoesList.add(ShoesDataModel(0, shoesSubTitle, shoesTitle, null, null, innerUrl))
         }
     }
 
@@ -214,50 +191,28 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(
                 .select("div.btn-box")
                 .select("span.btn-link")
                 .text()
+            val specialUrl = "https://www.nike.com" + elementData.select("a").attr("href")
 
-            if (checkCategory(category)) { // DRAW와 COMINGSOON 만 읽어옴
+            if (checkCategory(category) || mDao.getAllSpecialData().contains(SpecialDataModel(0, specialUrl))) { // 이미 데이터 존재하지 않고 special이 아니면 continue
                 continue
             }
 
-            val shoesSubTitle = elementData.select("div.info-sect")
-                .select("div.text-box")
-                .select("p.txt-description")
+            val month = elementData.select("div.img-sect")
+                .select("div.date")
+                .select("span.month")
                 .text()
+            val day = elementData.select("div.img-sect")
+                .select("div.date")
+                .select("span.day")
+                .text()
+            val whenStartEvent = elementData.select("div.info-sect")
+                .select("div.text-box")
+                .select("p.txt-subject")
+                .text()
+            val order = "${month.split("월")[0]}${day}".toInt()
 
-            for (data in specialShoesList) {
-                if (data.shoesSubTitle == shoesSubTitle) {
-                    val whenStartEvent = elementData.select("div.info-sect")
-                        .select("div.text-box")
-                        .select("p.txt-subject")
-                        .text()
-                    val month = elementData.select("div.img-sect")
-                        .select("div.date")
-                        .select("span.month")
-                        .text()
-                    val day = elementData.select("div.img-sect")
-                        .select("div.date")
-                        .select("span.day")
-                        .text()
-                    val order = "${month.split("월")[0]}${day}".toInt()
-
-                    val specialShoesData = SpecialShoesDataModel(
-                        null,
-                        data.shoesSubTitle,
-                        data.shoesTitle,
-                        data.howToEvent,
-                        data.shoesUrl,
-                        data.shoesImage,
-                        month,
-                        day,
-                        whenStartEvent,
-                        order
-                    )
-
-                    if(!mDao.getAllSpecialShoesData().contains(specialShoesData)) {
-                        insertSpecialData(specialShoesData)
-                    }
-                }
-            }
+            val specialData = SpecialDataModel(null, specialUrl, month, day, whenStartEvent, order)
+            insertSpecialData(specialData)
         }
     }
 
@@ -293,7 +248,7 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(
                     newShoesData.shoesSubTitle
                 )
 
-                deleteSpecialData(SpecialShoesDataModel(0, newShoesData.shoesSubTitle, newShoesData.shoesTitle))
+                deleteSpecialData(SpecialDataModel(0, ordinaryData.shoesUrl!!))
             } else if (ordinaryData.shoesCategory == ShoesDataModel.CATEGORY_DRAW) { // DRAW -> DRAW END
                 val newShoesPrice = "DRAW가 종료 되었습니다."
 
@@ -312,6 +267,10 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(
                 newShoesData.shoesTitle,
                 newShoesData.shoesSubTitle
             )
+
+            if(mDao.getAllSpecialData().contains(SpecialDataModel(0, ordinaryData.shoesUrl!!))) { // Special이 존재 할 시
+                mDao.updateSpecialDataUrl(newShoesData.shoesUrl!!, ordinaryData.shoesUrl)
+            }
         }
     }
 
@@ -326,27 +285,27 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(
             for (shoesData in mDao.getAllShoesData()) {
 
                 if (!allShoesList.contains(shoesData)) {
-                    mDao.deleteShoesData(shoesData)
+                    mDao.deleteShoesData(shoesData.shoesTitle, shoesData.shoesSubTitle)
                 }
             }
         }
     }
 
-    private fun insertSpecialData(specialShoesData: SpecialShoesDataModel) {
-        mDao.insertSpecialShoesData(specialShoesData)
+    private fun insertSpecialData(specialData: SpecialDataModel) {
+        mDao.insertSpecialData(specialData)
     }
 
     // SpecialData 리스트를 갱신 함
     private fun checkSpecialData() {
-        for (shoesData in mDao.getAllSpecialShoesData()) {
+        for (specialData in mDao.getAllSpecialData()) {
 
-            if (!allShoesList.contains(ShoesDataModel(0, shoesData.shoesSubTitle, shoesData.shoesTitle))) {
-                deleteSpecialData(shoesData)
+            if (!allShoesList.contains(ShoesDataModel(0, "", "", null, null, specialData.specialUrl))) {
+                deleteSpecialData(specialData)
             }
         }
     }
 
-    private fun deleteSpecialData(deleteShoes: SpecialShoesDataModel) {
-        mDao.deleteSpecialShoesData(deleteShoes.shoesTitle, deleteShoes.shoesSubTitle)
+    private fun deleteSpecialData(delete: SpecialDataModel) {
+        mDao.deleteSpecialData(delete.specialUrl)
     }
 }

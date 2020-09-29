@@ -12,8 +12,8 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.nikealarm.nikedrawalarm.database.Dao
-import com.nikealarm.nikedrawalarm.database.SpecialShoesDataModel
 import com.nikealarm.nikedrawalarm.database.MyDataBase
+import com.nikealarm.nikedrawalarm.database.SpecialShoesDataModel
 import com.nikealarm.nikedrawalarm.other.Contents
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -108,7 +108,7 @@ class MyAlarmReceiver : BroadcastReceiver() {
         CoroutineScope(Dispatchers.IO).launch {
             for (position in mDao.getAllSpecialShoesData().indices) {
                 val shoesData = mDao.getAllSpecialShoesData()[position]
-                val preferenceKey = "${shoesData.shoesTitle}-${shoesData.shoesSubTitle}"
+                val preferenceKey = "${shoesData.ShoesTitle}-${shoesData.ShoesSubTitle}"
                 val timeTrigger = mSharedPreferences.getLong(preferenceKey, 0)
 
                 if (timeTrigger != 0L) {
@@ -159,21 +159,21 @@ class MyAlarmReceiver : BroadcastReceiver() {
         }
     }
 
-    private fun deleteDrawShoesData(preference: SharedPreferences, shoesData: SpecialShoesDataModel, context: Context) {
+    private fun deleteDrawShoesData(preference: SharedPreferences, data: SpecialShoesDataModel, context: Context) {
         val allowAlarmPreference = context.getSharedPreferences(Contents.PREFERENCE_NAME_ALLOW_ALARM, Context.MODE_PRIVATE)
 
         with(preference.edit()) {
-            remove("${shoesData.shoesTitle}-${shoesData.shoesSubTitle}")
+            remove("${data.ShoesTitle}-${data.ShoesSubTitle}")
             commit()
         }
 
         with(allowAlarmPreference.edit()) {
-            remove("${shoesData.shoesTitle}-${shoesData.shoesSubTitle}")
+            remove("${data.ShoesTitle}-${data.ShoesSubTitle}")
             commit()
         }
 
         CoroutineScope(Dispatchers.IO).launch {
-            mDao.deleteSpecialShoesData(shoesData.shoesTitle, shoesData.shoesSubTitle)
+            mDao.deleteSpecialData(data.ShoesUrl!!)
         }
     }
 }

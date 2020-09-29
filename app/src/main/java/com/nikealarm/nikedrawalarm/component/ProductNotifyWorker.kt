@@ -14,8 +14,8 @@ import androidx.work.Worker
 import androidx.work.WorkerParameters
 import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.database.Dao
-import com.nikealarm.nikedrawalarm.database.SpecialShoesDataModel
 import com.nikealarm.nikedrawalarm.database.MyDataBase
+import com.nikealarm.nikedrawalarm.database.SpecialShoesDataModel
 import com.nikealarm.nikedrawalarm.other.Contents
 import com.nikealarm.nikedrawalarm.ui.MainActivity
 import com.squareup.picasso.Picasso
@@ -43,7 +43,7 @@ class ProductNotifyWorker(context: Context, workerParams: WorkerParameters) : Wo
         return Result.success()
     }
 
-    private fun createNotification(specialShoesInfo: SpecialShoesDataModel, context: Context) {
+    private fun createNotification(specialInfo: SpecialShoesDataModel, context: Context) {
         val vibrate = LongArray(4).apply {
             set(0, 0)
             set(1, 100)
@@ -56,14 +56,14 @@ class ProductNotifyWorker(context: Context, workerParams: WorkerParameters) : Wo
             5000,
             Intent(context, MainActivity::class.java).also {
                 it.action = Contents.INTENT_ACTION_GOTO_WEBSITE
-                it.putExtra(Contents.DRAW_URL, specialShoesInfo.shoesUrl)
+                it.putExtra(Contents.DRAW_URL, specialInfo.ShoesUrl)
             },
             PendingIntent.FLAG_ONE_SHOT
         )
-        val bitmap = Picasso.get().load(Uri.parse(specialShoesInfo.shoesImage)).get()
+        val bitmap = Picasso.get().load(Uri.parse(specialInfo.ShoesImageUrl)).get()
         val notificationBuilder = NotificationCompat.Builder(context, "Default")
             .setSmallIcon(R.mipmap.ic_launcher)
-            .setContentTitle("${specialShoesInfo.shoesSubTitle} - ${specialShoesInfo.shoesTitle}")
+            .setContentTitle("${specialInfo.ShoesSubTitle} - ${specialInfo.ShoesTitle}")
             .setVibrate(vibrate)
             .setLargeIcon(bitmap)
             .setStyle(NotificationCompat.BigTextStyle())
@@ -78,7 +78,7 @@ class ProductNotifyWorker(context: Context, workerParams: WorkerParameters) : Wo
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 "Default",
-                specialShoesInfo.shoesTitle,
+                specialInfo.ShoesTitle,
                 NotificationManager.IMPORTANCE_DEFAULT
             )
             val notificationManager =
@@ -105,13 +105,13 @@ class ProductNotifyWorker(context: Context, workerParams: WorkerParameters) : Wo
         )
 
         with(timeSharedPreference.edit()) {
-            remove("${data.shoesTitle}-${data.shoesSubTitle}")
+            remove("${data.ShoesTitle}-${data.ShoesSubTitle}")
             commit()
         }
 
-        mDao.deleteSpecialShoesData(data.shoesTitle, data.shoesSubTitle)
+        mDao.deleteSpecialData(data.ShoesUrl!!)
         with(allowAlarmPreference.edit()) {
-            remove("${data.shoesTitle}-${data.shoesSubTitle}")
+            remove("${data.ShoesTitle}-${data.ShoesSubTitle}")
             commit()
         }
 

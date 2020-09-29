@@ -57,12 +57,12 @@ class SpecialShoesListAdapter(private val context: Context, private val fragment
         val swipeLayout = itemView.findViewById<SwipeRevealLayout>(R.id.upcomingList_swipeLayout)
 
         fun bindView(data: SpecialShoesDataModel?) {
-            monthText.text = data?.shoesMonth
-            dayText.text = data?.shoesDay
-            shoesTitleText.text = data?.shoesTitle
-            shoesSubTitleText.text = data?.shoesSubTitle
-            whenStartEventText.text = data?.shoesWhenEvent
-            Glide.with(itemView.context).load(data?.shoesImage).into(shoesImageView)
+            monthText.text = data?.SpecialMonth
+            dayText.text = data?.SpecialDay
+            shoesTitleText.text = data?.ShoesTitle
+            shoesSubTitleText.text = data?.ShoesSubTitle
+            whenStartEventText.text = data?.SpecialWhenEvent
+            Glide.with(itemView.context).load(data?.ShoesImageUrl).into(shoesImageView)
 
             if(data?.isOpened!!) { // 레이아웃 확장
                 if(subLayout.visibility == View.GONE) {
@@ -88,20 +88,20 @@ class SpecialShoesListAdapter(private val context: Context, private val fragment
                 }
             }
 
-            if (isChecked("${data.shoesTitle}-${data.shoesSubTitle}")) {
+            if (isChecked("${data.ShoesTitle}-${data.ShoesSubTitle}")) {
                 alarmImageButton.setImageResource(R.drawable.ic_baseline_notifications_active)
 
                 alarmImageButton.setOnClickListener {
-                    removeNotification(adapterPosition, "${data.shoesTitle}-${data.shoesSubTitle}")
+                    removeNotification(adapterPosition, "${data.ShoesTitle}-${data.ShoesSubTitle}")
                 }
             } else {
                 alarmImageButton.setImageResource(R.drawable.ic_baseline_notifications_none)
 
                 alarmImageButton.setOnClickListener {
                     setNotification(
-                        EventDay(data.shoesMonth!!, data.shoesDay!!, data.shoesWhenEvent!!),
+                        EventDay(data.SpecialMonth!!, data.SpecialDay!!, data.SpecialWhenEvent!!),
                         adapterPosition,
-                        "${data.shoesTitle}-${data.shoesSubTitle}"
+                        "${data.ShoesTitle}-${data.ShoesSubTitle}"
                     )
                 }
             }
@@ -367,7 +367,7 @@ class SpecialShoesListAdapter(private val context: Context, private val fragment
     }
 
     override fun getItemId(position: Int): Long {
-        return currentList?.get(position)?.id?.toLong()!!
+        return currentList?.get(position)?.ShoesId?.toLong()!!
     }
 
     fun scrollClose() { // 스크롤시 레이아웃 축소 시킴
@@ -385,13 +385,13 @@ class SpecialShoesListAdapter(private val context: Context, private val fragment
                 oldItem: SpecialShoesDataModel,
                 newItem: SpecialShoesDataModel
             ): Boolean =
-                oldItem.id == newItem.id
+                oldItem.ShoesId == newItem.ShoesId
 
             override fun areContentsTheSame(
                 oldItem: SpecialShoesDataModel,
                 newItem: SpecialShoesDataModel
             ): Boolean =
-                oldItem.shoesTitle == newItem.shoesTitle
+                oldItem.ShoesTitle == newItem.ShoesTitle
         }
     }
 }
