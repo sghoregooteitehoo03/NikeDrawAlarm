@@ -14,6 +14,7 @@ import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreferenceCompat
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
+import com.nikealarm.nikedrawalarm.BuildConfig
 import com.nikealarm.nikedrawalarm.component.MyAlarmReceiver
 import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.component.FindDrawWorker
@@ -34,6 +35,9 @@ class SettingScreenPreference : PreferenceFragmentCompat() {
             Context.MODE_PRIVATE
         )
 
+        val showVersionPreference = findPreference<Preference>(getString(R.string.setting_preference_version))?.apply {
+            summary = BuildConfig.VERSION_NAME
+        }
         // 알람 설정 스위치
         val allowAlarmSwitch =
             findPreference<SwitchPreferenceCompat>(getString(R.string.setting_preference_switchKey))?.apply {

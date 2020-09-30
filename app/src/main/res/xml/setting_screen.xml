@@ -16,10 +16,10 @@
         app:iconSpaceReserved="false"
         app:title="기타">
 
-<!--        <Preference-->
-<!--            app:iconSpaceReserved="false"-->
-<!--            app:key="@string/setting_preference_share"-->
-<!--            app:title="공유하기" />-->
+        <!--        <Preference-->
+        <!--            app:iconSpaceReserved="false"-->
+        <!--            app:key="@string/setting_preference_share"-->
+        <!--            app:title="공유하기" />-->
 
         <Preference
             app:iconSpaceReserved="false"
@@ -29,7 +29,7 @@
         <Preference
             app:enabled="false"
             app:iconSpaceReserved="false"
-            app:summary="@string/app_version"
+            app:key="@string/setting_preference_version"
             app:title="버전" />
     </PreferenceCategory>
 </PreferenceScreen>
