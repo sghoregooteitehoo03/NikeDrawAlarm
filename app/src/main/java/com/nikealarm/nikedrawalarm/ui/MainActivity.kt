@@ -11,6 +11,7 @@ import com.nikealarm.nikedrawalarm.other.Contents
 import kotlinx.android.synthetic.main.activity_main.*
 
 /*
+* UPCOMING에서 카테고리별 보여주기 구현(Sppiner 이용)
 * UI 수정 및 최적화
 * 코드 최적화
 * */

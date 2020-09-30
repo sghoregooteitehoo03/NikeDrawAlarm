@@ -69,22 +69,34 @@
                         app:layout_constraintTop_toTopOf="parent">
 
                         <TextView
-                            android:id="@+id/upcomingList_monthText"
+                            android:id="@+id/upcomingList_categoryText"
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
+                            android:layout_height="0dp"
+                            android:layout_weight="1"
                             android:gravity="center"
                             android:textColor="#ffffff"
-                            android:textSize="35sp"
+                            android:textStyle="bold"
+                            tools:text="COMING" />
+
+                        <TextView
+                            android:id="@+id/upcomingList_monthText"
+                            android:layout_width="match_parent"
+                            android:layout_height="0dp"
+                            android:layout_weight="2"
+                            android:gravity="center"
+                            android:textColor="#ffffff"
+                            android:textSize="28sp"
                             android:textStyle="bold"
                             tools:text="9월" />
 
                         <TextView
                             android:id="@+id/upcomingList_dayText"
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
+                            android:layout_height="0dp"
+                            android:layout_weight="2"
                             android:gravity="center"
                             android:textColor="#ffffff"
-                            android:textSize="35sp"
+                            android:textSize="28sp"
                             android:textStyle="bold"
                             tools:text="05" />
                     </LinearLayout>

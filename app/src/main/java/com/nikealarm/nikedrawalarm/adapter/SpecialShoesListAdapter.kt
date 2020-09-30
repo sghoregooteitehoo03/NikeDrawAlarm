@@ -27,6 +27,7 @@ import com.chauthai.swipereveallayout.ViewBinderHelper
 import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.component.MyAlarmReceiver
 import com.nikealarm.nikedrawalarm.database.EventDay
+import com.nikealarm.nikedrawalarm.database.ShoesDataModel
 import com.nikealarm.nikedrawalarm.database.SpecialShoesDataModel
 import com.nikealarm.nikedrawalarm.other.Contents
 import com.nikealarm.nikedrawalarm.ui.dialog.AlarmDialog
@@ -43,6 +44,7 @@ class SpecialShoesListAdapter(private val context: Context, private val fragment
     inner class SpecialShoesListViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val monthText = itemView.findViewById<TextView>(R.id.upcomingList_monthText)
         val dayText = itemView.findViewById<TextView>(R.id.upcomingList_dayText)
+        val categoryText = itemView.findViewById<TextView>(R.id.upcomingList_categoryText)
         val shoesTitleText = itemView.findViewById<TextView>(R.id.upcomingList_shoesTitle_text)
         val shoesSubTitleText =
             itemView.findViewById<TextView>(R.id.upcomingList_shoesSubTitle_text)
@@ -59,6 +61,11 @@ class SpecialShoesListAdapter(private val context: Context, private val fragment
         fun bindView(data: SpecialShoesDataModel?) {
             monthText.text = data?.SpecialMonth
             dayText.text = data?.SpecialDay
+            categoryText.text = when(data?.ShoesCategory) {
+                ShoesDataModel.CATEGORY_DRAW -> "DRAW"
+                ShoesDataModel.CATEGORY_COMING_SOON -> "COMING"
+                else -> "DRAW"
+            }
             shoesTitleText.text = data?.ShoesTitle
             shoesSubTitleText.text = data?.ShoesSubTitle
             whenStartEventText.text = data?.SpecialWhenEvent
