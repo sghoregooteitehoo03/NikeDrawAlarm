@@ -80,7 +80,8 @@ class SpecialShoesListAdapter(private val context: Context, private val fragment
             }
 
             mainLayout.setOnClickListener {
-                data.isOpened = !data.isOpened
+                currentList?.get(adapterPosition)?.isOpened = !currentList?.get(adapterPosition)!!.isOpened
+                Log.i("CheckList", "${data.isOpened}")
 
                 if(previousPosition != -1 && previousPosition != adapterPosition) { // 다른 리스트를 눌렀을 때
                     currentList?.get(previousPosition)?.isOpened = !currentList?.get(previousPosition)!!.isOpened
@@ -384,6 +385,15 @@ class SpecialShoesListAdapter(private val context: Context, private val fragment
 
             previousPosition = -1
         }
+    }
+
+    fun changeCategory() {
+        if(previousPosition != -1) {
+            currentList?.get(previousPosition)?.isOpened = false
+            previousPosition = -1
+        }
+
+        notifyDataSetChanged()
     }
 
     companion object {

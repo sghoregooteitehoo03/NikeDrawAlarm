@@ -258,6 +258,7 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(
                     newShoesData.shoesTitle,
                     newShoesData.shoesSubTitle
                 )
+                mDao.deleteSpecialData(newShoesData.shoesUrl!!)
             }
         }
 

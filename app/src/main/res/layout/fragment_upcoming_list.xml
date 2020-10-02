@@ -16,7 +16,30 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
-        app:title="UPCOMING" />
+        app:title="UPCOMING">
+
+        <Spinner
+            android:id="@+id/upcomingFrag_spinner"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_marginEnd="8dp"
+            android:spinnerMode="dropdown" />
+    </androidx.appcompat.widget.Toolbar>
+
+    <TextView
+        android:id="@+id/upcomingFrag_noitemText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:alpha="0"
+        android:text="예정된 상품이 없습니다."
+        android:textColor="#000000"
+        android:textSize="25sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/upcomingFrag_toolbar" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/upcomingFrag_list"

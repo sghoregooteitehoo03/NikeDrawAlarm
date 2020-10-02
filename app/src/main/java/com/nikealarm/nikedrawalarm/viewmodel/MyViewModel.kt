@@ -5,6 +5,7 @@ import androidx.arch.core.util.Function
 import androidx.lifecycle.*
 import androidx.paging.PagedList
 import com.nikealarm.nikedrawalarm.database.ShoesDataModel
+import com.nikealarm.nikedrawalarm.database.SpecialShoesDataModel
 
 class MyViewModel(application: Application) : AndroidViewModel(application) {
     private val repository =
@@ -45,5 +46,15 @@ class MyViewModel(application: Application) : AndroidViewModel(application) {
     val shoesImageUrl = MutableLiveData<String>()
 
     // Special 목록
-    val specialShoesList = repository.getAllSpecialShoesData()
+    val upcomingCategory = MutableLiveData<String>()
+
+    val specialShoesList: LiveData<PagedList<SpecialShoesDataModel>> = Transformations.switchMap(
+        upcomingCategory, Function {
+            if(it == "DEFAULT") {
+                repository.getAllSpecialShoesData()
+            } else {
+                repository.getSpecialShoesData(it)
+            }
+        }
+    )
 }

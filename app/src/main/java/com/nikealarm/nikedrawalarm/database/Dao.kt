@@ -13,6 +13,9 @@ interface Dao {
     @Query("SELECT ShoesId, ShoesSubTitle, ShoesTitle, ShoesPrice, ShoesImageUrl, ShoesUrl, ShoesCategory, SpecialMonth, SpecialDay, SpecialWhenEvent, SpecialOrder FROM ShoesDataModel INNER JOIN SpecialDataModel ON ShoesUrl = SpecialUrl ORDER BY SpecialOrder ASC")
     fun getAllSpecialShoesPagingData(): DataSource.Factory<Int, SpecialShoesDataModel>
 
+    @Query("SELECT ShoesId, ShoesSubTitle, ShoesTitle, ShoesPrice, ShoesImageUrl, ShoesUrl, ShoesCategory, SpecialMonth, SpecialDay, SpecialWhenEvent, SpecialOrder FROM ShoesDataModel INNER JOIN SpecialDataModel ON ShoesUrl = SpecialUrl WHERE ShoesCategory = :upcomingCategory ORDER BY SpecialOrder ASC")
+    fun getSpecialShoesPagingData(upcomingCategory: String): DataSource.Factory<Int, SpecialShoesDataModel>
+
     // SpecialData
     @Query("SELECT * FROM SpecialDataModel")
     fun getAllSpecialData(): List<SpecialDataModel>
