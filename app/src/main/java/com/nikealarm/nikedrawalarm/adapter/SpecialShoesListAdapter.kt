@@ -33,13 +33,18 @@ import com.nikealarm.nikedrawalarm.other.Contents
 import com.nikealarm.nikedrawalarm.ui.dialog.AlarmDialog
 import java.util.*
 
-class SpecialShoesListAdapter(private val context: Context, private val fragmentManager: FragmentManager) :
+class SpecialShoesListAdapter(private val context: Context) :
     PagedListAdapter<SpecialShoesDataModel, SpecialShoesListAdapter.SpecialShoesListViewHolder>(
         diffCallback
     ) {
 
+    interface AlarmListener {
+        fun onAlarmListener(specialShoesData: SpecialShoesDataModel?, pos: Int, isChecked: Boolean)
+    }
+
     private var previousPosition = -1 // 이전에 선택한 리스트뷰에 위치
     private val viewBinderHelper = ViewBinderHelper()
+    private lateinit var alarmListener: AlarmListener
 
     inner class SpecialShoesListViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val monthText = itemView.findViewById<TextView>(R.id.upcomingList_monthText)
@@ -100,17 +105,13 @@ class SpecialShoesListAdapter(private val context: Context, private val fragment
                 alarmImageButton.setImageResource(R.drawable.ic_baseline_notifications_active)
 
                 alarmImageButton.setOnClickListener {
-                    removeNotification(adapterPosition, "${data.ShoesTitle}-${data.ShoesSubTitle}")
+                    alarmListener.onAlarmListener(data, adapterPosition, true)
                 }
             } else {
                 alarmImageButton.setImageResource(R.drawable.ic_baseline_notifications_none)
 
                 alarmImageButton.setOnClickListener {
-                    setNotification(
-                        EventDay(data.SpecialMonth!!, data.SpecialDay!!, data.SpecialWhenEvent!!),
-                        adapterPosition,
-                        "${data.ShoesTitle}-${data.ShoesSubTitle}"
-                    )
+                    alarmListener.onAlarmListener(data, adapterPosition, false)
                 }
             }
         }
@@ -125,7 +126,7 @@ class SpecialShoesListAdapter(private val context: Context, private val fragment
             collapseAnimation()
         }
 
-        // 애니메이션 설정
+        // 애니메이션 설정 시작
         private fun expandAnimation() {
             with(moreInfoButton) {
                 animate().setDuration(200)
@@ -185,41 +186,7 @@ class SpecialShoesListAdapter(private val context: Context, private val fragment
                 startAnimation(animation)
             }
         }
-
-        // 데이터베이스에 저장
-        private fun setPreference(preferenceKey: String?, timeTrigger: Long = 0L) {
-            val isAllowAlarm = !isChecked(preferenceKey)
-
-            val allowAlarmPreference = context.getSharedPreferences(
-                Contents.PREFERENCE_NAME_ALLOW_ALARM,
-                Context.MODE_PRIVATE
-            )
-            val timeSharedPreference =
-                context.getSharedPreferences(Contents.PREFERENCE_NAME_TIME, Context.MODE_PRIVATE)
-
-            if (isAllowAlarm) {
-                with(timeSharedPreference.edit()) {
-                    putLong(preferenceKey, timeTrigger)
-                    commit()
-                }
-
-                with(allowAlarmPreference.edit()) {
-                    this.putBoolean(preferenceKey, isAllowAlarm)
-                    this.commit()
-                }
-            } else {
-                with(timeSharedPreference.edit()) {
-                    this.remove(preferenceKey)
-                    commit()
-                }
-
-                with(allowAlarmPreference.edit()) {
-                    this.remove(preferenceKey)
-                    this.commit()
-                }
-            }
-
-        }
+        // 애니메이션 설정 끝
 
         private fun isChecked(preferenceKey: String?): Boolean {
             val allowAlarmPreference = context.getSharedPreferences(
@@ -227,137 +194,6 @@ class SpecialShoesListAdapter(private val context: Context, private val fragment
                 Context.MODE_PRIVATE
             )
             return allowAlarmPreference.getBoolean(preferenceKey, false)
-        }
-
-        // 알람 설정 알림창
-        private fun setNotification(eventDay: EventDay, requestCode: Int, preferenceKey: String?) {
-            val timeTrigger = getTimeInMillis(eventDay)
-            AlarmDialog.getAlarmDialog("알림 설정", "이 상품의 알림을 설정하시겠습니까?")
-                .show(fragmentManager, AlarmDialog.ALARM_DIALOG_TAG)
-
-            AlarmDialog.setOnCheckClickListener(object : AlarmDialog.CheckClickListener {
-                override fun onCheckClickListener(dialog: Dialog) {
-                    setAlarm(timeTrigger, requestCode)
-                    setPreference(preferenceKey, timeTrigger)
-
-                    notifyItemChanged(adapterPosition)
-                    dialog.dismiss()
-                }
-            })
-        }
-
-        // 알람 취소 알림창
-        private fun removeNotification(requestCode: Int, preferenceKey: String?) {
-            AlarmDialog.getAlarmDialog("알림 설정", "이 상품의 알림을 취소하시겠습니까?")
-                .show(fragmentManager, AlarmDialog.ALARM_DIALOG_TAG)
-
-            AlarmDialog.setOnCheckClickListener(object : AlarmDialog.CheckClickListener {
-                override fun onCheckClickListener(dialog: Dialog) {
-                    removeAlarm(requestCode)
-                    setPreference(preferenceKey)
-
-                    notifyItemChanged(adapterPosition)
-                    dialog.dismiss()
-                }
-            })
-        }
-
-        // 알람 설정
-        private fun setAlarm(timeTrigger: Long, requestCode: Int) {
-
-            val alarmIntent = Intent(context, MyAlarmReceiver::class.java).apply {
-                action = Contents.INTENT_ACTION_PRODUCT_ALARM
-                putExtra(Contents.INTENT_KEY_POSITION, requestCode)
-            }
-            val alarmPendingIntent = PendingIntent.getBroadcast(
-                context,
-                requestCode,
-                alarmIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT
-            )
-            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                alarmManager.setExactAndAllowWhileIdle(
-                    AlarmManager.RTC_WAKEUP,
-                    timeTrigger,
-                    alarmPendingIntent
-                )
-            } else {
-                alarmManager.setExact(
-                    AlarmManager.RTC_WAKEUP,
-                    timeTrigger,
-                    alarmPendingIntent
-                )
-            }
-        }
-
-        // 알람 삭제
-        private fun removeAlarm(requestCode: Int) {
-            val alarmIntent = Intent(context, MyAlarmReceiver::class.java).apply {
-                action = Contents.INTENT_ACTION_PRODUCT_ALARM
-                putExtra(Contents.INTENT_KEY_POSITION, requestCode)
-            }
-
-            // 이미 설정된 알람이 있는지 확인
-            if (checkExistAlarm(alarmIntent, requestCode)) {
-
-                // 설정된 알람이 있으면 삭제함
-                val alarmPendingIntent = PendingIntent.getBroadcast(
-                    context,
-                    requestCode,
-                    alarmIntent,
-                    PendingIntent.FLAG_UPDATE_CURRENT
-                )
-
-                val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-                alarmManager.cancel(alarmPendingIntent)
-                alarmPendingIntent.cancel()
-
-                Log.i("RemoveAlarm", "동작")
-            }
-        }
-
-        // 알림 확인
-        private fun checkExistAlarm(mIntent: Intent, requestCode: Int): Boolean {
-            val alarmPendingIntent = PendingIntent.getBroadcast(
-                context,
-                requestCode,
-                mIntent,
-                PendingIntent.FLAG_NO_CREATE
-            )
-
-            return alarmPendingIntent?.let {
-                true
-            }?:let {
-                false
-            }
-        }
-
-        private fun getTimeInMillis(eventDay: EventDay): Long {
-            val month = if(eventDay.eventMonth[1].toString() != "월") {
-                "${eventDay.eventMonth[0]}${eventDay.eventMonth[1]}".toIntOrNull() // 10월, 11월, 12월 처리
-            } else {
-                eventDay.eventMonth[0].toString().toIntOrNull()
-            }
-            val day = eventDay.eventDay.toIntOrNull()
-
-            val time = eventDay.eventTime.substring(2, 8).trim().split(":")
-            val hour = time[0].toIntOrNull()
-            val minute = time[1].toIntOrNull()
-
-            val mCalendar = Calendar.getInstance().apply {
-                if (month != null && day != null && hour != null && minute != null) {
-                    set(Calendar.MONTH, month - 1)
-                    set(Calendar.DAY_OF_MONTH, day)
-                    set(Calendar.HOUR_OF_DAY, hour)
-                    set(Calendar.MINUTE, minute)
-                    set(Calendar.SECOND, 0)
-                    set(Calendar.MILLISECOND, 0)
-                }
-            }
-
-            return mCalendar.timeInMillis
         }
     }
 
@@ -378,13 +214,8 @@ class SpecialShoesListAdapter(private val context: Context, private val fragment
         return currentList?.get(position)?.ShoesId?.toLong()!!
     }
 
-    fun scrollClose() { // 스크롤시 레이아웃 축소 시킴
-        if(previousPosition != -1) { // 레이아웃이 확장 되있을 시
-            getItem(previousPosition)!!.isOpened = false
-            notifyItemChanged(previousPosition)
-
-            previousPosition = -1
-        }
+    fun setOnAlarmListener(_alarmListener: AlarmListener) {
+        alarmListener = _alarmListener
     }
 
     fun changeCategory() {

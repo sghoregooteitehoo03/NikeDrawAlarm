@@ -8,6 +8,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Build
 import android.util.Log
+import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
@@ -48,7 +49,11 @@ class MyAlarmReceiver : BroadcastReceiver() {
                     val productNotifyWorkRequest = OneTimeWorkRequestBuilder<ProductNotifyWorker>()
                         .setInputData(workDataOf(Contents.WORKER_INPUT_DATA_KEY to dataPosition))
                         .build()
-                    WorkManager.getInstance(context).enqueue(productNotifyWorkRequest)
+                    WorkManager.getInstance(context).enqueueUniqueWork(
+                        "ProductWork",
+                        ExistingWorkPolicy.KEEP,
+                        productNotifyWorkRequest
+                    )
                 }
             }
         }

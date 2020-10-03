@@ -11,7 +11,6 @@ import com.nikealarm.nikedrawalarm.other.Contents
 import kotlinx.android.synthetic.main.activity_main.*
 
 /*
-* 알림설정 데이터베이스 접근 수정
 * UPCOMING 정보 시 분 초 표시
 * 진행중인 상품 알려주기
 * UI 수정 및 최적화
