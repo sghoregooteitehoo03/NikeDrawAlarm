@@ -79,7 +79,7 @@ class FindDrawWorker(context: Context, workerParams: WorkerParameters) : Worker(
                         .get()
 
                     // 신발 정보를 가져옴
-                    val shoesPrice = innerDoc.select("div.price") // draw 신발 가격
+                    val shoesPrice = "가격 : " + innerDoc.select("div.price") // draw 신발 가격
                         .text()
                     val shoesImageUrl = innerDoc.select("li.uk-width-1-2") // draw 신발 이미지
                         .select("img")
@@ -95,7 +95,7 @@ class FindDrawWorker(context: Context, workerParams: WorkerParameters) : Worker(
                             .text() + "\n"
                     }
 
-                    howToEvent += "\n$shoesPrice"
+                    howToEvent += shoesPrice
 
                     val shoesData =
                         ShoesDataModel(

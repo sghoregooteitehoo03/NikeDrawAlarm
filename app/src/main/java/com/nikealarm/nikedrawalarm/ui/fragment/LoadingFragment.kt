@@ -53,18 +53,32 @@ class LoadingFragment : Fragment() {
         WorkManager.getInstance(requireContext())
             .getWorkInfosByTagLiveData(Contents.WORKER_PARSING_DATA)
             .observe(viewLifecycleOwner, Observer {
-                if (it[0].state == WorkInfo.State.SUCCEEDED) {
-                    isStarted = true
-                    findNavController().navigate(R.id.action_loadingFragment_to_drawListFragment)
-                } else if(it[0].state == WorkInfo.State.FAILED) {
-                    failedWorkAnimation()
-                } else if(it[0] != null) {
-                    val progress = it[0].progress
-                    val value = progress.getInt(Contents.WORKER_PARSING_DATA_OUTPUT_KEY, 0)
+                when (it[0].state) {
+                    WorkInfo.State.SUCCEEDED -> { // 로딩 성공 시
+                        isStarted = true
+                        findNavController().navigate(R.id.action_loadingFragment_to_drawListFragment)
+                    }
+                    WorkInfo.State.FAILED -> { // 로딩 실패 시
+                        failedWorkAnimation()
+                    }
+                    WorkInfo.State.RUNNING -> { // 로딩 중
+                        val progress = it[0].progress
+                        val value = progress.getInt(Contents.WORKER_PARSING_DATA_OUTPUT_KEY, 0)
 
-                    loadingFrag_percent_textView.text = "$value%"
+                        loadingFrag_percent_textView.text = "$value%"
+                    }
+                    else -> {}
                 }
             })
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        if(!isStarted) { // 로딩중에 앱을 나갔을 경우
+            WorkManager.getInstance(requireContext())
+                .cancelUniqueWork(Contents.WORKER_PARSING_DATA)
+        }
     }
 
     private fun startWork() {
@@ -121,4 +135,5 @@ class LoadingFragment : Fragment() {
                 .withLayer()
         }
     }
+    // 애니메이션 설정 끝
 }

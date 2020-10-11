@@ -144,10 +144,10 @@ class SettingScreenPreference : PreferenceFragmentCompat() {
 
             mAlarmManager.cancel(alarmPendingIntent)
             alarmPendingIntent.cancel()
-            removePreference()
 
             Log.i("RemoveAlarm", "동작")
         }
+        removePreference()
     }
 
     // 알림 확인

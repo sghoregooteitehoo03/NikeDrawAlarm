@@ -6,7 +6,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 
-@Database(entities = [SpecialDataModel::class, ShoesDataModel::class], version = 4)
+@Database(entities = [SpecialDataModel::class, ShoesDataModel::class], version = 5)
 @TypeConverters(Converter::class)
 abstract class MyDataBase : RoomDatabase() {
     abstract fun getDao(): Dao

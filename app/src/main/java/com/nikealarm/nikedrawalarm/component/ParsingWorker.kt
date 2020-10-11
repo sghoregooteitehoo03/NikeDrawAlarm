@@ -24,8 +24,11 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(
         mDao = MyDataBase.getDatabase(applicationContext)!!.getDao()
 
         parsingData() // 데이터를 파싱함
-        syncData() // 데이터를 갱신함
+        if(isStopped) { // cancel 됐을 때
+            return Result.failure()
+        }
 
+        syncData() // 데이터를 갱신함
 
         Log.i("CheckSize", "${mDao.getAllShoesData().size}")
         Log.i("CheckDrawSize", "${mDao.getAllSpecialData().size}")
@@ -55,6 +58,10 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(
         var progress = 0.0
 
         for (elementData in elementsData) {
+            if(isStopped) { // cancel 됐을 때
+                return
+            }
+
             val shoesInfo = elementData.select("div.info-sect") // 신발 정보
                 .select("div.btn-box")
                 .select("span")
@@ -101,7 +108,7 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(
                     .get()
 
                 // 신발 정보를 가져옴
-                val shoesPrice = innerDoc.select("div.price") // 신발 가격
+                val shoesPrice = "가격 : " + innerDoc.select("div.price") // 신발 가격
                     .text()
 
                 val shoesImageUrl = innerDoc.select("li.uk-width-1-2") // 신발 이미지
@@ -120,6 +127,7 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(
                                 .eq(j)
                                 .text() + "\n"
                         }
+                        howToEvent += shoesPrice
 
                         insertShoesData = ShoesDataModel(
                             null,
@@ -171,6 +179,7 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(
                 insertData(insertShoesData)
             }
 
+
             progress += 2.5
 
             setProgressAsync(workDataOf(Contents.WORKER_PARSING_DATA_OUTPUT_KEY to progress.toInt()))
@@ -187,6 +196,10 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(
         val elementsData = doc.select("div.launch-list-item")
 
         for (elementData in elementsData) {
+            if(isStopped) { // cancel 됐을 때
+                return
+            }
+
             val category = elementData.select("div.info-sect")
                 .select("div.btn-box")
                 .select("span.btn-link")
@@ -226,6 +239,31 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(
             }
         }
     }
+
+    // 갱신 설정
+    // ShoesData 리스트를 갱신 함
+    private fun checkShoesData() {
+
+        if (allShoesList.size < mDao.getAllShoesData().size) {
+            for (shoesData in mDao.getAllShoesData()) {
+
+                if (!allShoesList.contains(shoesData)) {
+                    mDao.deleteShoesData(shoesData.shoesTitle, shoesData.shoesSubTitle)
+                }
+            }
+        }
+    }
+
+    // SpecialData 리스트를 갱신 함
+    private fun checkSpecialData() {
+        for (specialData in mDao.getAllSpecialData()) {
+
+            if (!allShoesList.contains(ShoesDataModel(0, "", "", null, null, specialData.specialUrl))) {
+                deleteSpecialData(specialData)
+            }
+        }
+    }
+    // 갱신 끝
 
     // 데이터베이스 설정
     private fun insertData(shoesData: ShoesDataModel) {
@@ -279,34 +317,12 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(
         mDao.clearShoesData()
     }
 
-    // ShoesData 리스트를 갱신 함
-    private fun checkShoesData() {
-
-        if (allShoesList.size < mDao.getAllShoesData().size) {
-            for (shoesData in mDao.getAllShoesData()) {
-
-                if (!allShoesList.contains(shoesData)) {
-                    mDao.deleteShoesData(shoesData.shoesTitle, shoesData.shoesSubTitle)
-                }
-            }
-        }
-    }
-
     private fun insertSpecialData(specialData: SpecialDataModel) {
         mDao.insertSpecialData(specialData)
-    }
-
-    // SpecialData 리스트를 갱신 함
-    private fun checkSpecialData() {
-        for (specialData in mDao.getAllSpecialData()) {
-
-            if (!allShoesList.contains(ShoesDataModel(0, "", "", null, null, specialData.specialUrl))) {
-                deleteSpecialData(specialData)
-            }
-        }
     }
 
     private fun deleteSpecialData(delete: SpecialDataModel) {
         mDao.deleteSpecialData(delete.specialUrl)
     }
+    // 데이터베이스 설정 끝
 }

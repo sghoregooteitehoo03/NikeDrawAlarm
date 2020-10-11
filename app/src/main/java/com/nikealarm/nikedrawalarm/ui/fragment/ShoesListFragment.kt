@@ -211,7 +211,6 @@ class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
             if (drawer.isDrawerOpen(GravityCompat.START)) {
                 drawer.closeDrawer(GravityCompat.START)
             } else {
-//                terminationApp()
                 val tempTime = System.currentTimeMillis()
                 val intervalTime = tempTime - backPressedTime
 
