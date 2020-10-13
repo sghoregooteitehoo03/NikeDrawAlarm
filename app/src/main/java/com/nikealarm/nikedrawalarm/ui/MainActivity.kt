@@ -12,7 +12,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 /*
 * 자동응모 기능
-* UPCOMING 정보 시 분 초 표시
+* UPCOMING 정보 시 분 초 표시 (서버 필요)
 * 진행중인 상품 알려주기
 * UI 수정 및 최적화
 * 코드 최적화
