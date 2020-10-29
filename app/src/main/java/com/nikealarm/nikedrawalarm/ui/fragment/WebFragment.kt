@@ -72,7 +72,11 @@ class WebFragment : Fragment() {
                 mainWebView.goBack()
             } else {
                 super.setEnabled(false)
-                requireActivity().onBackPressed()
+                try {
+                    requireActivity().onBackPressed()
+                } catch (e: IllegalStateException) {
+                    requireActivity().finish()
+                }
             }
         }
     }

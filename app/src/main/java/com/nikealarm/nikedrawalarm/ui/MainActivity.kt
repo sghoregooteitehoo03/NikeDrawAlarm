@@ -8,15 +8,19 @@ import android.os.Bundle
 import androidx.navigation.fragment.findNavController
 import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.other.Contents
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_main.*
 
 /*
+* sold out 표시(리스트에선 빨간색으로 강조 표시) (O)
+* HILT 이용
 * 자동응모 기능
 * UPCOMING 정보 시 분 초 표시 (서버 필요)
 * 진행중인 상품 알려주기
 * UI 수정 및 최적화
 * 코드 최적화
 * */
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {

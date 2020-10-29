@@ -5,6 +5,7 @@ import android.app.Dialog
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
@@ -34,16 +35,26 @@ import com.nikealarm.nikedrawalarm.other.Contents
 import com.nikealarm.nikedrawalarm.ui.MainActivity
 import com.nikealarm.nikedrawalarm.ui.dialog.AlarmDialog
 import com.nikealarm.nikedrawalarm.viewmodel.MyViewModel
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_upcoming_list.*
 import java.util.*
+import javax.inject.Inject
+import javax.inject.Named
 
+@AndroidEntryPoint
 class UpcomingListFragment : Fragment(), SpecialShoesListAdapter.AlarmListener {
-
     private lateinit var mViewModel: MyViewModel
     private lateinit var mAdapter: SpecialShoesListAdapter
 
     private var isStarted = false
     private lateinit var specialShoesList: PagedList<SpecialShoesDataModel>
+
+    @Inject
+    @Named(Contents.PREFERENCE_NAME_TIME)
+    lateinit var timePreferences: SharedPreferences
+    @Inject
+    @Named(Contents.PREFERENCE_NAME_ALLOW_ALARM)
+    lateinit var allowAlarmPreferences: SharedPreferences
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -60,7 +71,7 @@ class UpcomingListFragment : Fragment(), SpecialShoesListAdapter.AlarmListener {
 
         // 인스턴스 설정
         mViewModel = ViewModelProvider(this)[MyViewModel::class.java]
-        mAdapter = SpecialShoesListAdapter(requireContext()).apply {
+        mAdapter = SpecialShoesListAdapter(requireContext(), allowAlarmPreferences).apply {
             setHasStableIds(true)
             setOnAlarmListener(this@UpcomingListFragment)
         }
@@ -294,40 +305,26 @@ class UpcomingListFragment : Fragment(), SpecialShoesListAdapter.AlarmListener {
 
     // 데이터베이스에 저장
     private fun setPreference(preferenceKey: String?, timeTrigger: Long) {
-        val allowAlarmPreference = requireContext().getSharedPreferences(
-            Contents.PREFERENCE_NAME_ALLOW_ALARM,
-            Context.MODE_PRIVATE
-        )
-        val timeSharedPreference =
-            requireContext().getSharedPreferences(Contents.PREFERENCE_NAME_TIME, Context.MODE_PRIVATE)
-
-        with(timeSharedPreference.edit()) {
+        with(timePreferences.edit()) {
             putLong(preferenceKey, timeTrigger)
             commit()
         }
 
-        with(allowAlarmPreference.edit()) {
-            this.putBoolean(preferenceKey, true)
-            this.commit()
+        with(allowAlarmPreferences.edit()) {
+            putBoolean(preferenceKey, true)
+            commit()
         }
     }
 
     private fun removePreference(preferenceKey: String?) {
-        val allowAlarmPreference = requireContext().getSharedPreferences(
-            Contents.PREFERENCE_NAME_ALLOW_ALARM,
-            Context.MODE_PRIVATE
-        )
-        val timeSharedPreference =
-            requireContext().getSharedPreferences(Contents.PREFERENCE_NAME_TIME, Context.MODE_PRIVATE)
-
-        with(timeSharedPreference.edit()) {
-            this.remove(preferenceKey)
+        with(timePreferences.edit()) {
+            remove(preferenceKey)
             commit()
         }
 
-        with(allowAlarmPreference.edit()) {
-            this.remove(preferenceKey)
-            this.commit()
+        with(allowAlarmPreferences.edit()) {
+            remove(preferenceKey)
+            commit()
         }
     }
     // 알람 끝

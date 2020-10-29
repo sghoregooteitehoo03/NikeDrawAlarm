@@ -20,7 +20,7 @@ import androidx.work.*
 import com.bumptech.glide.Glide
 import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.adapter.ImageListPagerAdapter
-import com.nikealarm.nikedrawalarm.component.GetImageWorker
+import com.nikealarm.nikedrawalarm.component.worker.GetImageWorker
 import com.nikealarm.nikedrawalarm.other.Contents
 import com.nikealarm.nikedrawalarm.viewmodel.MyViewModel
 import kotlinx.android.synthetic.main.fragment_image_list.*
