@@ -4,10 +4,8 @@ import android.app.Application
 import androidx.lifecycle.LiveData
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
-import com.nikealarm.nikedrawalarm.database.MyDataBase
-import com.nikealarm.nikedrawalarm.database.ShoesDataModel
-import com.nikealarm.nikedrawalarm.database.SpecialDataModel
-import com.nikealarm.nikedrawalarm.database.SpecialShoesDataModel
+import com.nikealarm.nikedrawalarm.database.*
+import javax.inject.Inject
 
 class MyRepository(application: Application) {
     private val mDao = MyDataBase.getDatabase(application)!!.getDao()

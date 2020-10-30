@@ -40,7 +40,7 @@ class ResetProductAlarmWorker @WorkerInject constructor(
             val timeTrigger = timePreferences.getLong(preferenceKey, 0)
 
             if (timeTrigger != 0L) {
-                Log.i("CheckTime", "${timeTrigger}")
+                Log.i("CheckTime", "$timeTrigger")
                 if (timeTrigger < System.currentTimeMillis()) {
                     deleteDrawShoesData(shoesData)
                     continue

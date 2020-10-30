@@ -1,6 +1,8 @@
 package com.nikealarm.nikedrawalarm.other.di
 
 import android.content.Context
+import androidx.room.Room
+import com.nikealarm.nikedrawalarm.database.MyDataBase
 import com.nikealarm.nikedrawalarm.other.Contents
 import dagger.Module
 import dagger.Provides
@@ -31,4 +33,20 @@ object AppModule {
             Contents.PREFERENCE_NAME_ALLOW_ALARM,
             Context.MODE_PRIVATE
         )
+
+    @Singleton
+    @Provides
+    fun provideDatabase(@ApplicationContext context: Context) =
+        Room.databaseBuilder(
+            context,
+            MyDataBase::class.java,
+            "database"
+            )
+            .fallbackToDestructiveMigration()
+            .build()
+
+    @Singleton
+    @Provides
+    fun provideDao(database: MyDataBase) =
+        database.getDao()
 }

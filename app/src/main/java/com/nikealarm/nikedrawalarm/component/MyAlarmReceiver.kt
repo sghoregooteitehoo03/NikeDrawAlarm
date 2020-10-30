@@ -8,21 +8,14 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Build
 import android.util.Log
-import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.nikealarm.nikedrawalarm.component.worker.FindDrawWorker
 import com.nikealarm.nikedrawalarm.component.worker.ProductNotifyWorker
 import com.nikealarm.nikedrawalarm.component.worker.ResetProductAlarmWorker
-import com.nikealarm.nikedrawalarm.database.Dao
-import com.nikealarm.nikedrawalarm.database.MyDataBase
-import com.nikealarm.nikedrawalarm.database.SpecialShoesDataModel
 import com.nikealarm.nikedrawalarm.other.Contents
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Named
 
@@ -106,7 +99,6 @@ class MyAlarmReceiver : BroadcastReceiver() {
         }
     }
 
-    /* 테스트 해보기 */
     // 상품 알람 재설정
     private fun reSetProductAlarm(context: Context) {
         Log.i("Check2", "동작")
