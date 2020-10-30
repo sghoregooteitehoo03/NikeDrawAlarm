@@ -49,11 +49,7 @@ class MyAlarmReceiver : BroadcastReceiver() {
                     val productNotifyWorkRequest = OneTimeWorkRequestBuilder<ProductNotifyWorker>()
                         .setInputData(workDataOf(Contents.WORKER_INPUT_DATA_KEY to dataPosition))
                         .build()
-                    WorkManager.getInstance(context).enqueueUniqueWork(
-                        "ProductWork",
-                        ExistingWorkPolicy.KEEP,
-                        productNotifyWorkRequest
-                    )
+                    WorkManager.getInstance(context).enqueue(productNotifyWorkRequest)
                 }
             }
         }
