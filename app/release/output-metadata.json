@@ -1,19 +1,17 @@
 {
-  "version": 1,
+  "version": 2,
   "artifactType": {
     "type": "APK",
     "kind": "Directory"
   },
   "applicationId": "com.nikealarm.nikedrawalarm",
-  "variantName": "release",
+  "variantName": "processReleaseResources",
   "elements": [
     {
       "type": "SINGLE",
       "filters": [],
-      "properties": [],
-      "versionCode": 7,
-      "versionName": "2.1.4",
-      "enabled": true,
+      "versionCode": 9,
+      "versionName": "2.1.6",
       "outputFile": "app-release.apk"
     }
   ]
