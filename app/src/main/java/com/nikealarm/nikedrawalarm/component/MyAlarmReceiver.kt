@@ -14,6 +14,7 @@ import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.nikealarm.nikedrawalarm.component.worker.FindDrawWorker
 import com.nikealarm.nikedrawalarm.component.worker.ProductNotifyWorker
+import com.nikealarm.nikedrawalarm.component.worker.ResetProductAlarmWorker
 import com.nikealarm.nikedrawalarm.database.Dao
 import com.nikealarm.nikedrawalarm.database.MyDataBase
 import com.nikealarm.nikedrawalarm.database.SpecialShoesDataModel
@@ -27,14 +28,9 @@ import javax.inject.Named
 
 @AndroidEntryPoint
 class MyAlarmReceiver : BroadcastReceiver() {
-    private lateinit var mDao: Dao
-
     @Inject
     @Named(Contents.PREFERENCE_NAME_TIME)
     lateinit var timePreferences: SharedPreferences
-    @Inject
-    @Named(Contents.PREFERENCE_NAME_ALLOW_ALARM)
-    lateinit var allowAlarmPreferences: SharedPreferences
 
     override fun onReceive(context: Context, intent: Intent) {
         // This method is called when the BroadcastReceiver is receiving an Intent broadcast.
@@ -62,11 +58,7 @@ class MyAlarmReceiver : BroadcastReceiver() {
                     val productNotifyWorkRequest = OneTimeWorkRequestBuilder<ProductNotifyWorker>()
                         .setInputData(workDataOf(Contents.WORKER_INPUT_DATA_KEY to dataPosition))
                         .build()
-                    WorkManager.getInstance(context).enqueueUniqueWork(
-                        "ProductWork",
-                        ExistingWorkPolicy.KEEP,
-                        productNotifyWorkRequest
-                    )
+                    WorkManager.getInstance(context).enqueue(productNotifyWorkRequest)
                 }
             }
         }
@@ -114,55 +106,13 @@ class MyAlarmReceiver : BroadcastReceiver() {
         }
     }
 
+    /* 테스트 해보기 */
     // 상품 알람 재설정
     private fun reSetProductAlarm(context: Context) {
         Log.i("Check2", "동작")
-        mDao = MyDataBase.getDatabase(context)!!.getDao()
-
-        CoroutineScope(Dispatchers.IO).launch {
-            for (position in mDao.getAllSpecialShoesData().indices) {
-                val shoesData = mDao.getAllSpecialShoesData()[position]
-                val preferenceKey = "${shoesData.ShoesTitle}-${shoesData.ShoesSubTitle}"
-                val timeTrigger = timePreferences.getLong(preferenceKey, 0)
-
-                if (timeTrigger != 0L) {
-                    Log.i("CheckTime", "${timeTrigger}")
-                    if (timeTrigger < System.currentTimeMillis()) {
-                        deleteDrawShoesData(shoesData)
-                        continue
-                    }
-
-                    val mAlarmManager =
-                        context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-
-                    val reIntent = Intent(context, MyAlarmReceiver::class.java).apply {
-                        action = Contents.INTENT_ACTION_PRODUCT_ALARM
-                        putExtra(Contents.INTENT_KEY_POSITION, position)
-                    }
-
-                    val alarmPendingIntent = PendingIntent.getBroadcast(
-                        context,
-                        position,
-                        reIntent,
-                        PendingIntent.FLAG_UPDATE_CURRENT
-                    )
-
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        mAlarmManager.setExactAndAllowWhileIdle(
-                            AlarmManager.RTC_WAKEUP,
-                            timeTrigger,
-                            alarmPendingIntent
-                        )
-                    } else {
-                        mAlarmManager.setExact(
-                            AlarmManager.RTC_WAKEUP,
-                            timeTrigger,
-                            alarmPendingIntent
-                        )
-                    }
-                }
-            }
-        }
+        val resetProductAlarmWorkRequest = OneTimeWorkRequestBuilder<ResetProductAlarmWorker>()
+            .build()
+        WorkManager.getInstance(context).enqueue(resetProductAlarmWorkRequest)
     }
 
     // 데이터베이스 설정
@@ -170,22 +120,6 @@ class MyAlarmReceiver : BroadcastReceiver() {
         with(timePreferences.edit()) {
             putLong(Contents.SYNC_ALARM_KEY, timeTrigger)
             commit()
-        }
-    }
-
-    private fun deleteDrawShoesData(data: SpecialShoesDataModel) {
-        with(timePreferences.edit()) {
-            remove("${data.ShoesTitle}-${data.ShoesSubTitle}")
-            commit()
-        }
-
-        with(allowAlarmPreferences.edit()) {
-            remove("${data.ShoesTitle}-${data.ShoesSubTitle}")
-            commit()
-        }
-
-        CoroutineScope(Dispatchers.IO).launch {
-            mDao.deleteSpecialData(data.ShoesUrl!!)
         }
     }
 }
