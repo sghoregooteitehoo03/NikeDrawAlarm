@@ -57,12 +57,7 @@
     <fragment
         android:id="@+id/mainWebFragment"
         android:name="com.nikealarm.nikedrawalarm.ui.fragment.MainWebFragment"
-        android:label="MainWebFragment" >
-        <argument
-            android:name="shoesUrl"
-            app:argType="string"
-            android:defaultValue="https://www.nike.com/kr/launch/?type=feed" />
-    </fragment>
+        android:label="MainWebFragment" />
     <fragment
         android:id="@+id/settingFragment"
         android:name="com.nikealarm.nikedrawalarm.ui.fragment.SettingFragment"
@@ -70,15 +65,7 @@
     <fragment
         android:id="@+id/imageListFragment"
         android:name="com.nikealarm.nikedrawalarm.ui.fragment.ImageListFragment"
-        android:label="ImageListFragment" >
-        <argument
-            android:name="shoesUrl"
-            app:argType="string"
-            android:defaultValue="https://www.nike.com/kr/launch/?type=feed" />
-        <argument
-            android:name="shoesImageUrl"
-            app:argType="string" />
-    </fragment>
+        android:label="ImageListFragment" />
     <fragment
         android:id="@+id/loadingFragment"
         android:name="com.nikealarm.nikedrawalarm.ui.fragment.LoadingFragment"

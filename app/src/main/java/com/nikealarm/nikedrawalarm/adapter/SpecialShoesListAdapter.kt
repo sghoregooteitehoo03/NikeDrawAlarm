@@ -1,7 +1,6 @@
 package com.nikealarm.nikedrawalarm.adapter
 
 import android.content.Context
-import android.content.SharedPreferences
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -22,8 +21,9 @@ import com.chauthai.swipereveallayout.ViewBinderHelper
 import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.database.ShoesDataModel
 import com.nikealarm.nikedrawalarm.database.SpecialShoesDataModel
+import com.nikealarm.nikedrawalarm.other.Contents
 
-class SpecialShoesListAdapter(private val context: Context, private val allowAlarmPreferences: SharedPreferences) :
+class SpecialShoesListAdapter(private val context: Context) :
     PagedListAdapter<SpecialShoesDataModel, SpecialShoesListAdapter.SpecialShoesListViewHolder>(
         diffCallback
     ) {
@@ -179,7 +179,11 @@ class SpecialShoesListAdapter(private val context: Context, private val allowAla
         // 애니메이션 설정 끝
 
         private fun isChecked(preferenceKey: String?): Boolean {
-            return allowAlarmPreferences.getBoolean(preferenceKey, false)
+            val allowAlarmPreference = context.getSharedPreferences(
+                Contents.PREFERENCE_NAME_ALLOW_ALARM,
+                Context.MODE_PRIVATE
+            )
+            return allowAlarmPreference.getBoolean(preferenceKey, false)
         }
     }
 

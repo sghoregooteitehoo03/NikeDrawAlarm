@@ -137,21 +137,21 @@ class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
     }
 
     override fun onClickItem(newUrl: String?) {
-        val directions =
-            ShoesListFragmentDirections.actionDrawListFragmentToMainWebFragment(newUrl!!)
-        findNavController().navigate(directions)
+        mViewModel.setUrl(newUrl ?: "https://www.nike.com/kr/launch/?type=feed")
+        findNavController().navigate(R.id.action_drawListFragment_to_mainWebFragment)
     }
 
     override fun onClickImage(newUrl: String, shoesImageUrl: String, imageView: ImageView) {
-        val directions = ShoesListFragmentDirections.actionDrawListFragmentToImageListFragment(
-            newUrl,
-            shoesImageUrl
-        )
+        mViewModel.setUrl(newUrl)
+        mViewModel.shoesImageUrl.value = shoesImageUrl
+
         val extras = FragmentNavigatorExtras(
             imageView to newUrl
         )
         findNavController().navigate(
-            directions,
+            R.id.action_drawListFragment_to_imageListFragment,
+            null,
+            null,
             extras
         )
     }
@@ -214,16 +214,12 @@ class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
                 val tempTime = System.currentTimeMillis()
                 val intervalTime = tempTime - backPressedTime
 
-                if (0 <= intervalTime && FINISH_INTERVAL_TIME >= intervalTime) {
+                if(0 <= intervalTime && FINISH_INTERVAL_TIME >= intervalTime) {
                     requireActivity().finish()
                     backToast.cancel()
                 } else {
                     backPressedTime = tempTime
-                    backToast = Toast.makeText(
-                        requireContext(),
-                        "뒤로 가기 버튼을 한 번 더 누르면 종료됩니다.",
-                        Toast.LENGTH_SHORT
-                    ).apply {
+                    backToast = Toast.makeText(requireContext(), "뒤로 가기 버튼을 한 번 더 누르면 종료됩니다.", Toast.LENGTH_SHORT).apply {
                         show()
                     }
                 }

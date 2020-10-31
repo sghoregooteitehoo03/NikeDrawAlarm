@@ -32,6 +32,5 @@ data class ShoesDataModel(
         const val CATEGORY_DRAW_END = "CATEGORY_DRAW_END"
         const val CATEGORY_COMING_SOON = "COMING SOON"
         const val CATEGORY_RELEASED = "RELEASED"
-        const val SHOES_SOLD_OUT = "SOLD OUT"
     }
 }

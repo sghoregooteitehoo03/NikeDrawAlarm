@@ -1,7 +1,6 @@
 package com.nikealarm.nikedrawalarm.adapter
 
 import android.content.Context
-import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -75,11 +74,6 @@ class ShoesListAdapter(
             shoesSubTitleText.text = data?.shoesSubTitle
             shoesTitleText.text = data?.shoesTitle
             howToEventText.text = data?.shoesPrice
-            if(data?.shoesPrice == ShoesDataModel.SHOES_SOLD_OUT) {
-                howToEventText.setTextColor(Color.RED)
-            } else {
-                howToEventText.setTextColor(Color.BLACK)
-            }
 
             learnMoreText.setOnClickListener {
                 itemListener.onClickItem(data?.shoesUrl)

@@ -12,28 +12,28 @@ import android.util.Log
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreferenceCompat
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.nikealarm.nikedrawalarm.BuildConfig
 import com.nikealarm.nikedrawalarm.component.MyAlarmReceiver
 import com.nikealarm.nikedrawalarm.R
+import com.nikealarm.nikedrawalarm.component.FindDrawWorker
 import com.nikealarm.nikedrawalarm.other.Contents
-import dagger.hilt.android.AndroidEntryPoint
 import java.util.*
-import javax.inject.Inject
-import javax.inject.Named
 
-@AndroidEntryPoint
 class SettingScreenPreference : PreferenceFragmentCompat() {
     private lateinit var mAlarmManager: AlarmManager
-
-    @Inject
-    @Named(Contents.PREFERENCE_NAME_TIME)
-    lateinit var timePreferences: SharedPreferences
+    private lateinit var mSharedPreference: SharedPreferences
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.setting_screen, rootKey)
 
         // 인스턴스 설정
         mAlarmManager = context?.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        mSharedPreference = requireContext().getSharedPreferences(
+            Contents.PREFERENCE_NAME_TIME,
+            Context.MODE_PRIVATE
+        )
 
         val showVersionPreference = findPreference<Preference>(getString(R.string.setting_preference_version))?.apply {
             summary = BuildConfig.VERSION_NAME
@@ -119,7 +119,7 @@ class SettingScreenPreference : PreferenceFragmentCompat() {
 
     // 등록한 알람시간을 데이터베이스에 저장함
     private fun setPreference(timeTrigger: Long) {
-        with(timePreferences.edit()) {
+        with(mSharedPreference.edit()) {
             putLong(Contents.SYNC_ALARM_KEY, timeTrigger)
             commit()
         }
@@ -168,7 +168,7 @@ class SettingScreenPreference : PreferenceFragmentCompat() {
 
     // 등록한 알람시간을 데이터베이스에서 지움
     private fun removePreference() {
-        with(timePreferences.edit()) {
+        with(mSharedPreference.edit()) {
             this.remove(Contents.SYNC_ALARM_KEY)
             commit()
         }
