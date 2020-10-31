@@ -33,19 +33,6 @@ class MyViewModel @ViewModelInject constructor(
         return shoesList
     }
 
-    // 특정 신발의 웹 주소
-    private val url = MutableLiveData<String>()
-
-    fun setUrl(url: String) {
-        this.url.value = url
-    }
-
-    fun getUrl(): MutableLiveData<String> {
-        return url
-    }
-
-    val shoesImageUrl = MutableLiveData<String>()
-
     // Special 목록
     val upcomingCategory = MutableLiveData<String>()
 

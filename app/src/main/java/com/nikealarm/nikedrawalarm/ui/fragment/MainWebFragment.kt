@@ -11,6 +11,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.ui.MainActivity
@@ -20,8 +21,6 @@ class MainWebFragment : Fragment() {
     private lateinit var mainWebView: WebView
     private lateinit var mainProgress: ProgressBar
     private lateinit var mainWebRefresh: SwipeRefreshLayout
-
-    private lateinit var mViewModel: MyViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -44,9 +43,8 @@ class MainWebFragment : Fragment() {
             (activity as MainActivity).supportActionBar?.setDisplayHomeAsUpEnabled(true)
         }
         // 인스턴스 설정
-        mViewModel = ViewModelProvider(requireActivity())[MyViewModel::class.java]
-
-        val url = mViewModel.getUrl().value?:"https://www.nike.com/kr/launch/?type=feed"
+        val args: MainWebFragmentArgs by navArgs()
+        val url = args.shoesUrl
 
         // id설정
         mainWebView = view.findViewById<WebView>(R.id.main_webView).apply {
