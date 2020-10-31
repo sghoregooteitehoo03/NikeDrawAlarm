@@ -28,7 +28,6 @@ class MainActivity : AppCompatActivity() {
 
         // 기존의 알림창이 존재 했을 때 알림창을 제거함
         ifNeedToMoveFragment(intent)
-        Log.i("Check", "test")
         cancelNotification()
     }
 
