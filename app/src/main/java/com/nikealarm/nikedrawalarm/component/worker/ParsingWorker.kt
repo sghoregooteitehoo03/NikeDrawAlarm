@@ -1,7 +1,9 @@
-package com.nikealarm.nikedrawalarm.component
+package com.nikealarm.nikedrawalarm.component.worker
 
 import android.content.Context
 import android.util.Log
+import androidx.hilt.Assisted
+import androidx.hilt.work.WorkerInject
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
@@ -12,19 +14,20 @@ import com.nikealarm.nikedrawalarm.database.ShoesDataModel
 import com.nikealarm.nikedrawalarm.other.Contents
 import org.jsoup.Jsoup
 
-class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(
+class ParsingWorker @WorkerInject constructor(
+    @Assisted context: Context,
+    @Assisted workerParams: WorkerParameters,
+    val mDao: Dao
+) : Worker(
     context,
     workerParams
 ) {
-    private lateinit var mDao: Dao
 
     private val allShoesList = mutableListOf<ShoesDataModel>()
 
     override fun doWork(): Result {
-        mDao = MyDataBase.getDatabase(applicationContext)!!.getDao()
-
         parsingData() // 데이터를 파싱함
-        if(isStopped) { // cancel 됐을 때
+        if (isStopped) { // cancel 됐을 때
             return Result.failure()
         }
 
@@ -58,7 +61,7 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(
         var progress = 0.0
 
         for (elementData in elementsData) {
-            if(isStopped) { // cancel 됐을 때
+            if (isStopped) { // cancel 됐을 때
                 return
             }
 
@@ -83,7 +86,9 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(
             val innerUrl =
                 "https://www.nike.com" + elementData.select("a").attr("href") // 해당 신발의 링크창을 읽어옴
 
-            if (mDao.getAllShoesData().contains(ShoesDataModel(0, shoesSubTitle, shoesTitle))) { // 해당 데이터가 이미 존재 시
+            if (mDao.getAllShoesData()
+                    .contains(ShoesDataModel(0, shoesSubTitle, shoesTitle))
+            ) { // 해당 데이터가 이미 존재 시
                 val category = when (shoesInfo) {
                     "THE DRAW 진행예정", "THE DRAW 응모하기" -> ShoesDataModel.CATEGORY_DRAW
                     "THE DRAW 응모 마감", "THE DRAW 당첨 결과 확인", "THE DRAW 종료" -> ShoesDataModel.CATEGORY_DRAW_END
@@ -96,7 +101,7 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(
                         0,
                         shoesSubTitle,
                         shoesTitle,
-                        null,
+                        shoesInfo,
                         null,
                         innerUrl,
                         category
@@ -118,7 +123,7 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(
 
                 val insertShoesData: ShoesDataModel
                 when (shoesInfo) {
-                    "THE DRAW 진행예정", "THE DRAW 응모하기" -> {
+                    "THE DRAW 진행예정", "THE DRAW 응모하기" -> { // DRAW
                         val innerElementData = innerDoc.select("span.uk-text-bold")
 
                         var howToEvent = "" // 이벤트 참여방법
@@ -139,7 +144,7 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(
                             ShoesDataModel.CATEGORY_DRAW
                         )
                     }
-                    "THE DRAW 응모 마감", "THE DRAW 당첨 결과 확인", "THE DRAW 종료" -> {
+                    "THE DRAW 응모 마감", "THE DRAW 당첨 결과 확인", "THE DRAW 종료" -> { // DRAW END
                         insertShoesData = ShoesDataModel(
                             null,
                             shoesSubTitle,
@@ -150,7 +155,7 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(
                             ShoesDataModel.CATEGORY_DRAW_END
                         )
                     }
-                    "COMING SOON" -> {
+                    "COMING SOON" -> { // COMING SOON
                         val launchDate = "${innerDoc.select("div.txt-date").text()}\n${shoesPrice}"
 
                         insertShoesData = ShoesDataModel(
@@ -163,12 +168,17 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(
                             ShoesDataModel.CATEGORY_COMING_SOON
                         )
                     }
-                    else -> {
+                    else -> { // RELEASED
+                        val stock: String = if (shoesInfo == ShoesDataModel.SHOES_SOLD_OUT) {
+                            shoesInfo
+                        } else {
+                            shoesPrice
+                        }
                         insertShoesData = ShoesDataModel(
                             null,
                             shoesSubTitle,
                             shoesTitle,
-                            shoesPrice,
+                            stock,
                             shoesImageUrl,
                             innerUrl,
                             ShoesDataModel.CATEGORY_RELEASED
@@ -196,7 +206,7 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(
         val elementsData = doc.select("div.launch-list-item")
 
         for (elementData in elementsData) {
-            if(isStopped) { // cancel 됐을 때
+            if (isStopped) { // cancel 됐을 때
                 return
             }
 
@@ -206,7 +216,9 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(
                 .text()
             val specialUrl = "https://www.nike.com" + elementData.select("a").attr("href")
 
-            if (checkCategory(category) || mDao.getAllSpecialData().contains(SpecialDataModel(0, specialUrl))) { // 이미 데이터 존재하지 않고 special이 아니면 continue
+            if (checkCategory(category) || mDao.getAllSpecialData()
+                    .contains(SpecialDataModel(0, specialUrl))
+            ) { // 이미 데이터 존재하지 않고 special이 아니면 continue
                 continue
             }
 
@@ -258,7 +270,17 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(
     private fun checkSpecialData() {
         for (specialData in mDao.getAllSpecialData()) {
 
-            if (!allShoesList.contains(ShoesDataModel(0, "", "", null, null, specialData.specialUrl))) {
+            if (!allShoesList.contains(
+                    ShoesDataModel(
+                        0,
+                        "",
+                        "",
+                        null,
+                        null,
+                        specialData.specialUrl
+                    )
+                )
+            ) {
                 deleteSpecialData(specialData)
             }
         }
@@ -273,10 +295,10 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(
     private fun updateData(newShoesData: ShoesDataModel) {
         val index = mDao.getAllShoesData()
             .indexOf(ShoesDataModel(0, newShoesData.shoesSubTitle, newShoesData.shoesTitle))
-        val ordinaryData = mDao.getAllShoesData()[index]
+        val ordinaryData = mDao.getAllShoesData()[index] // 기존의 있던 신발 데이터를 읽어옴
 
-        if (newShoesData.shoesCategory != ordinaryData.shoesCategory) { // CATEGORY -> RELEASED
-            if (ordinaryData.shoesCategory == ShoesDataModel.CATEGORY_COMING_SOON) {
+        if (newShoesData.shoesCategory != ordinaryData.shoesCategory) { // 카테고리가 바뀌었을 때
+            if (ordinaryData.shoesCategory == ShoesDataModel.CATEGORY_COMING_SOON) { // CATEGORY -> RELEASED
                 val newShoesPrice = ordinaryData.shoesPrice?.split("\n")?.get(1) // 신발 가격
 
                 mDao.updateShoesCategory(
@@ -300,6 +322,24 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(
             }
         }
 
+        if (newShoesData.shoesCategory == ShoesDataModel.CATEGORY_RELEASED) { // 출시 된 상품의 재고가 바뀌었을 때
+            if (ordinaryData.shoesPrice != ShoesDataModel.SHOES_SOLD_OUT && newShoesData.shoesPrice == ShoesDataModel.SHOES_SOLD_OUT) { // 재고가 다 떨어졌을 경우
+                mDao.updateShoesCategory(
+                    ShoesDataModel.SHOES_SOLD_OUT,
+                    ShoesDataModel.CATEGORY_RELEASED,
+                    newShoesData.shoesTitle,
+                    newShoesData.shoesSubTitle
+                )
+            } else if (ordinaryData.shoesPrice == ShoesDataModel.SHOES_SOLD_OUT && newShoesData.shoesPrice != ShoesDataModel.SHOES_SOLD_OUT) { // 재고가 다시 생긴 경우
+                mDao.updateShoesCategory(
+                    "가격 : ${newShoesData.shoesPrice}",
+                    ShoesDataModel.CATEGORY_RELEASED,
+                    newShoesData.shoesTitle,
+                    newShoesData.shoesSubTitle
+                )
+            }
+        }
+
         if (newShoesData.shoesUrl != ordinaryData.shoesUrl) { // URL이 바뀌었을 시
             mDao.updateShoesUrl(
                 newShoesData.shoesUrl,
@@ -307,14 +347,12 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(
                 newShoesData.shoesSubTitle
             )
 
-            if(mDao.getAllSpecialData().contains(SpecialDataModel(0, ordinaryData.shoesUrl!!))) { // Special이 존재 할 시
+            if (mDao.getAllSpecialData()
+                    .contains(SpecialDataModel(0, ordinaryData.shoesUrl!!))
+            ) { // Special이 존재 할 시
                 mDao.updateSpecialDataUrl(newShoesData.shoesUrl!!, ordinaryData.shoesUrl)
             }
         }
-    }
-
-    private fun clearData() {
-        mDao.clearShoesData()
     }
 
     private fun insertSpecialData(specialData: SpecialDataModel) {

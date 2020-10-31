@@ -1,0 +1,1137 @@
+Index: app/src/main/java/com/nikealarm/nikedrawalarm/ui/fragment/ShoesListFragment.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.nikealarm.nikedrawalarm.ui.fragment\r\n\r\nimport android.os.Bundle\r\nimport android.view.*\r\nimport android.widget.ImageView\r\nimport android.widget.Toast\r\nimport androidx.activity.OnBackPressedCallback\r\nimport androidx.appcompat.app.ActionBarDrawerToggle\r\nimport androidx.appcompat.widget.Toolbar\r\nimport androidx.core.view.GravityCompat\r\nimport androidx.core.view.doOnPreDraw\r\nimport androidx.drawerlayout.widget.DrawerLayout\r\nimport androidx.fragment.app.Fragment\r\nimport androidx.lifecycle.Observer\r\nimport androidx.lifecycle.ViewModelProvider\r\nimport androidx.navigation.fragment.FragmentNavigatorExtras\r\nimport androidx.navigation.fragment.findNavController\r\nimport androidx.recyclerview.widget.LinearLayoutManager\r\nimport androidx.recyclerview.widget.RecyclerView\r\nimport com.google.android.material.navigation.NavigationView\r\nimport com.nikealarm.nikedrawalarm.adapter.ShoesListAdapter\r\nimport com.nikealarm.nikedrawalarm.R\r\nimport com.nikealarm.nikedrawalarm.database.ShoesDataModel\r\nimport com.nikealarm.nikedrawalarm.ui.MainActivity\r\nimport com.nikealarm.nikedrawalarm.viewmodel.MyViewModel\r\nimport kotlinx.android.synthetic.main.fragment_shoes_list.*\r\nimport kotlinx.coroutines.CoroutineScope\r\nimport kotlinx.coroutines.Dispatchers\r\nimport kotlinx.coroutines.delay\r\nimport kotlinx.coroutines.launch\r\n\r\nclass ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,\r\n    NavigationView.OnNavigationItemSelectedListener, ShoesListAdapter.ImageClickListener {\r\n    private lateinit var drawer: DrawerLayout\r\n    private lateinit var backToast: Toast\r\n\r\n    private lateinit var mViewModel: MyViewModel\r\n    private val FINISH_INTERVAL_TIME = 2000L\r\n    private var backPressedTime = 0L\r\n\r\n    override fun onCreateView(\r\n        inflater: LayoutInflater, container: ViewGroup?,\r\n        savedInstanceState: Bundle?\r\n    ): View? {\r\n        // Inflate the layout for this fragment\r\n\r\n        activity?.onBackPressedDispatcher?.addCallback(backPressedCallback)\r\n\r\n        return inflater.inflate(R.layout.fragment_shoes_list, container, false)\r\n    }\r\n\r\n    // 시작\r\n    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {\r\n        super.onViewCreated(view, savedInstanceState)\r\n\r\n        // 툴바 설정\r\n        val mToolbar = view.findViewById<Toolbar>(R.id.drawListFrag_toolbar).apply {\r\n            (activity as MainActivity).setSupportActionBar(this)\r\n        }\r\n\r\n        // 인스턴스 설정\r\n        mViewModel = ViewModelProvider(requireActivity())[MyViewModel::class.java]\r\n\r\n        val mAdapter = ShoesListAdapter(\r\n            requireContext(),\r\n            requireActivity().supportFragmentManager\r\n        ).apply {\r\n            setOnItemClickListener(this@ShoesListFragment)\r\n            setOnImageClickListener(this@ShoesListFragment)\r\n        }\r\n\r\n        // 옵저버 설정\r\n        mViewModel.getShoesCategory().observe(viewLifecycleOwner, Observer {\r\n            mToolbar.title = it\r\n\r\n            if (drawListFrag_scrollUp_Button.isEnabled) {\r\n                disappearButton()\r\n            }\r\n//            disappearButton()\r\n        })\r\n        mViewModel.getShoesData().observe(viewLifecycleOwner, Observer {\r\n            mAdapter.submitList(it)\r\n            if (it.size == 0) {\r\n                appearText()\r\n            } else {\r\n                if (drawListFrag_noItem_text.isEnabled) {\r\n                    disappearText()\r\n                }\r\n            }\r\n        })\r\n\r\n        // id 설정\r\n        val listView = view.findViewById<RecyclerView>(R.id.drawListFrag_listView).apply {\r\n            setHasFixedSize(true)\r\n            layoutManager = LinearLayoutManager(context)\r\n            adapter = mAdapter\r\n\r\n            addOnScrollListener(object : RecyclerView.OnScrollListener() {\r\n                override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {\r\n                    super.onScrollStateChanged(recyclerView, newState)\r\n\r\n                    if (recyclerView.computeVerticalScrollOffset() == 0) {\r\n                        disappearButton()\r\n                    } else {\r\n                        appearButton()\r\n                    }\r\n                }\r\n            })\r\n        }\r\n        with(drawListFrag_scrollUp_Button) {\r\n            isEnabled = false\r\n            setOnClickListener {\r\n                listView.smoothScrollToPosition(0)\r\n            }\r\n        }\r\n        val navView = view.findViewById<NavigationView>(R.id.drawListFrag_navView).apply {\r\n            setCheckedItem(R.id.mainMenu_released)\r\n            setNavigationItemSelectedListener(this@ShoesListFragment)\r\n        }\r\n        drawer = view.findViewById(R.id.drawListFrag_drawer)\r\n\r\n        // navigation 설정\r\n        val toggle = ActionBarDrawerToggle(\r\n            requireActivity(),\r\n            drawer,\r\n            mToolbar,\r\n            R.string.open_drawer,\r\n            R.string.close_drawer\r\n        )\r\n        drawer.addDrawerListener(toggle)\r\n        toggle.syncState()\r\n\r\n        postponeEnterTransition()\r\n        listView.doOnPreDraw {\r\n            startPostponedEnterTransition()\r\n        }\r\n    }\r\n\r\n    override fun onClickItem(newUrl: String?) {\r\n        mViewModel.setUrl(newUrl ?: \"https://www.nike.com/kr/launch/?type=feed\")\r\n        findNavController().navigate(R.id.action_drawListFragment_to_mainWebFragment)\r\n    }\r\n\r\n    override fun onClickImage(newUrl: String, shoesImageUrl: String, imageView: ImageView) {\r\n        mViewModel.setUrl(newUrl)\r\n        mViewModel.shoesImageUrl.value = shoesImageUrl\r\n\r\n        val extras = FragmentNavigatorExtras(\r\n            imageView to newUrl\r\n        )\r\n        findNavController().navigate(\r\n            R.id.action_drawListFragment_to_imageListFragment,\r\n            null,\r\n            null,\r\n            extras\r\n        )\r\n    }\r\n\r\n    override fun onNavigationItemSelected(menuItem: MenuItem): Boolean {\r\n        drawer.closeDrawer(GravityCompat.START)\r\n\r\n        return when (menuItem.itemId) {\r\n            R.id.mainMenu_draw -> {\r\n                setToolbarTitle(ShoesDataModel.CATEGORY_DRAW)\r\n                true\r\n            }\r\n            R.id.mainMenu_comingSoon -> {\r\n                setToolbarTitle(ShoesDataModel.CATEGORY_COMING_SOON)\r\n                true\r\n            }\r\n            R.id.mainMenu_released -> {\r\n                setToolbarTitle(ShoesDataModel.CATEGORY_RELEASED)\r\n                true\r\n            }\r\n            R.id.mainMenu_upcoming -> {\r\n                CoroutineScope(Dispatchers.IO).launch {\r\n                    delay(230)\r\n                    findNavController().navigate(R.id.action_drawListFragment_to_upcomingListFragment)\r\n                }\r\n                true\r\n            }\r\n            R.id.mainMenu_setting -> {\r\n                CoroutineScope(Dispatchers.IO).launch {\r\n                    delay(230)\r\n                    findNavController().navigate(R.id.action_drawListFragment_to_settingFragment)\r\n                }\r\n\r\n                true\r\n            }\r\n            else -> false\r\n        }\r\n    }\r\n\r\n    override fun onResume() {\r\n        super.onResume()\r\n        backPressedCallback.isEnabled = true\r\n    }\r\n\r\n    override fun onDestroyView() {\r\n        super.onDestroyView()\r\n        backPressedCallback.isEnabled = false\r\n    }\r\n\r\n    private fun setToolbarTitle(shoesCategory: String) {\r\n        mViewModel.setShoesCategory(shoesCategory)\r\n    }\r\n\r\n    private val backPressedCallback = object : OnBackPressedCallback(true) {\r\n\r\n        override fun handleOnBackPressed() {\r\n            if (drawer.isDrawerOpen(GravityCompat.START)) {\r\n                drawer.closeDrawer(GravityCompat.START)\r\n            } else {\r\n                val tempTime = System.currentTimeMillis()\r\n                val intervalTime = tempTime - backPressedTime\r\n\r\n                if(0 <= intervalTime && FINISH_INTERVAL_TIME >= intervalTime) {\r\n                    requireActivity().finish()\r\n                    backToast.cancel()\r\n                } else {\r\n                    backPressedTime = tempTime\r\n                    backToast = Toast.makeText(requireContext(), \"뒤로 가기 버튼을 한 번 더 누르면 종료됩니다.\", Toast.LENGTH_SHORT).apply {\r\n                        show()\r\n                    }\r\n                }\r\n            }\r\n        }\r\n    }\r\n\r\n    // 애니메이션 설정\r\n    private fun appearText() {\r\n        with(drawListFrag_noItem_text) {\r\n            isEnabled = true\r\n\r\n            animate().setDuration(350)\r\n                .alpha(1f)\r\n                .withLayer()\r\n        }\r\n    }\r\n\r\n    private fun disappearText() {\r\n        with(drawListFrag_noItem_text) {\r\n            isEnabled = false\r\n\r\n            animate().setDuration(100)\r\n                .alpha(0f)\r\n                .withLayer()\r\n        }\r\n    }\r\n\r\n    private fun appearButton() {\r\n        with(drawListFrag_scrollUp_Button) {\r\n            isEnabled = true\r\n            animate().setDuration(100)\r\n                .alpha(1f)\r\n                .withLayer()\r\n        }\r\n    }\r\n\r\n    private fun disappearButton() {\r\n        with(drawListFrag_scrollUp_Button) {\r\n            isEnabled = false\r\n            animate().setDuration(100)\r\n                .alpha(0f)\r\n                .withLayer()\r\n        }\r\n    }\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/nikealarm/nikedrawalarm/ui/fragment/ShoesListFragment.kt	(revision 2a4adaf47544d23e0e8bcddf3e1c5532f684ff3d)
++++ app/src/main/java/com/nikealarm/nikedrawalarm/ui/fragment/ShoesListFragment.kt	(date 1604142087526)
+@@ -137,21 +137,21 @@
+     }
+ 
+     override fun onClickItem(newUrl: String?) {
+-        mViewModel.setUrl(newUrl ?: "https://www.nike.com/kr/launch/?type=feed")
+-        findNavController().navigate(R.id.action_drawListFragment_to_mainWebFragment)
++        val directions =
++            ShoesListFragmentDirections.actionDrawListFragmentToMainWebFragment(newUrl!!)
++        findNavController().navigate(directions)
+     }
+ 
+     override fun onClickImage(newUrl: String, shoesImageUrl: String, imageView: ImageView) {
+-        mViewModel.setUrl(newUrl)
+-        mViewModel.shoesImageUrl.value = shoesImageUrl
+-
++        val directions = ShoesListFragmentDirections.actionDrawListFragmentToImageListFragment(
++            newUrl,
++            shoesImageUrl
++        )
+         val extras = FragmentNavigatorExtras(
+             imageView to newUrl
+         )
+         findNavController().navigate(
+-            R.id.action_drawListFragment_to_imageListFragment,
+-            null,
+-            null,
++            directions,
+             extras
+         )
+     }
+@@ -214,12 +214,16 @@
+                 val tempTime = System.currentTimeMillis()
+                 val intervalTime = tempTime - backPressedTime
+ 
+-                if(0 <= intervalTime && FINISH_INTERVAL_TIME >= intervalTime) {
++                if (0 <= intervalTime && FINISH_INTERVAL_TIME >= intervalTime) {
+                     requireActivity().finish()
+                     backToast.cancel()
+                 } else {
+                     backPressedTime = tempTime
+-                    backToast = Toast.makeText(requireContext(), "뒤로 가기 버튼을 한 번 더 누르면 종료됩니다.", Toast.LENGTH_SHORT).apply {
++                    backToast = Toast.makeText(
++                        requireContext(),
++                        "뒤로 가기 버튼을 한 번 더 누르면 종료됩니다.",
++                        Toast.LENGTH_SHORT
++                    ).apply {
+                         show()
+                     }
+                 }
+Index: app/src/main/java/com/nikealarm/nikedrawalarm/ui/fragment/LoadingFragment.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.nikealarm.nikedrawalarm.ui.fragment\r\n\r\nimport android.os.Bundle\r\nimport android.view.LayoutInflater\r\nimport android.view.View\r\nimport android.view.ViewGroup\r\nimport android.widget.Button\r\nimport android.widget.ProgressBar\r\nimport android.widget.TextView\r\nimport androidx.fragment.app.Fragment\r\nimport androidx.lifecycle.Observer\r\nimport androidx.navigation.fragment.findNavController\r\nimport androidx.work.*\r\nimport com.nikealarm.nikedrawalarm.R\r\nimport com.nikealarm.nikedrawalarm.component.ParsingWorker\r\nimport com.nikealarm.nikedrawalarm.other.Contents\r\nimport kotlinx.android.synthetic.main.fragment_loading.*\r\n\r\nclass LoadingFragment : Fragment() {\r\n    private lateinit var explainText: TextView\r\n    private lateinit var restartBtn: Button\r\n    private lateinit var progressBar: ProgressBar\r\n\r\n    companion object {\r\n        private var isStarted = false\r\n    }\r\n\r\n    override fun onCreateView(\r\n        inflater: LayoutInflater,\r\n        container: ViewGroup?,\r\n        savedInstanceState: Bundle?\r\n    ): View? {\r\n\r\n        startWork()\r\n        return inflater.inflate(R.layout.fragment_loading, container, false)\r\n    }\r\n\r\n    // 시작\r\n    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {\r\n        super.onViewCreated(view, savedInstanceState)\r\n\r\n        // id 설정\r\n        explainText = view.findViewById(R.id.loadingFrag_errorText)\r\n        restartBtn = view.findViewById<Button>(R.id.loadingFrag_restart_btn).apply {\r\n            setOnClickListener {\r\n                startWorkAnimation()\r\n                startWork()\r\n            }\r\n        }\r\n        progressBar = view.findViewById(R.id.loadingFrag_progressBar)\r\n\r\n        // 옵저버 설정\r\n        WorkManager.getInstance(requireContext())\r\n            .getWorkInfosByTagLiveData(Contents.WORKER_PARSING_DATA)\r\n            .observe(viewLifecycleOwner, Observer {\r\n                when (it[0].state) {\r\n                    WorkInfo.State.SUCCEEDED -> { // 로딩 성공 시\r\n                        isStarted = true\r\n                        findNavController().navigate(R.id.action_loadingFragment_to_drawListFragment)\r\n                    }\r\n                    WorkInfo.State.FAILED -> { // 로딩 실패 시\r\n                        failedWorkAnimation()\r\n                    }\r\n                    WorkInfo.State.RUNNING -> { // 로딩 중\r\n                        val progress = it[0].progress\r\n                        val value = progress.getInt(Contents.WORKER_PARSING_DATA_OUTPUT_KEY, 0)\r\n\r\n                        loadingFrag_percent_textView.text = \"$value%\"\r\n                    }\r\n                    else -> {}\r\n                }\r\n            })\r\n    }\r\n\r\n    override fun onDestroy() {\r\n        super.onDestroy()\r\n\r\n        if(!isStarted) { // 로딩중에 앱을 나갔을 경우\r\n            WorkManager.getInstance(requireContext())\r\n                .cancelUniqueWork(Contents.WORKER_PARSING_DATA)\r\n        }\r\n    }\r\n\r\n    private fun startWork() {\r\n        if (!isStarted) {\r\n            val parsingWork: OneTimeWorkRequest = OneTimeWorkRequestBuilder<ParsingWorker>()\r\n                .addTag(Contents.WORKER_PARSING_DATA)\r\n                .build()\r\n\r\n            WorkManager.getInstance(requireContext()).enqueueUniqueWork(\r\n                Contents.WORKER_PARSING_DATA,\r\n                ExistingWorkPolicy.KEEP,\r\n                parsingWork\r\n            )\r\n        }\r\n    }\r\n\r\n    // 애니메이션 설정\r\n    private fun failedWorkAnimation() {\r\n        with(loadingFrag_errorLayout) {\r\n            animate().setDuration(200)\r\n                .alpha(1f)\r\n                .withLayer()\r\n\r\n            restartBtn.isEnabled = true\r\n        }\r\n        with(loadingFrag_mainLayout) {\r\n            animate().setDuration(200)\r\n                .alpha(0f)\r\n                .withLayer()\r\n        }\r\n        with(loadingFrag_explainText) {\r\n            animate().setDuration(200)\r\n                .alpha(0f)\r\n                .withLayer()\r\n        }\r\n    }\r\n\r\n    private fun startWorkAnimation() {\r\n        with(loadingFrag_errorLayout) {\r\n            animate().setDuration(200)\r\n                .alpha(0f)\r\n                .withLayer()\r\n\r\n            restartBtn.isEnabled = false\r\n        }\r\n        with(loadingFrag_mainLayout) {\r\n            animate().setDuration(200)\r\n                .alpha(1f)\r\n                .withLayer()\r\n        }\r\n        with(loadingFrag_explainText) {\r\n            animate().setDuration(200)\r\n                .alpha(1f)\r\n                .withLayer()\r\n        }\r\n    }\r\n    // 애니메이션 설정 끝\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/nikealarm/nikedrawalarm/ui/fragment/LoadingFragment.kt	(revision 2a4adaf47544d23e0e8bcddf3e1c5532f684ff3d)
++++ app/src/main/java/com/nikealarm/nikedrawalarm/ui/fragment/LoadingFragment.kt	(date 1604142136143)
+@@ -12,7 +12,7 @@
+ import androidx.navigation.fragment.findNavController
+ import androidx.work.*
+ import com.nikealarm.nikedrawalarm.R
+-import com.nikealarm.nikedrawalarm.component.ParsingWorker
++import com.nikealarm.nikedrawalarm.component.worker.ParsingWorker
+ import com.nikealarm.nikedrawalarm.other.Contents
+ import kotlinx.android.synthetic.main.fragment_loading.*
+ 
+Index: app/src/main/java/com/nikealarm/nikedrawalarm/ui/fragment/MainWebFragment.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.nikealarm.nikedrawalarm.ui.fragment\r\n\r\nimport android.os.Bundle\r\nimport android.view.*\r\nimport androidx.fragment.app.Fragment\r\nimport android.webkit.WebChromeClient\r\nimport android.webkit.WebView\r\nimport android.webkit.WebViewClient\r\nimport android.widget.ProgressBar\r\nimport androidx.activity.OnBackPressedCallback\r\nimport androidx.appcompat.widget.Toolbar\r\nimport androidx.lifecycle.ViewModelProvider\r\nimport androidx.navigation.fragment.findNavController\r\nimport androidx.swiperefreshlayout.widget.SwipeRefreshLayout\r\nimport com.nikealarm.nikedrawalarm.R\r\nimport com.nikealarm.nikedrawalarm.ui.MainActivity\r\nimport com.nikealarm.nikedrawalarm.viewmodel.MyViewModel\r\n\r\nclass MainWebFragment : Fragment() {\r\n    private lateinit var mainWebView: WebView\r\n    private lateinit var mainProgress: ProgressBar\r\n    private lateinit var mainWebRefresh: SwipeRefreshLayout\r\n\r\n    private lateinit var mViewModel: MyViewModel\r\n\r\n    override fun onCreateView(\r\n        inflater: LayoutInflater, container: ViewGroup?,\r\n        savedInstanceState: Bundle?\r\n    ): View? {\r\n        // Inflate the layout for this fragment\r\n\r\n        activity?.onBackPressedDispatcher?.addCallback(backPressedCallback)\r\n        setHasOptionsMenu(true)\r\n\r\n        return inflater.inflate(R.layout.fragment_web, container, false)\r\n    }\r\n\r\n    // 시작\r\n    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {\r\n        super.onViewCreated(view, savedInstanceState)\r\n\r\n        val toolbar = view.findViewById<Toolbar>(R.id.webFrag_toolbar).apply {\r\n            (activity as MainActivity).setSupportActionBar(this)\r\n            (activity as MainActivity).supportActionBar?.setDisplayHomeAsUpEnabled(true)\r\n        }\r\n        // 인스턴스 설정\r\n        mViewModel = ViewModelProvider(requireActivity())[MyViewModel::class.java]\r\n\r\n        val url = mViewModel.getUrl().value?:\"https://www.nike.com/kr/launch/?type=feed\"\r\n\r\n        // id설정\r\n        mainWebView = view.findViewById<WebView>(R.id.main_webView).apply {\r\n            loadUrl(url)\r\n\r\n            settings.javaScriptEnabled = true\r\n            webViewClient = WebViewClient()\r\n            webChromeClient = mWebChromeClient\r\n        }\r\n        mainProgress = view.findViewById(R.id.main_webProgress)\r\n        mainWebRefresh = view.findViewById<SwipeRefreshLayout>(R.id.main_webViewRefresh).apply {\r\n            setOnRefreshListener {\r\n                mainWebView.reload()\r\n            }\r\n        }\r\n    }\r\n\r\n    override fun onOptionsItemSelected(item: MenuItem): Boolean {\r\n        return when (item.itemId) {\r\n            android.R.id.home -> {\r\n                backPressedCallback.isEnabled = false\r\n                findNavController().navigateUp()\r\n                true\r\n            }\r\n            else -> false\r\n        }\r\n    }\r\n\r\n    private val mWebChromeClient = object : WebChromeClient() {\r\n        override fun onProgressChanged(view: WebView?, newProgress: Int) {\r\n            super.onProgressChanged(view, newProgress)\r\n\r\n            with(mainProgress) {\r\n                visibility = View.VISIBLE\r\n                progress = newProgress\r\n\r\n                if (progress == 100) {\r\n                    visibility = View.GONE\r\n                    mainWebRefresh.isRefreshing = false\r\n                }\r\n            }\r\n        }\r\n    }\r\n\r\n    private val backPressedCallback = object : OnBackPressedCallback(true) {\r\n        override fun handleOnBackPressed() {\r\n            if (mainWebView.canGoBack()) {\r\n                mainWebView.goBack()\r\n            } else {\r\n                super.setEnabled(false)\r\n                requireActivity().onBackPressed()\r\n            }\r\n        }\r\n    }\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/nikealarm/nikedrawalarm/ui/fragment/MainWebFragment.kt	(revision 2a4adaf47544d23e0e8bcddf3e1c5532f684ff3d)
++++ app/src/main/java/com/nikealarm/nikedrawalarm/ui/fragment/MainWebFragment.kt	(date 1604142136144)
+@@ -11,6 +11,7 @@
+ import androidx.appcompat.widget.Toolbar
+ import androidx.lifecycle.ViewModelProvider
+ import androidx.navigation.fragment.findNavController
++import androidx.navigation.fragment.navArgs
+ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+ import com.nikealarm.nikedrawalarm.R
+ import com.nikealarm.nikedrawalarm.ui.MainActivity
+@@ -21,8 +22,6 @@
+     private lateinit var mainProgress: ProgressBar
+     private lateinit var mainWebRefresh: SwipeRefreshLayout
+ 
+-    private lateinit var mViewModel: MyViewModel
+-
+     override fun onCreateView(
+         inflater: LayoutInflater, container: ViewGroup?,
+         savedInstanceState: Bundle?
+@@ -44,9 +43,8 @@
+             (activity as MainActivity).supportActionBar?.setDisplayHomeAsUpEnabled(true)
+         }
+         // 인스턴스 설정
+-        mViewModel = ViewModelProvider(requireActivity())[MyViewModel::class.java]
+-
+-        val url = mViewModel.getUrl().value?:"https://www.nike.com/kr/launch/?type=feed"
++        val args: MainWebFragmentArgs by navArgs()
++        val url = args.shoesUrl
+ 
+         // id설정
+         mainWebView = view.findViewById<WebView>(R.id.main_webView).apply {
+Index: app/src/main/java/com/nikealarm/nikedrawalarm/ui/fragment/UpcomingListFragment.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.nikealarm.nikedrawalarm.ui.fragment\r\n\r\nimport android.app.AlarmManager\r\nimport android.app.Dialog\r\nimport android.app.PendingIntent\r\nimport android.content.Context\r\nimport android.content.Intent\r\nimport android.graphics.Color\r\nimport android.os.Build\r\nimport android.os.Bundle\r\nimport android.util.Log\r\nimport android.view.LayoutInflater\r\nimport android.view.MenuItem\r\nimport android.view.View\r\nimport android.view.ViewGroup\r\nimport android.widget.AdapterView\r\nimport android.widget.ArrayAdapter\r\nimport android.widget.TextView\r\nimport android.widget.Toast\r\nimport androidx.fragment.app.Fragment\r\nimport androidx.lifecycle.Observer\r\nimport androidx.lifecycle.ViewModelProvider\r\nimport androidx.navigation.fragment.findNavController\r\nimport androidx.paging.PagedList\r\nimport androidx.recyclerview.widget.LinearLayoutManager\r\nimport androidx.recyclerview.widget.SimpleItemAnimator\r\nimport com.nikealarm.nikedrawalarm.R\r\nimport com.nikealarm.nikedrawalarm.adapter.SpecialShoesListAdapter\r\nimport com.nikealarm.nikedrawalarm.component.MyAlarmReceiver\r\nimport com.nikealarm.nikedrawalarm.database.EventDay\r\nimport com.nikealarm.nikedrawalarm.database.ShoesDataModel\r\nimport com.nikealarm.nikedrawalarm.database.SpecialShoesDataModel\r\nimport com.nikealarm.nikedrawalarm.other.Contents\r\nimport com.nikealarm.nikedrawalarm.ui.MainActivity\r\nimport com.nikealarm.nikedrawalarm.ui.dialog.AlarmDialog\r\nimport com.nikealarm.nikedrawalarm.viewmodel.MyViewModel\r\nimport kotlinx.android.synthetic.main.fragment_upcoming_list.*\r\nimport java.util.*\r\n\r\nclass UpcomingListFragment : Fragment(), SpecialShoesListAdapter.AlarmListener {\r\n\r\n    private lateinit var mViewModel: MyViewModel\r\n    private lateinit var mAdapter: SpecialShoesListAdapter\r\n\r\n    private var isStarted = false\r\n    private lateinit var specialShoesList: PagedList<SpecialShoesDataModel>\r\n\r\n    override fun onCreateView(\r\n        inflater: LayoutInflater,\r\n        container: ViewGroup?,\r\n        savedInstanceState: Bundle?\r\n    ): View? {\r\n        setHasOptionsMenu(true)\r\n        return inflater.inflate(R.layout.fragment_upcoming_list, container, false)\r\n    }\r\n\r\n    // 시작\r\n    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {\r\n        super.onViewCreated(view, savedInstanceState)\r\n\r\n        // 인스턴스 설정\r\n        mViewModel = ViewModelProvider(this)[MyViewModel::class.java]\r\n        mAdapter = SpecialShoesListAdapter(requireContext()).apply {\r\n            setHasStableIds(true)\r\n            setOnAlarmListener(this@UpcomingListFragment)\r\n        }\r\n        val spinnerAdapter = ArrayAdapter<String>(requireContext(), android.R.layout.simple_spinner_dropdown_item, listOf(\"DEFAULT\", \"DRAW\", \"COMING\"))\r\n\r\n        // 옵저버 설정\r\n        mViewModel.specialShoesList.observe(viewLifecycleOwner, Observer {\r\n            mAdapter.submitList(it)\r\n\r\n            if(!isStarted) {\r\n                specialShoesList = it\r\n                isStarted = true\r\n            }\r\n\r\n            if (it.size == 0) {\r\n                appearText()\r\n            } else {\r\n                if (upcomingFrag_noitemText.isEnabled) {\r\n                    disappearText()\r\n                }\r\n            }\r\n        })\r\n\r\n        // 뷰 설정\r\n        with(upcomingFrag_toolbar) {  // 툴바\r\n            (requireActivity() as MainActivity).setSupportActionBar(this)\r\n            (requireActivity() as MainActivity).supportActionBar?.setDisplayHomeAsUpEnabled(true)\r\n        }\r\n        with(upcomingFrag_spinner) { // 스피너\r\n            adapter = spinnerAdapter\r\n            onItemSelectedListener = object : AdapterView.OnItemSelectedListener {\r\n                override fun onItemSelected(adapterView: AdapterView<*>?, v: View?, pos: Int, id: Long) {\r\n                    mViewModel.upcomingCategory.value = when(pos) {\r\n                        0 -> \"DEFAULT\"\r\n                        1 -> ShoesDataModel.CATEGORY_DRAW\r\n                        2 -> ShoesDataModel.CATEGORY_COMING_SOON\r\n                        else -> \"DEFAULT\"\r\n                    }\r\n\r\n                    mAdapter.changeCategory()\r\n\r\n                    v?.let {\r\n                        (v as TextView).setTextColor(Color.WHITE)\r\n                    }\r\n                }\r\n\r\n                override fun onNothingSelected(adapterView: AdapterView<*>?) {\r\n\r\n                }\r\n            }\r\n        }\r\n        with(upcomingFrag_list) { // 리사이클\r\n            adapter = mAdapter\r\n            layoutManager = LinearLayoutManager(requireContext())\r\n            setHasFixedSize(true)\r\n            (itemAnimator as SimpleItemAnimator).supportsChangeAnimations = false\r\n        }\r\n    }\r\n\r\n    override fun onOptionsItemSelected(item: MenuItem): Boolean {\r\n        return when(item.itemId) {\r\n            android.R.id.home -> {\r\n                findNavController().navigateUp()\r\n                true\r\n            }\r\n            else -> false\r\n        }\r\n    }\r\n\r\n    override fun onAlarmListener(\r\n        specialShoesData: SpecialShoesDataModel?,\r\n        pos: Int,\r\n        isChecked: Boolean\r\n    ) {\r\n        if(isChecked) { // 알림이 설정 되어있을 때\r\n            removeNotification(specialShoesData!!, pos)\r\n        } else { // 알림이 설정 되어있지 않을 때6\r\n            setNotification(specialShoesData!!, pos)\r\n        }\r\n    }\r\n\r\n    override fun onDestroy() {\r\n        super.onDestroy()\r\n        mViewModel.upcomingCategory.value = \"DEFAULT\"\r\n    }\r\n\r\n    // 알람 시작\r\n    // 알람 설정 알림창\r\n    private fun setNotification(specialShoesData: SpecialShoesDataModel, pos: Int) {\r\n        val timeTrigger = getTimeInMillis(\r\n            EventDay(\r\n            specialShoesData.SpecialMonth!!,\r\n            specialShoesData.SpecialDay!!,\r\n            specialShoesData.SpecialWhenEvent!!\r\n        )\r\n        )\r\n        AlarmDialog.getAlarmDialog(\"알림 설정\", \"이 상품의 알림을 설정하시겠습니까?\")\r\n            .show(requireActivity().supportFragmentManager, AlarmDialog.ALARM_DIALOG_TAG)\r\n\r\n        AlarmDialog.setOnCheckClickListener(object : AlarmDialog.CheckClickListener {\r\n            override fun onCheckClickListener(dialog: Dialog) {\r\n                setAlarm(timeTrigger, specialShoesData)\r\n                setPreference(\"${specialShoesData.ShoesTitle}-${specialShoesData.ShoesSubTitle}\", timeTrigger)\r\n\r\n                mAdapter.notifyItemChanged(pos)\r\n                dialog.dismiss()\r\n            }\r\n        })\r\n    }\r\n\r\n    // 알람 취소 알림창\r\n    private fun removeNotification(specialShoesData: SpecialShoesDataModel, pos: Int) {\r\n        AlarmDialog.getAlarmDialog(\"알림 설정\", \"이 상품의 알림을 취소하시겠습니까?\")\r\n            .show(requireActivity().supportFragmentManager, AlarmDialog.ALARM_DIALOG_TAG)\r\n\r\n        AlarmDialog.setOnCheckClickListener(object : AlarmDialog.CheckClickListener {\r\n            override fun onCheckClickListener(dialog: Dialog) {\r\n                removeAlarm(specialShoesData)\r\n                removePreference(\"${specialShoesData.ShoesTitle}-${specialShoesData.ShoesSubTitle}\")\r\n\r\n                mAdapter.notifyItemChanged(pos)\r\n                dialog.dismiss()\r\n            }\r\n        })\r\n    }\r\n\r\n    // 알람 설정\r\n    private fun setAlarm(timeTrigger: Long, specialShoesData: SpecialShoesDataModel) {\r\n        val index = specialShoesList.indexOf(specialShoesData)\r\n\r\n        if(index != -1) {\r\n            val alarmIntent = Intent(requireContext(), MyAlarmReceiver::class.java).apply {\r\n                action = Contents.INTENT_ACTION_PRODUCT_ALARM\r\n                putExtra(Contents.INTENT_KEY_POSITION, index)\r\n            }\r\n            val alarmPendingIntent = PendingIntent.getBroadcast(\r\n                requireContext(),\r\n                index,\r\n                alarmIntent,\r\n                PendingIntent.FLAG_UPDATE_CURRENT\r\n            )\r\n            val alarmManager = requireContext().getSystemService(Context.ALARM_SERVICE) as AlarmManager\r\n\r\n            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {\r\n                alarmManager.setExactAndAllowWhileIdle(\r\n                    AlarmManager.RTC_WAKEUP,\r\n                    timeTrigger,\r\n                    alarmPendingIntent\r\n                )\r\n            } else {\r\n                alarmManager.setExact(\r\n                    AlarmManager.RTC_WAKEUP,\r\n                    timeTrigger,\r\n                    alarmPendingIntent\r\n                )\r\n            }\r\n        }\r\n    }\r\n\r\n    // 알람 삭제\r\n    private fun removeAlarm(specialShoesData: SpecialShoesDataModel) {\r\n        val index = specialShoesList.indexOf(specialShoesData)\r\n\r\n        if(index != -1) {\r\n            val alarmIntent = Intent(requireContext(), MyAlarmReceiver::class.java).apply {\r\n                action = Contents.INTENT_ACTION_PRODUCT_ALARM\r\n                putExtra(Contents.INTENT_KEY_POSITION, index)\r\n            }\r\n\r\n            // 이미 설정된 알람이 있는지 확인\r\n            if (checkExistAlarm(alarmIntent, index)) {\r\n\r\n                // 설정된 알람이 있으면 삭제함\r\n                val alarmPendingIntent = PendingIntent.getBroadcast(\r\n                    requireContext(),\r\n                    index,\r\n                    alarmIntent,\r\n                    PendingIntent.FLAG_UPDATE_CURRENT\r\n                )\r\n\r\n                val alarmManager = requireContext().getSystemService(Context.ALARM_SERVICE) as AlarmManager\r\n                alarmManager.cancel(alarmPendingIntent)\r\n                alarmPendingIntent.cancel()\r\n\r\n                Log.i(\"RemoveAlarm\", \"동작\")\r\n            }\r\n        }\r\n    }\r\n\r\n    // 알림 확인\r\n    private fun checkExistAlarm(mIntent: Intent, requestCode: Int): Boolean {\r\n        val alarmPendingIntent = PendingIntent.getBroadcast(\r\n            requireContext(),\r\n            requestCode,\r\n            mIntent,\r\n            PendingIntent.FLAG_NO_CREATE\r\n        )\r\n\r\n        return alarmPendingIntent?.let {\r\n            true\r\n        }?:let {\r\n            false\r\n        }\r\n    }\r\n\r\n    private fun getTimeInMillis(eventDay: EventDay): Long {\r\n        val month = if(eventDay.eventMonth[1].toString() != \"월\") {\r\n            \"${eventDay.eventMonth[0]}${eventDay.eventMonth[1]}\".toIntOrNull() // 10월, 11월, 12월 처리\r\n        } else {\r\n            eventDay.eventMonth[0].toString().toIntOrNull()\r\n        }\r\n        val day = eventDay.eventDay.toIntOrNull()\r\n\r\n        val time = eventDay.eventTime.substring(2, 8).trim().split(\":\")\r\n        val hour = time[0].toIntOrNull()\r\n        val minute = time[1].toIntOrNull()\r\n\r\n        val mCalendar = Calendar.getInstance().apply {\r\n            if (month != null && day != null && hour != null && minute != null) {\r\n                set(Calendar.MONTH, month - 1)\r\n                set(Calendar.DAY_OF_MONTH, day)\r\n                set(Calendar.HOUR_OF_DAY, hour)\r\n                set(Calendar.MINUTE, minute)\r\n                set(Calendar.SECOND, 0)\r\n                set(Calendar.MILLISECOND, 0)\r\n            }\r\n        }\r\n\r\n        return mCalendar.timeInMillis\r\n    }\r\n\r\n    // 데이터베이스에 저장\r\n    private fun setPreference(preferenceKey: String?, timeTrigger: Long) {\r\n        val allowAlarmPreference = requireContext().getSharedPreferences(\r\n            Contents.PREFERENCE_NAME_ALLOW_ALARM,\r\n            Context.MODE_PRIVATE\r\n        )\r\n        val timeSharedPreference =\r\n            requireContext().getSharedPreferences(Contents.PREFERENCE_NAME_TIME, Context.MODE_PRIVATE)\r\n\r\n        with(timeSharedPreference.edit()) {\r\n            putLong(preferenceKey, timeTrigger)\r\n            commit()\r\n        }\r\n\r\n        with(allowAlarmPreference.edit()) {\r\n            this.putBoolean(preferenceKey, true)\r\n            this.commit()\r\n        }\r\n    }\r\n\r\n    private fun removePreference(preferenceKey: String?) {\r\n        val allowAlarmPreference = requireContext().getSharedPreferences(\r\n            Contents.PREFERENCE_NAME_ALLOW_ALARM,\r\n            Context.MODE_PRIVATE\r\n        )\r\n        val timeSharedPreference =\r\n            requireContext().getSharedPreferences(Contents.PREFERENCE_NAME_TIME, Context.MODE_PRIVATE)\r\n\r\n        with(timeSharedPreference.edit()) {\r\n            this.remove(preferenceKey)\r\n            commit()\r\n        }\r\n\r\n        with(allowAlarmPreference.edit()) {\r\n            this.remove(preferenceKey)\r\n            this.commit()\r\n        }\r\n    }\r\n    // 알람 끝\r\n\r\n    // 애니메이션 설정 시작\r\n    private fun appearText() {\r\n        with(upcomingFrag_noitemText) {\r\n            isEnabled = true\r\n\r\n            animate().setDuration(350)\r\n                .alpha(1f)\r\n                .withLayer()\r\n        }\r\n    }\r\n\r\n    private fun disappearText() {\r\n        with(upcomingFrag_noitemText) {\r\n            isEnabled = false\r\n\r\n            animate().setDuration(100)\r\n                .alpha(0f)\r\n                .withLayer()\r\n        }\r\n    }\r\n    // 애니메이션 설정 끝\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/nikealarm/nikedrawalarm/ui/fragment/UpcomingListFragment.kt	(revision 2a4adaf47544d23e0e8bcddf3e1c5532f684ff3d)
++++ app/src/main/java/com/nikealarm/nikedrawalarm/ui/fragment/UpcomingListFragment.kt	(date 1604142136147)
+@@ -5,6 +5,7 @@
+ import android.app.PendingIntent
+ import android.content.Context
+ import android.content.Intent
++import android.content.SharedPreferences
+ import android.graphics.Color
+ import android.os.Build
+ import android.os.Bundle
+@@ -34,17 +35,27 @@
+ import com.nikealarm.nikedrawalarm.ui.MainActivity
+ import com.nikealarm.nikedrawalarm.ui.dialog.AlarmDialog
+ import com.nikealarm.nikedrawalarm.viewmodel.MyViewModel
++import dagger.hilt.android.AndroidEntryPoint
+ import kotlinx.android.synthetic.main.fragment_upcoming_list.*
+ import java.util.*
++import javax.inject.Inject
++import javax.inject.Named
+ 
++@AndroidEntryPoint
+ class UpcomingListFragment : Fragment(), SpecialShoesListAdapter.AlarmListener {
+-
+     private lateinit var mViewModel: MyViewModel
+     private lateinit var mAdapter: SpecialShoesListAdapter
+ 
+     private var isStarted = false
+     private lateinit var specialShoesList: PagedList<SpecialShoesDataModel>
+ 
++    @Inject
++    @Named(Contents.PREFERENCE_NAME_TIME)
++    lateinit var timePreferences: SharedPreferences
++    @Inject
++    @Named(Contents.PREFERENCE_NAME_ALLOW_ALARM)
++    lateinit var allowAlarmPreferences: SharedPreferences
++
+     override fun onCreateView(
+         inflater: LayoutInflater,
+         container: ViewGroup?,
+@@ -60,7 +71,7 @@
+ 
+         // 인스턴스 설정
+         mViewModel = ViewModelProvider(this)[MyViewModel::class.java]
+-        mAdapter = SpecialShoesListAdapter(requireContext()).apply {
++        mAdapter = SpecialShoesListAdapter(requireContext(), allowAlarmPreferences).apply {
+             setHasStableIds(true)
+             setOnAlarmListener(this@UpcomingListFragment)
+         }
+@@ -294,40 +305,26 @@
+ 
+     // 데이터베이스에 저장
+     private fun setPreference(preferenceKey: String?, timeTrigger: Long) {
+-        val allowAlarmPreference = requireContext().getSharedPreferences(
+-            Contents.PREFERENCE_NAME_ALLOW_ALARM,
+-            Context.MODE_PRIVATE
+-        )
+-        val timeSharedPreference =
+-            requireContext().getSharedPreferences(Contents.PREFERENCE_NAME_TIME, Context.MODE_PRIVATE)
+-
+-        with(timeSharedPreference.edit()) {
++        with(timePreferences.edit()) {
+             putLong(preferenceKey, timeTrigger)
+             commit()
+         }
+ 
+-        with(allowAlarmPreference.edit()) {
+-            this.putBoolean(preferenceKey, true)
+-            this.commit()
++        with(allowAlarmPreferences.edit()) {
++            putBoolean(preferenceKey, true)
++            commit()
+         }
+     }
+ 
+     private fun removePreference(preferenceKey: String?) {
+-        val allowAlarmPreference = requireContext().getSharedPreferences(
+-            Contents.PREFERENCE_NAME_ALLOW_ALARM,
+-            Context.MODE_PRIVATE
+-        )
+-        val timeSharedPreference =
+-            requireContext().getSharedPreferences(Contents.PREFERENCE_NAME_TIME, Context.MODE_PRIVATE)
+-
+-        with(timeSharedPreference.edit()) {
+-            this.remove(preferenceKey)
++        with(timePreferences.edit()) {
++            remove(preferenceKey)
+             commit()
+         }
+ 
+-        with(allowAlarmPreference.edit()) {
+-            this.remove(preferenceKey)
+-            this.commit()
++        with(allowAlarmPreferences.edit()) {
++            remove(preferenceKey)
++            commit()
+         }
+     }
+     // 알람 끝
+Index: app/src/main/java/com/nikealarm/nikedrawalarm/ui/fragment/ImageListFragment.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.nikealarm.nikedrawalarm.ui.fragment\r\n\r\nimport android.os.Bundle\r\nimport android.util.Log\r\nimport android.view.LayoutInflater\r\nimport android.view.View\r\nimport android.view.ViewGroup\r\nimport android.widget.ImageButton\r\nimport android.widget.ImageView\r\nimport android.widget.LinearLayout\r\nimport androidx.activity.OnBackPressedCallback\r\nimport androidx.core.content.ContextCompat\r\nimport androidx.fragment.app.Fragment\r\nimport androidx.lifecycle.Observer\r\nimport androidx.lifecycle.ViewModelProvider\r\nimport androidx.navigation.fragment.findNavController\r\nimport androidx.transition.TransitionInflater\r\nimport androidx.viewpager2.widget.ViewPager2\r\nimport androidx.work.*\r\nimport com.bumptech.glide.Glide\r\nimport com.nikealarm.nikedrawalarm.R\r\nimport com.nikealarm.nikedrawalarm.adapter.ImageListPagerAdapter\r\nimport com.nikealarm.nikedrawalarm.component.GetImageWorker\r\nimport com.nikealarm.nikedrawalarm.other.Contents\r\nimport com.nikealarm.nikedrawalarm.viewmodel.MyViewModel\r\nimport kotlinx.android.synthetic.main.fragment_image_list.*\r\n\r\nclass ImageListFragment : Fragment() {\r\n    private lateinit var mViewModel: MyViewModel\r\n    private lateinit var dots: Array<ImageView?>\r\n\r\n    private lateinit var viewPager: ViewPager2\r\n    private lateinit var sliderDotspanel: LinearLayout\r\n\r\n    override fun onCreate(savedInstanceState: Bundle?) {\r\n        super.onCreate(savedInstanceState)\r\n        sharedElementEnterTransition =\r\n            TransitionInflater.from(requireContext()).inflateTransition(R.transition.image_shared_element_transition)\r\n        sharedElementReturnTransition =\r\n            TransitionInflater.from(requireContext()).inflateTransition(R.transition.image_shared_return_element_transition)\r\n    }\r\n\r\n    override fun onCreateView(\r\n        inflater: LayoutInflater,\r\n        container: ViewGroup?,\r\n        savedInstanceState: Bundle?\r\n    ): View? {\r\n        mViewModel = ViewModelProvider(requireActivity())[MyViewModel::class.java]\r\n        val getImageWork = OneTimeWorkRequestBuilder<GetImageWorker>()\r\n            .addTag(Contents.WORKER_GET_IMAGE)\r\n            .setInputData(workDataOf(Contents.WORKER_GET_IMAGE_INPUT_KEY to mViewModel.getUrl().value))\r\n            .build()\r\n\r\n        WorkManager.getInstance(requireContext())\r\n            .enqueueUniqueWork(Contents.WORKER_GET_IMAGE, ExistingWorkPolicy.KEEP, getImageWork)\r\n\r\n        activity?.onBackPressedDispatcher?.addCallback(backPressed)\r\n        return inflater.inflate(R.layout.fragment_image_list, container, false)\r\n    }\r\n\r\n    // 시작\r\n    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {\r\n        super.onViewCreated(view, savedInstanceState)\r\n\r\n        // id 설정\r\n        with(imageListFrag_firstImage) {\r\n//            Picasso.get().load(mViewModel.shoesImageUrl.value).into(this)\r\n            Glide.with(context).load(mViewModel.shoesImageUrl.value).into(this)\r\n            transitionName = mViewModel.getUrl().value\r\n        }\r\n        viewPager = view.findViewById(R.id.imageListFrag_viewpager)\r\n        sliderDotspanel = view.findViewById(R.id.imageListFrag_sliderDots)\r\n        val cancelBtn = view.findViewById<ImageButton>(R.id.imageListFrag_cancelBtn).apply {\r\n            setOnClickListener {\r\n                exitFragment()\r\n            }\r\n        }\r\n\r\n        // 옵저버 설정\r\n        WorkManager.getInstance(requireContext())\r\n            .getWorkInfosByTagLiveData(Contents.WORKER_GET_IMAGE)\r\n            .observe(viewLifecycleOwner, Observer {\r\n                if (it[0].state == WorkInfo.State.SUCCEEDED) {\r\n                    val imageList =\r\n                        it[0].outputData.getStringArray(Contents.WORKER_GET_IMAGE_OUTPUT_KEY)\r\n                    val dotsCount = imageList!!.size\r\n\r\n                    Log.i(\"Check\", \"${imageList.size}\")\r\n                    setDots(dotsCount)\r\n                    val viewPagerAdapter = ImageListPagerAdapter(imageList as Array<String>)\r\n\r\n                    viewPager.adapter = viewPagerAdapter\r\n                    setData()\r\n                }\r\n            })\r\n    }\r\n\r\n    // 데이터가 준비 되었을 시\r\n    private fun setData() {\r\n        imageListFrag_firstImage.visibility = View.GONE\r\n        imageListFrag_layout.visibility = View.VISIBLE\r\n    }\r\n\r\n    private fun resetData() {\r\n        imageListFrag_firstImage.visibility = View.VISIBLE\r\n        imageListFrag_layout.visibility = View.GONE\r\n    }\r\n\r\n    private fun setDots(size: Int) {\r\n        dots = arrayOfNulls(size)\r\n\r\n        for (i in 0 until size) {\r\n            dots[i] = ImageView(requireContext())\r\n            dots[i]?.setImageDrawable(\r\n                ContextCompat.getDrawable(\r\n                    requireContext(),\r\n                    R.drawable.non_active_dot_shape\r\n                )\r\n            )\r\n\r\n            val params = LinearLayout.LayoutParams(\r\n                LinearLayout.LayoutParams.WRAP_CONTENT,\r\n                LinearLayout.LayoutParams.WRAP_CONTENT\r\n            ).apply {\r\n                setMargins(8, 0, 8, 0)\r\n            }\r\n\r\n            sliderDotspanel.addView(dots[i], params)\r\n        }\r\n\r\n        viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {\r\n\r\n            override fun onPageSelected(position: Int) {\r\n                super.onPageSelected(position)\r\n                for (i in 0 until size) {\r\n                    dots[i]?.setImageDrawable(\r\n                        ContextCompat.getDrawable(\r\n                            requireContext(),\r\n                            R.drawable.non_active_dot_shape\r\n                        )\r\n                    )\r\n                }\r\n\r\n                dots[position]?.setImageDrawable(\r\n                    ContextCompat.getDrawable(\r\n                        requireContext(),\r\n                        R.drawable.active_dot_shape\r\n                    )\r\n                )\r\n            }\r\n        })\r\n    }\r\n\r\n    private fun exitFragment() {\r\n        backPressed.isEnabled = false\r\n\r\n        resetData()\r\n        findNavController().navigateUp()\r\n    }\r\n\r\n    private val backPressed = object : OnBackPressedCallback(true) {\r\n\r\n        override fun handleOnBackPressed() {\r\n            exitFragment()\r\n        }\r\n\r\n    }\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/nikealarm/nikedrawalarm/ui/fragment/ImageListFragment.kt	(revision 2a4adaf47544d23e0e8bcddf3e1c5532f684ff3d)
++++ app/src/main/java/com/nikealarm/nikedrawalarm/ui/fragment/ImageListFragment.kt	(date 1604142136142)
+@@ -14,24 +14,26 @@
+ import androidx.lifecycle.Observer
+ import androidx.lifecycle.ViewModelProvider
+ import androidx.navigation.fragment.findNavController
++import androidx.navigation.fragment.navArgs
+ import androidx.transition.TransitionInflater
+ import androidx.viewpager2.widget.ViewPager2
+ import androidx.work.*
+ import com.bumptech.glide.Glide
+ import com.nikealarm.nikedrawalarm.R
+ import com.nikealarm.nikedrawalarm.adapter.ImageListPagerAdapter
+-import com.nikealarm.nikedrawalarm.component.GetImageWorker
++import com.nikealarm.nikedrawalarm.component.worker.GetImageWorker
+ import com.nikealarm.nikedrawalarm.other.Contents
+ import com.nikealarm.nikedrawalarm.viewmodel.MyViewModel
+ import kotlinx.android.synthetic.main.fragment_image_list.*
+ 
+ class ImageListFragment : Fragment() {
+-    private lateinit var mViewModel: MyViewModel
+     private lateinit var dots: Array<ImageView?>
+ 
+     private lateinit var viewPager: ViewPager2
+     private lateinit var sliderDotspanel: LinearLayout
+ 
++    private val args: ImageListFragmentArgs by navArgs()
++
+     override fun onCreate(savedInstanceState: Bundle?) {
+         super.onCreate(savedInstanceState)
+         sharedElementEnterTransition =
+@@ -45,10 +47,9 @@
+         container: ViewGroup?,
+         savedInstanceState: Bundle?
+     ): View? {
+-        mViewModel = ViewModelProvider(requireActivity())[MyViewModel::class.java]
+         val getImageWork = OneTimeWorkRequestBuilder<GetImageWorker>()
+             .addTag(Contents.WORKER_GET_IMAGE)
+-            .setInputData(workDataOf(Contents.WORKER_GET_IMAGE_INPUT_KEY to mViewModel.getUrl().value))
++            .setInputData(workDataOf(Contents.WORKER_GET_IMAGE_INPUT_KEY to args.shoesUrl))
+             .build()
+ 
+         WorkManager.getInstance(requireContext())
+@@ -64,9 +65,8 @@
+ 
+         // id 설정
+         with(imageListFrag_firstImage) {
+-//            Picasso.get().load(mViewModel.shoesImageUrl.value).into(this)
+-            Glide.with(context).load(mViewModel.shoesImageUrl.value).into(this)
+-            transitionName = mViewModel.getUrl().value
++            Glide.with(context).load(args.shoesImageUrl).into(this)
++            transitionName = args.shoesUrl
+         }
+         viewPager = view.findViewById(R.id.imageListFrag_viewpager)
+         sliderDotspanel = view.findViewById(R.id.imageListFrag_sliderDots)
+Index: app/src/main/java/com/nikealarm/nikedrawalarm/ui/fragment/SettingScreenPreference.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.nikealarm.nikedrawalarm.ui.fragment\r\n\r\nimport android.app.AlarmManager\r\nimport android.app.PendingIntent\r\nimport android.content.Context\r\nimport android.content.Intent\r\nimport android.content.SharedPreferences\r\nimport android.net.Uri\r\nimport android.os.Build\r\nimport android.os.Bundle\r\nimport android.util.Log\r\nimport androidx.preference.Preference\r\nimport androidx.preference.PreferenceFragmentCompat\r\nimport androidx.preference.SwitchPreferenceCompat\r\nimport androidx.work.OneTimeWorkRequestBuilder\r\nimport androidx.work.WorkManager\r\nimport com.nikealarm.nikedrawalarm.BuildConfig\r\nimport com.nikealarm.nikedrawalarm.component.MyAlarmReceiver\r\nimport com.nikealarm.nikedrawalarm.R\r\nimport com.nikealarm.nikedrawalarm.component.FindDrawWorker\r\nimport com.nikealarm.nikedrawalarm.other.Contents\r\nimport java.util.*\r\n\r\nclass SettingScreenPreference : PreferenceFragmentCompat() {\r\n    private lateinit var mAlarmManager: AlarmManager\r\n    private lateinit var mSharedPreference: SharedPreferences\r\n\r\n    override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {\r\n        setPreferencesFromResource(R.xml.setting_screen, rootKey)\r\n\r\n        // 인스턴스 설정\r\n        mAlarmManager = context?.getSystemService(Context.ALARM_SERVICE) as AlarmManager\r\n        mSharedPreference = requireContext().getSharedPreferences(\r\n            Contents.PREFERENCE_NAME_TIME,\r\n            Context.MODE_PRIVATE\r\n        )\r\n\r\n        val showVersionPreference = findPreference<Preference>(getString(R.string.setting_preference_version))?.apply {\r\n            summary = BuildConfig.VERSION_NAME\r\n        }\r\n        // 알람 설정 스위치\r\n        val allowAlarmSwitch =\r\n            findPreference<SwitchPreferenceCompat>(getString(R.string.setting_preference_switchKey))?.apply {\r\n                setOnPreferenceClickListener {\r\n                    if (this.isChecked) {\r\n                        setAlarm()\r\n                    } else {\r\n                        removeAlarm()\r\n                    }\r\n                    true\r\n                }\r\n            }\r\n//        val shareDropDownPreference =\r\n//            findPreference<Preference>(getString(R.string.setting_preference_share))?.apply {\r\n//                setOnPreferenceClickListener {\r\n//                    shareIntent()\r\n//                    true\r\n//                }\r\n//            }\r\n        val emailDropDownPreference =\r\n            findPreference<Preference>(getString(R.string.setting_preference_email))?.apply {\r\n                setOnPreferenceClickListener {\r\n                    emailIntent()\r\n                    true\r\n                }\r\n            }\r\n    }\r\n\r\n    // 알람 설정\r\n    private fun setAlarm() {\r\n        val alarmIntent = Intent(context, MyAlarmReceiver::class.java).apply {\r\n            action = Contents.INTENT_ACTION_SYNC_ALARM\r\n        }\r\n\r\n        val mCalendar = Calendar.getInstance().apply {\r\n            val time = if(this.get(Calendar.HOUR_OF_DAY) == 24) {\r\n                3\r\n            } else {\r\n                this.get(Calendar.HOUR_OF_DAY) + 3\r\n            }\r\n            set(Calendar.HOUR_OF_DAY, time)\r\n            set(Calendar.MINUTE, 0)\r\n            set(Calendar.SECOND, 0)\r\n            set(Calendar.MILLISECOND, 0)\r\n        }\r\n\r\n        val timeTrigger = mCalendar.timeInMillis\r\n\r\n        val alarmPendingIntent = PendingIntent.getBroadcast(\r\n            context,\r\n            Contents.SYNC_ALARM_CODE,\r\n            alarmIntent,\r\n            PendingIntent.FLAG_UPDATE_CURRENT\r\n        )\r\n\r\n        // 오전 8시 알람 설정\r\n        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {\r\n            mAlarmManager.setExactAndAllowWhileIdle(\r\n                AlarmManager.RTC_WAKEUP,\r\n                timeTrigger,\r\n                alarmPendingIntent\r\n            )\r\n        } else {\r\n            mAlarmManager.setExact(\r\n                AlarmManager.RTC_WAKEUP,\r\n                timeTrigger,\r\n                alarmPendingIntent\r\n            )\r\n        }\r\n        setPreference(timeTrigger)\r\n\r\n        // 테스트\r\n//        val parsingWorkRequest = OneTimeWorkRequestBuilder<FindDrawWorker>()\r\n//            .build()\r\n//        WorkManager.getInstance(requireContext()).enqueue(parsingWorkRequest)\r\n\r\n        Log.i(\"SetAlarm\", \"동작\")\r\n    }\r\n\r\n    // 등록한 알람시간을 데이터베이스에 저장함\r\n    private fun setPreference(timeTrigger: Long) {\r\n        with(mSharedPreference.edit()) {\r\n            putLong(Contents.SYNC_ALARM_KEY, timeTrigger)\r\n            commit()\r\n        }\r\n    }\r\n\r\n    // 알람 지우기\r\n    private fun removeAlarm() {\r\n        val mIntent = Intent(context, MyAlarmReceiver::class.java).apply {\r\n            action = Contents.INTENT_ACTION_SYNC_ALARM\r\n        }\r\n\r\n        // 이미 설정된 알람이 있는지 확인\r\n        if (checkExistAlarm(mIntent)) {\r\n\r\n            // 설정된 알람이 있으면 삭제함\r\n            val alarmPendingIntent = PendingIntent.getBroadcast(\r\n                context,\r\n                Contents.SYNC_ALARM_CODE,\r\n                mIntent,\r\n                PendingIntent.FLAG_UPDATE_CURRENT\r\n            )\r\n\r\n            mAlarmManager.cancel(alarmPendingIntent)\r\n            alarmPendingIntent.cancel()\r\n\r\n            Log.i(\"RemoveAlarm\", \"동작\")\r\n        }\r\n        removePreference()\r\n    }\r\n\r\n    // 알림 확인\r\n    private fun checkExistAlarm(mIntent: Intent): Boolean {\r\n        val alarmPendingIntent = PendingIntent.getBroadcast(\r\n            context,\r\n            Contents.SYNC_ALARM_CODE,\r\n            mIntent,\r\n            PendingIntent.FLAG_NO_CREATE\r\n        )\r\n\r\n        return alarmPendingIntent?.let {\r\n            true\r\n        }?:let {\r\n            false\r\n        }\r\n    }\r\n\r\n    // 등록한 알람시간을 데이터베이스에서 지움\r\n    private fun removePreference() {\r\n        with(mSharedPreference.edit()) {\r\n            this.remove(Contents.SYNC_ALARM_KEY)\r\n            commit()\r\n        }\r\n    }\r\n\r\n    // 출시 후 수정하기\r\n    private fun shareIntent() {\r\n\r\n    }\r\n\r\n    private fun emailIntent() {\r\n        val intent = Intent(Intent.ACTION_SENDTO).apply {\r\n            val email = arrayOf(getString(R.string.developer_email))\r\n            data = Uri.parse(\"mailto:\")\r\n            putExtra(Intent.EXTRA_EMAIL, email)\r\n        }\r\n\r\n        if (intent.resolveActivity(requireContext().packageManager) != null) {\r\n            startActivity(intent)\r\n        }\r\n    }\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/nikealarm/nikedrawalarm/ui/fragment/SettingScreenPreference.kt	(revision 2a4adaf47544d23e0e8bcddf3e1c5532f684ff3d)
++++ app/src/main/java/com/nikealarm/nikedrawalarm/ui/fragment/SettingScreenPreference.kt	(date 1604142136146)
+@@ -12,28 +12,28 @@
+ import androidx.preference.Preference
+ import androidx.preference.PreferenceFragmentCompat
+ import androidx.preference.SwitchPreferenceCompat
+-import androidx.work.OneTimeWorkRequestBuilder
+-import androidx.work.WorkManager
+ import com.nikealarm.nikedrawalarm.BuildConfig
+ import com.nikealarm.nikedrawalarm.component.MyAlarmReceiver
+ import com.nikealarm.nikedrawalarm.R
+-import com.nikealarm.nikedrawalarm.component.FindDrawWorker
+ import com.nikealarm.nikedrawalarm.other.Contents
++import dagger.hilt.android.AndroidEntryPoint
+ import java.util.*
++import javax.inject.Inject
++import javax.inject.Named
+ 
++@AndroidEntryPoint
+ class SettingScreenPreference : PreferenceFragmentCompat() {
+     private lateinit var mAlarmManager: AlarmManager
+-    private lateinit var mSharedPreference: SharedPreferences
++
++    @Inject
++    @Named(Contents.PREFERENCE_NAME_TIME)
++    lateinit var timePreferences: SharedPreferences
+ 
+     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
+         setPreferencesFromResource(R.xml.setting_screen, rootKey)
+ 
+         // 인스턴스 설정
+         mAlarmManager = context?.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+-        mSharedPreference = requireContext().getSharedPreferences(
+-            Contents.PREFERENCE_NAME_TIME,
+-            Context.MODE_PRIVATE
+-        )
+ 
+         val showVersionPreference = findPreference<Preference>(getString(R.string.setting_preference_version))?.apply {
+             summary = BuildConfig.VERSION_NAME
+@@ -119,7 +119,7 @@
+ 
+     // 등록한 알람시간을 데이터베이스에 저장함
+     private fun setPreference(timeTrigger: Long) {
+-        with(mSharedPreference.edit()) {
++        with(timePreferences.edit()) {
+             putLong(Contents.SYNC_ALARM_KEY, timeTrigger)
+             commit()
+         }
+@@ -168,7 +168,7 @@
+ 
+     // 등록한 알람시간을 데이터베이스에서 지움
+     private fun removePreference() {
+-        with(mSharedPreference.edit()) {
++        with(timePreferences.edit()) {
+             this.remove(Contents.SYNC_ALARM_KEY)
+             commit()
+         }
+Index: app/src/main/java/com/nikealarm/nikedrawalarm/ui/MainActivity.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.nikealarm.nikedrawalarm.ui\r\n\r\nimport android.app.NotificationManager\r\nimport android.content.Context\r\nimport android.content.Intent\r\nimport androidx.appcompat.app.AppCompatActivity\r\nimport android.os.Bundle\r\nimport android.util.Log\r\nimport androidx.navigation.fragment.findNavController\r\nimport com.nikealarm.nikedrawalarm.R\r\nimport com.nikealarm.nikedrawalarm.other.Contents\r\nimport kotlinx.android.synthetic.main.activity_main.*\r\n\r\n/*\r\n* 자동응모 기능\r\n* UPCOMING 정보 시 분 초 표시 (서버 필요)\r\n* 진행중인 상품 알려주기\r\n* UI 수정 및 최적화\r\n* 코드 최적화\r\n* */\r\nclass MainActivity : AppCompatActivity() {\r\n\r\n    override fun onCreate(savedInstanceState: Bundle?) {\r\n        super.onCreate(savedInstanceState)\r\n        setContentView(R.layout.activity_main)\r\n\r\n        // 기존의 알림창이 존재 했을 때 알림창을 제거함\r\n        ifNeedToMoveFragment(intent)\r\n        cancelNotification()\r\n    }\r\n\r\n    override fun onNewIntent(intent: Intent?) {\r\n        super.onNewIntent(intent)\r\n        ifNeedToMoveFragment(intent)\r\n    }\r\n\r\n    private fun ifNeedToMoveFragment(intent: Intent?) {\r\n        if(intent?.action == Contents.INTENT_ACTION_GOTO_WEBSITE) {\r\n            setIntent(intent)\r\n            cancelNotification()\r\n            nav_host_fragment.findNavController().navigate(R.id.action_global_mainFragment)\r\n        } else if(intent?.action == Contents.INTENT_ACTION_GOTO_DRAWLIST) {\r\n            setIntent(intent)\r\n            cancelNotification()\r\n            nav_host_fragment.findNavController().navigate(R.id.action_global_drawListFragment)\r\n        }\r\n    }\r\n\r\n    private fun cancelNotification() {\r\n        val closeChannelId = intent.getIntExtra(Contents.CHANNEL_ID, -1)\r\n        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager\r\n\r\n        if(closeChannelId != -1) {\r\n            notificationManager.cancel(closeChannelId)\r\n        } else {\r\n            notificationManager.cancelAll()\r\n        }\r\n    }\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/nikealarm/nikedrawalarm/ui/MainActivity.kt	(revision 2a4adaf47544d23e0e8bcddf3e1c5532f684ff3d)
++++ app/src/main/java/com/nikealarm/nikedrawalarm/ui/MainActivity.kt	(date 1604142136140)
+@@ -9,6 +9,7 @@
+ import androidx.navigation.fragment.findNavController
+ import com.nikealarm.nikedrawalarm.R
+ import com.nikealarm.nikedrawalarm.other.Contents
++import dagger.hilt.android.AndroidEntryPoint
+ import kotlinx.android.synthetic.main.activity_main.*
+ 
+ /*
+@@ -18,6 +19,7 @@
+ * UI 수정 및 최적화
+ * 코드 최적화
+ * */
++@AndroidEntryPoint
+ class MainActivity : AppCompatActivity() {
+ 
+     override fun onCreate(savedInstanceState: Bundle?) {
+Index: app/src/main/java/com/nikealarm/nikedrawalarm/adapter/ShoesListAdapter.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.nikealarm.nikedrawalarm.adapter\r\n\r\nimport android.content.Context\r\nimport android.view.LayoutInflater\r\nimport android.view.View\r\nimport android.view.ViewGroup\r\nimport android.widget.ImageView\r\nimport android.widget.TextView\r\nimport androidx.fragment.app.FragmentManager\r\nimport androidx.paging.PagedListAdapter\r\nimport androidx.recyclerview.widget.DiffUtil\r\nimport androidx.recyclerview.widget.RecyclerView\r\nimport com.bumptech.glide.Glide\r\nimport com.nikealarm.nikedrawalarm.R\r\nimport com.nikealarm.nikedrawalarm.database.ShoesDataModel\r\n\r\nclass ShoesListAdapter(\r\n    private val mContext: Context,\r\n    private val fragmentManager: FragmentManager\r\n) :\r\n    PagedListAdapter<ShoesDataModel, ShoesListAdapter.DrawListViewHolder>(\r\n        diffCallback\r\n    ) {\r\n\r\n    private lateinit var itemListener: ItemClickListener\r\n    private lateinit var imageListener: ImageClickListener\r\n\r\n    interface ItemClickListener {\r\n        fun onClickItem(newUrl: String?)\r\n    }\r\n\r\n    interface ImageClickListener {\r\n        fun onClickImage(newUrl: String, shoesImageUrl: String, imageView: ImageView)\r\n    }\r\n\r\n    fun setOnItemClickListener(listener: ItemClickListener) {\r\n        itemListener = listener\r\n    }\r\n\r\n    fun setOnImageClickListener(listener: ImageClickListener) {\r\n        imageListener = listener\r\n    }\r\n\r\n    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DrawListViewHolder {\r\n        val view =\r\n            LayoutInflater.from(parent.context).inflate(R.layout.shoes_listitem, parent, false)\r\n        return DrawListViewHolder(view)\r\n    }\r\n\r\n    override fun onBindViewHolder(holder: DrawListViewHolder, position: Int) {\r\n        holder.bindView(getItem(position))\r\n    }\r\n\r\n    inner class DrawListViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {\r\n        val shoesImage = itemView.findViewById<ImageView>(R.id.drawList_imgItem)\r\n        val shoesSubTitleText = itemView.findViewById<TextView>(R.id.drawList_shoesSubTitle_text)\r\n        val shoesTitleText = itemView.findViewById<TextView>(R.id.drawList_shoesTitle_text)\r\n        val howToEventText = itemView.findViewById<TextView>(R.id.drawList_howToEvent_text)\r\n        val learnMoreText = itemView.findViewById<TextView>(R.id.drawList_learnMore_text)\r\n\r\n        fun bindView(data: ShoesDataModel?) {\r\n            with(shoesImage) {\r\n                Glide.with(mContext).load(data?.shoesImageUrl).into(this)\r\n                transitionName = data?.shoesUrl\r\n\r\n                setOnClickListener {\r\n                    imageListener.onClickImage(\r\n                        data?.shoesUrl!!,\r\n                        data.shoesImageUrl!!,\r\n                        shoesImage\r\n                    )\r\n                }\r\n            }\r\n            shoesSubTitleText.text = data?.shoesSubTitle\r\n            shoesTitleText.text = data?.shoesTitle\r\n            howToEventText.text = data?.shoesPrice\r\n\r\n            learnMoreText.setOnClickListener {\r\n                itemListener.onClickItem(data?.shoesUrl)\r\n            }\r\n        }\r\n    }\r\n\r\n    companion object {\r\n        private val diffCallback = object : DiffUtil.ItemCallback<ShoesDataModel>() {\r\n            override fun areItemsTheSame(\r\n                oldItem: ShoesDataModel,\r\n                newItem: ShoesDataModel\r\n            ): Boolean =\r\n                oldItem.id == newItem.id\r\n\r\n            override fun areContentsTheSame(\r\n                oldItem: ShoesDataModel,\r\n                newItem: ShoesDataModel\r\n            ): Boolean =\r\n                oldItem.shoesTitle == newItem.shoesTitle\r\n        }\r\n    }\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/nikealarm/nikedrawalarm/adapter/ShoesListAdapter.kt	(revision 2a4adaf47544d23e0e8bcddf3e1c5532f684ff3d)
++++ app/src/main/java/com/nikealarm/nikedrawalarm/adapter/ShoesListAdapter.kt	(date 1604142136123)
+@@ -1,6 +1,7 @@
+ package com.nikealarm.nikedrawalarm.adapter
+ 
+ import android.content.Context
++import android.graphics.Color
+ import android.view.LayoutInflater
+ import android.view.View
+ import android.view.ViewGroup
+@@ -74,6 +75,11 @@
+             shoesSubTitleText.text = data?.shoesSubTitle
+             shoesTitleText.text = data?.shoesTitle
+             howToEventText.text = data?.shoesPrice
++            if(data?.shoesPrice == ShoesDataModel.SHOES_SOLD_OUT) {
++                howToEventText.setTextColor(Color.RED)
++            } else {
++                howToEventText.setTextColor(Color.BLACK)
++            }
+ 
+             learnMoreText.setOnClickListener {
+                 itemListener.onClickItem(data?.shoesUrl)
+Index: app/src/main/java/com/nikealarm/nikedrawalarm/adapter/SpecialShoesListAdapter.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.nikealarm.nikedrawalarm.adapter\r\n\r\nimport android.content.Context\r\nimport android.util.Log\r\nimport android.view.LayoutInflater\r\nimport android.view.View\r\nimport android.view.ViewGroup\r\nimport android.view.animation.Animation\r\nimport android.view.animation.Transformation\r\nimport android.widget.FrameLayout\r\nimport android.widget.ImageButton\r\nimport android.widget.ImageView\r\nimport android.widget.TextView\r\nimport androidx.constraintlayout.widget.ConstraintLayout\r\nimport androidx.paging.PagedListAdapter\r\nimport androidx.recyclerview.widget.DiffUtil\r\nimport androidx.recyclerview.widget.RecyclerView\r\nimport com.bumptech.glide.Glide\r\nimport com.chauthai.swipereveallayout.SwipeRevealLayout\r\nimport com.chauthai.swipereveallayout.ViewBinderHelper\r\nimport com.nikealarm.nikedrawalarm.R\r\nimport com.nikealarm.nikedrawalarm.database.ShoesDataModel\r\nimport com.nikealarm.nikedrawalarm.database.SpecialShoesDataModel\r\nimport com.nikealarm.nikedrawalarm.other.Contents\r\n\r\nclass SpecialShoesListAdapter(private val context: Context) :\r\n    PagedListAdapter<SpecialShoesDataModel, SpecialShoesListAdapter.SpecialShoesListViewHolder>(\r\n        diffCallback\r\n    ) {\r\n\r\n    interface AlarmListener {\r\n        fun onAlarmListener(specialShoesData: SpecialShoesDataModel?, pos: Int, isChecked: Boolean)\r\n    }\r\n\r\n    private var previousPosition = -1 // 이전에 선택한 리스트뷰에 위치\r\n    private val viewBinderHelper = ViewBinderHelper()\r\n    private lateinit var alarmListener: AlarmListener\r\n\r\n    inner class SpecialShoesListViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {\r\n        val monthText = itemView.findViewById<TextView>(R.id.upcomingList_monthText)\r\n        val dayText = itemView.findViewById<TextView>(R.id.upcomingList_dayText)\r\n        val categoryText = itemView.findViewById<TextView>(R.id.upcomingList_categoryText)\r\n        val shoesTitleText = itemView.findViewById<TextView>(R.id.upcomingList_shoesTitle_text)\r\n        val shoesSubTitleText =\r\n            itemView.findViewById<TextView>(R.id.upcomingList_shoesSubTitle_text)\r\n        val whenStartEventText =\r\n            itemView.findViewById<TextView>(R.id.upcomingList_whenStartEvent_text)\r\n        val shoesImageView = itemView.findViewById<ImageView>(R.id.upcomingList_shoesImage_imageView)\r\n        val alarmImageButton = itemView.findViewById<ImageButton>(R.id.upcomingList_alarm_imageButton)\r\n        val moreInfoButton = itemView.findViewById<ImageButton>(R.id.upcomingList_moreInfo_imageButton)\r\n\r\n        val mainLayout = itemView.findViewById<ConstraintLayout>(R.id.upcomingList_mainLayout)\r\n        val subLayout = itemView.findViewById<FrameLayout>(R.id.upcomingList_subLayout)\r\n        val swipeLayout = itemView.findViewById<SwipeRevealLayout>(R.id.upcomingList_swipeLayout)\r\n\r\n        fun bindView(data: SpecialShoesDataModel?) {\r\n            monthText.text = data?.SpecialMonth\r\n            dayText.text = data?.SpecialDay\r\n            categoryText.text = when(data?.ShoesCategory) {\r\n                ShoesDataModel.CATEGORY_DRAW -> \"DRAW\"\r\n                ShoesDataModel.CATEGORY_COMING_SOON -> \"COMING\"\r\n                else -> \"DRAW\"\r\n            }\r\n            shoesTitleText.text = data?.ShoesTitle\r\n            shoesSubTitleText.text = data?.ShoesSubTitle\r\n            whenStartEventText.text = data?.SpecialWhenEvent\r\n            Glide.with(itemView.context).load(data?.ShoesImageUrl).into(shoesImageView)\r\n\r\n            if(data?.isOpened!!) { // 레이아웃 확장\r\n                if(subLayout.visibility == View.GONE) {\r\n                    expand()\r\n                }\r\n            } else {\r\n                collapse()\r\n            }\r\n\r\n            mainLayout.setOnClickListener {\r\n                currentList?.get(adapterPosition)?.isOpened = !currentList?.get(adapterPosition)!!.isOpened\r\n                Log.i(\"CheckList\", \"${data.isOpened}\")\r\n\r\n                if(previousPosition != -1 && previousPosition != adapterPosition) { // 다른 리스트를 눌렀을 때\r\n                    currentList?.get(previousPosition)?.isOpened = !currentList?.get(previousPosition)!!.isOpened\r\n                    notifyItemChanged(previousPosition)\r\n                }\r\n\r\n                notifyItemChanged(adapterPosition)\r\n                previousPosition = if(previousPosition == adapterPosition) { // 같은 리스트를 눌렀을 때\r\n                    -1\r\n                } else { // 다른 리스트를 눌렀을 때\r\n                    adapterPosition\r\n                }\r\n            }\r\n\r\n            if (isChecked(\"${data.ShoesTitle}-${data.ShoesSubTitle}\")) {\r\n                alarmImageButton.setImageResource(R.drawable.ic_baseline_notifications_active)\r\n\r\n                alarmImageButton.setOnClickListener {\r\n                    alarmListener.onAlarmListener(data, adapterPosition, true)\r\n                }\r\n            } else {\r\n                alarmImageButton.setImageResource(R.drawable.ic_baseline_notifications_none)\r\n\r\n                alarmImageButton.setOnClickListener {\r\n                    alarmListener.onAlarmListener(data, adapterPosition, false)\r\n                }\r\n            }\r\n        }\r\n\r\n        // 레이아웃 확장\r\n        private fun expand() {\r\n            expandAnimation()\r\n        }\r\n\r\n        // 레이아웃 축소\r\n        private fun collapse() {\r\n            collapseAnimation()\r\n        }\r\n\r\n        // 애니메이션 설정 시작\r\n        private fun expandAnimation() {\r\n            with(moreInfoButton) {\r\n                animate().setDuration(200)\r\n                    .rotation(-180f)\r\n                    .withLayer()\r\n            }\r\n\r\n            with(subLayout) {\r\n                measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED)\r\n                val actualHeight = measuredHeight\r\n\r\n                layoutParams.height = 0\r\n                visibility = View.VISIBLE\r\n\r\n                val animation = object : Animation() {\r\n                    override fun applyTransformation(interpolatedTime: Float, t: Transformation?) {\r\n                        super.applyTransformation(interpolatedTime, t)\r\n\r\n                        layoutParams.height = if(interpolatedTime.toInt() == 1) {\r\n                            ViewGroup.LayoutParams.WRAP_CONTENT\r\n                        } else {\r\n                            (actualHeight * interpolatedTime).toInt()\r\n                        }\r\n                        requestLayout()\r\n                    }\r\n                }\r\n\r\n                animation.duration = (actualHeight / context.resources.displayMetrics.density).toLong()\r\n                startAnimation(animation)\r\n            }\r\n        }\r\n\r\n        private fun collapseAnimation() {\r\n            with(moreInfoButton) {\r\n                animate().setDuration(200)\r\n                    .rotation(0f)\r\n                    .withLayer()\r\n            }\r\n\r\n            with(subLayout) {\r\n                val actualHeight = measuredHeight\r\n\r\n                val animation = object : Animation() {\r\n                    override fun applyTransformation(interpolatedTime: Float, t: Transformation?) {\r\n                        super.applyTransformation(interpolatedTime, t)\r\n\r\n                        if(interpolatedTime.toInt() == 1) {\r\n                            visibility = View.GONE\r\n                        } else {\r\n                            layoutParams.height = actualHeight - (actualHeight * interpolatedTime).toInt()\r\n                            requestLayout()\r\n                        }\r\n                    }\r\n                }\r\n\r\n                animation.duration = (actualHeight / context.resources.displayMetrics.density).toLong()\r\n                startAnimation(animation)\r\n            }\r\n        }\r\n        // 애니메이션 설정 끝\r\n\r\n        private fun isChecked(preferenceKey: String?): Boolean {\r\n            val allowAlarmPreference = context.getSharedPreferences(\r\n                Contents.PREFERENCE_NAME_ALLOW_ALARM,\r\n                Context.MODE_PRIVATE\r\n            )\r\n            return allowAlarmPreference.getBoolean(preferenceKey, false)\r\n        }\r\n    }\r\n\r\n    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SpecialShoesListViewHolder {\r\n        val view = LayoutInflater.from(parent.context).inflate(R.layout.upcoming_listitem, parent, false)\r\n        return SpecialShoesListViewHolder(view)\r\n    }\r\n\r\n    override fun onBindViewHolder(holder: SpecialShoesListViewHolder, position: Int) {\r\n        with(viewBinderHelper) {\r\n            setOpenOnlyOne(true)\r\n            bind(holder.swipeLayout, getItemId(position).toString())\r\n        }\r\n        holder.bindView(getItem(position))\r\n    }\r\n\r\n    override fun getItemId(position: Int): Long {\r\n        return currentList?.get(position)?.ShoesId?.toLong()!!\r\n    }\r\n\r\n    fun setOnAlarmListener(_alarmListener: AlarmListener) {\r\n        alarmListener = _alarmListener\r\n    }\r\n\r\n    fun changeCategory() {\r\n        if(previousPosition != -1) {\r\n            currentList?.get(previousPosition)?.isOpened = false\r\n            previousPosition = -1\r\n        }\r\n\r\n        notifyDataSetChanged()\r\n    }\r\n\r\n    companion object {\r\n        private val diffCallback = object : DiffUtil.ItemCallback<SpecialShoesDataModel>() {\r\n            override fun areItemsTheSame(\r\n                oldItem: SpecialShoesDataModel,\r\n                newItem: SpecialShoesDataModel\r\n            ): Boolean =\r\n                oldItem.ShoesId == newItem.ShoesId\r\n\r\n            override fun areContentsTheSame(\r\n                oldItem: SpecialShoesDataModel,\r\n                newItem: SpecialShoesDataModel\r\n            ): Boolean =\r\n                oldItem.ShoesTitle == newItem.ShoesTitle\r\n        }\r\n    }\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/nikealarm/nikedrawalarm/adapter/SpecialShoesListAdapter.kt	(revision 2a4adaf47544d23e0e8bcddf3e1c5532f684ff3d)
++++ app/src/main/java/com/nikealarm/nikedrawalarm/adapter/SpecialShoesListAdapter.kt	(date 1604142136124)
+@@ -1,6 +1,7 @@
+ package com.nikealarm.nikedrawalarm.adapter
+ 
+ import android.content.Context
++import android.content.SharedPreferences
+ import android.util.Log
+ import android.view.LayoutInflater
+ import android.view.View
+@@ -21,9 +22,8 @@
+ import com.nikealarm.nikedrawalarm.R
+ import com.nikealarm.nikedrawalarm.database.ShoesDataModel
+ import com.nikealarm.nikedrawalarm.database.SpecialShoesDataModel
+-import com.nikealarm.nikedrawalarm.other.Contents
+ 
+-class SpecialShoesListAdapter(private val context: Context) :
++class SpecialShoesListAdapter(private val context: Context, private val allowAlarmPreferences: SharedPreferences) :
+     PagedListAdapter<SpecialShoesDataModel, SpecialShoesListAdapter.SpecialShoesListViewHolder>(
+         diffCallback
+     ) {
+@@ -179,11 +179,7 @@
+         // 애니메이션 설정 끝
+ 
+         private fun isChecked(preferenceKey: String?): Boolean {
+-            val allowAlarmPreference = context.getSharedPreferences(
+-                Contents.PREFERENCE_NAME_ALLOW_ALARM,
+-                Context.MODE_PRIVATE
+-            )
+-            return allowAlarmPreference.getBoolean(preferenceKey, false)
++            return allowAlarmPreferences.getBoolean(preferenceKey, false)
+         }
+     }
+ 
+Index: app/src/main/java/com/nikealarm/nikedrawalarm/component/MyAlarmReceiver.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.nikealarm.nikedrawalarm.component\r\n\r\nimport android.app.AlarmManager\r\nimport android.app.PendingIntent\r\nimport android.content.BroadcastReceiver\r\nimport android.content.Context\r\nimport android.content.Intent\r\nimport android.content.SharedPreferences\r\nimport android.os.Build\r\nimport android.util.Log\r\nimport androidx.work.ExistingWorkPolicy\r\nimport androidx.work.OneTimeWorkRequestBuilder\r\nimport androidx.work.WorkManager\r\nimport androidx.work.workDataOf\r\nimport com.nikealarm.nikedrawalarm.database.Dao\r\nimport com.nikealarm.nikedrawalarm.database.MyDataBase\r\nimport com.nikealarm.nikedrawalarm.database.SpecialShoesDataModel\r\nimport com.nikealarm.nikedrawalarm.other.Contents\r\nimport kotlinx.coroutines.CoroutineScope\r\nimport kotlinx.coroutines.Dispatchers\r\nimport kotlinx.coroutines.launch\r\n\r\nclass MyAlarmReceiver : BroadcastReceiver() {\r\n    private lateinit var mDao: Dao\r\n\r\n    override fun onReceive(context: Context, intent: Intent) {\r\n        // This method is called when the BroadcastReceiver is receiving an Intent broadcast.\r\n        // 재부팅 시 알람 재설정\r\n        if (intent.action == \"android.intent.action.BOOT_COMPLETED\") {\r\n            reSetAlarm(context)\r\n            reSetProductAlarm(context)\r\n        } else {\r\n            // 매일 데이터를 갱신 함\r\n            if (intent.action == Contents.INTENT_ACTION_SYNC_ALARM) {\r\n                reSetAlarm(context)\r\n\r\n                val parsingWorkRequest = OneTimeWorkRequestBuilder<FindDrawWorker>()\r\n                    .build()\r\n                WorkManager.getInstance(context).enqueue(parsingWorkRequest)\r\n            }\r\n            // 특정 상품의 알림을 울림\r\n            else if (intent.action == Contents.INTENT_ACTION_PRODUCT_ALARM) {\r\n                // 상품의 대한 알림을 울림\r\n                val dataPosition = intent.getIntExtra(Contents.INTENT_KEY_POSITION, -1)\r\n                Log.i(\"Check3\", \"동작\")\r\n\r\n                if (dataPosition != -1) {\r\n                    Log.i(\"Check4\", \"동작 ${dataPosition}\")\r\n                    val productNotifyWorkRequest = OneTimeWorkRequestBuilder<ProductNotifyWorker>()\r\n                        .setInputData(workDataOf(Contents.WORKER_INPUT_DATA_KEY to dataPosition))\r\n                        .build()\r\n                    WorkManager.getInstance(context).enqueue(productNotifyWorkRequest)\r\n                }\r\n            }\r\n        }\r\n    }\r\n\r\n    // 알람 재설정\r\n    private fun reSetAlarm(context: Context) {\r\n        Log.i(\"Check\", \"동작\")\r\n\r\n        val mSharedPreferences =\r\n            context.getSharedPreferences(Contents.PREFERENCE_NAME_TIME, Context.MODE_PRIVATE)\r\n        var timeTrigger = mSharedPreferences.getLong(Contents.SYNC_ALARM_KEY, 0)\r\n\r\n        if (timeTrigger != 0.toLong()) {\r\n            Log.i(\"Check\", \"재설정\")\r\n            while(timeTrigger < System.currentTimeMillis()) {\r\n                timeTrigger += 10800000\r\n            }\r\n\r\n            val mAlarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager\r\n\r\n            val reIntent = Intent(context, MyAlarmReceiver::class.java).apply {\r\n                action = Contents.INTENT_ACTION_SYNC_ALARM\r\n            }\r\n\r\n            val alarmPendingIntent = PendingIntent.getBroadcast(\r\n                context,\r\n                Contents.SYNC_ALARM_CODE,\r\n                reIntent,\r\n                PendingIntent.FLAG_UPDATE_CURRENT\r\n            )\r\n\r\n            setPreference(mSharedPreferences, timeTrigger)\r\n            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {\r\n                mAlarmManager.setExactAndAllowWhileIdle(\r\n                    AlarmManager.RTC_WAKEUP,\r\n                    timeTrigger,\r\n                    alarmPendingIntent\r\n                )\r\n            } else {\r\n                mAlarmManager.setExact(\r\n                    AlarmManager.RTC_WAKEUP,\r\n                    timeTrigger,\r\n                    alarmPendingIntent\r\n                )\r\n            }\r\n        }\r\n    }\r\n\r\n    // 상품 알람 재설정\r\n    private fun reSetProductAlarm(context: Context) {\r\n        Log.i(\"Check2\", \"동작\")\r\n        val mSharedPreferences =\r\n            context.getSharedPreferences(Contents.PREFERENCE_NAME_TIME, Context.MODE_PRIVATE)\r\n        mDao = MyDataBase.getDatabase(context)!!.getDao()\r\n\r\n        CoroutineScope(Dispatchers.IO).launch {\r\n            for (position in mDao.getAllSpecialShoesData().indices) {\r\n                val shoesData = mDao.getAllSpecialShoesData()[position]\r\n                val preferenceKey = \"${shoesData.ShoesTitle}-${shoesData.ShoesSubTitle}\"\r\n                val timeTrigger = mSharedPreferences.getLong(preferenceKey, 0)\r\n\r\n                if (timeTrigger != 0L) {\r\n                    Log.i(\"CheckTime\", \"${timeTrigger}\")\r\n                    if (timeTrigger < System.currentTimeMillis()) {\r\n                        deleteDrawShoesData(mSharedPreferences, shoesData, context)\r\n                        continue\r\n                    }\r\n\r\n                    val mAlarmManager =\r\n                        context.getSystemService(Context.ALARM_SERVICE) as AlarmManager\r\n\r\n                    val reIntent = Intent(context, MyAlarmReceiver::class.java).apply {\r\n                        action = Contents.INTENT_ACTION_PRODUCT_ALARM\r\n                        putExtra(Contents.INTENT_KEY_POSITION, position)\r\n                    }\r\n\r\n                    val alarmPendingIntent = PendingIntent.getBroadcast(\r\n                        context,\r\n                        position,\r\n                        reIntent,\r\n                        PendingIntent.FLAG_UPDATE_CURRENT\r\n                    )\r\n\r\n                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {\r\n                        mAlarmManager.setExactAndAllowWhileIdle(\r\n                            AlarmManager.RTC_WAKEUP,\r\n                            timeTrigger,\r\n                            alarmPendingIntent\r\n                        )\r\n                    } else {\r\n                        mAlarmManager.setExact(\r\n                            AlarmManager.RTC_WAKEUP,\r\n                            timeTrigger,\r\n                            alarmPendingIntent\r\n                        )\r\n                    }\r\n                }\r\n            }\r\n        }\r\n    }\r\n\r\n    // 데이터베이스 설정\r\n    private fun setPreference(preference: SharedPreferences, timeTrigger: Long) {\r\n        with(preference.edit()) {\r\n            putLong(Contents.SYNC_ALARM_KEY, timeTrigger)\r\n            commit()\r\n        }\r\n    }\r\n\r\n    private fun deleteDrawShoesData(preference: SharedPreferences, data: SpecialShoesDataModel, context: Context) {\r\n        val allowAlarmPreference = context.getSharedPreferences(Contents.PREFERENCE_NAME_ALLOW_ALARM, Context.MODE_PRIVATE)\r\n\r\n        with(preference.edit()) {\r\n            remove(\"${data.ShoesTitle}-${data.ShoesSubTitle}\")\r\n            commit()\r\n        }\r\n\r\n        with(allowAlarmPreference.edit()) {\r\n            remove(\"${data.ShoesTitle}-${data.ShoesSubTitle}\")\r\n            commit()\r\n        }\r\n\r\n        CoroutineScope(Dispatchers.IO).launch {\r\n            mDao.deleteSpecialData(data.ShoesUrl!!)\r\n        }\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/nikealarm/nikedrawalarm/component/MyAlarmReceiver.kt	(revision 2a4adaf47544d23e0e8bcddf3e1c5532f684ff3d)
++++ app/src/main/java/com/nikealarm/nikedrawalarm/component/MyAlarmReceiver.kt	(date 1604142136125)
+@@ -8,20 +8,22 @@
+ import android.content.SharedPreferences
+ import android.os.Build
+ import android.util.Log
+-import androidx.work.ExistingWorkPolicy
+ import androidx.work.OneTimeWorkRequestBuilder
+ import androidx.work.WorkManager
+ import androidx.work.workDataOf
+-import com.nikealarm.nikedrawalarm.database.Dao
+-import com.nikealarm.nikedrawalarm.database.MyDataBase
+-import com.nikealarm.nikedrawalarm.database.SpecialShoesDataModel
++import com.nikealarm.nikedrawalarm.component.worker.FindDrawWorker
++import com.nikealarm.nikedrawalarm.component.worker.ProductNotifyWorker
++import com.nikealarm.nikedrawalarm.component.worker.ResetProductAlarmWorker
+ import com.nikealarm.nikedrawalarm.other.Contents
+-import kotlinx.coroutines.CoroutineScope
+-import kotlinx.coroutines.Dispatchers
+-import kotlinx.coroutines.launch
++import dagger.hilt.android.AndroidEntryPoint
++import javax.inject.Inject
++import javax.inject.Named
+ 
++@AndroidEntryPoint
+ class MyAlarmReceiver : BroadcastReceiver() {
+-    private lateinit var mDao: Dao
++    @Inject
++    @Named(Contents.PREFERENCE_NAME_TIME)
++    lateinit var timePreferences: SharedPreferences
+ 
+     override fun onReceive(context: Context, intent: Intent) {
+         // This method is called when the BroadcastReceiver is receiving an Intent broadcast.
+@@ -59,9 +61,7 @@
+     private fun reSetAlarm(context: Context) {
+         Log.i("Check", "동작")
+ 
+-        val mSharedPreferences =
+-            context.getSharedPreferences(Contents.PREFERENCE_NAME_TIME, Context.MODE_PRIVATE)
+-        var timeTrigger = mSharedPreferences.getLong(Contents.SYNC_ALARM_KEY, 0)
++        var timeTrigger = timePreferences.getLong(Contents.SYNC_ALARM_KEY, 0)
+ 
+         if (timeTrigger != 0.toLong()) {
+             Log.i("Check", "재설정")
+@@ -82,7 +82,7 @@
+                 PendingIntent.FLAG_UPDATE_CURRENT
+             )
+ 
+-            setPreference(mSharedPreferences, timeTrigger)
++            setPreference(timeTrigger)
+             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                 mAlarmManager.setExactAndAllowWhileIdle(
+                     AlarmManager.RTC_WAKEUP,
+@@ -102,79 +102,16 @@
+     // 상품 알람 재설정
+     private fun reSetProductAlarm(context: Context) {
+         Log.i("Check2", "동작")
+-        val mSharedPreferences =
+-            context.getSharedPreferences(Contents.PREFERENCE_NAME_TIME, Context.MODE_PRIVATE)
+-        mDao = MyDataBase.getDatabase(context)!!.getDao()
+-
+-        CoroutineScope(Dispatchers.IO).launch {
+-            for (position in mDao.getAllSpecialShoesData().indices) {
+-                val shoesData = mDao.getAllSpecialShoesData()[position]
+-                val preferenceKey = "${shoesData.ShoesTitle}-${shoesData.ShoesSubTitle}"
+-                val timeTrigger = mSharedPreferences.getLong(preferenceKey, 0)
+-
+-                if (timeTrigger != 0L) {
+-                    Log.i("CheckTime", "${timeTrigger}")
+-                    if (timeTrigger < System.currentTimeMillis()) {
+-                        deleteDrawShoesData(mSharedPreferences, shoesData, context)
+-                        continue
+-                    }
+-
+-                    val mAlarmManager =
+-                        context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+-
+-                    val reIntent = Intent(context, MyAlarmReceiver::class.java).apply {
+-                        action = Contents.INTENT_ACTION_PRODUCT_ALARM
+-                        putExtra(Contents.INTENT_KEY_POSITION, position)
+-                    }
+-
+-                    val alarmPendingIntent = PendingIntent.getBroadcast(
+-                        context,
+-                        position,
+-                        reIntent,
+-                        PendingIntent.FLAG_UPDATE_CURRENT
+-                    )
+-
+-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+-                        mAlarmManager.setExactAndAllowWhileIdle(
+-                            AlarmManager.RTC_WAKEUP,
+-                            timeTrigger,
+-                            alarmPendingIntent
+-                        )
+-                    } else {
+-                        mAlarmManager.setExact(
+-                            AlarmManager.RTC_WAKEUP,
+-                            timeTrigger,
+-                            alarmPendingIntent
+-                        )
+-                    }
+-                }
+-            }
+-        }
++        val resetProductAlarmWorkRequest = OneTimeWorkRequestBuilder<ResetProductAlarmWorker>()
++            .build()
++        WorkManager.getInstance(context).enqueue(resetProductAlarmWorkRequest)
+     }
+ 
+     // 데이터베이스 설정
+-    private fun setPreference(preference: SharedPreferences, timeTrigger: Long) {
+-        with(preference.edit()) {
++    private fun setPreference(timeTrigger: Long) {
++        with(timePreferences.edit()) {
+             putLong(Contents.SYNC_ALARM_KEY, timeTrigger)
+             commit()
+         }
+     }
+-
+-    private fun deleteDrawShoesData(preference: SharedPreferences, data: SpecialShoesDataModel, context: Context) {
+-        val allowAlarmPreference = context.getSharedPreferences(Contents.PREFERENCE_NAME_ALLOW_ALARM, Context.MODE_PRIVATE)
+-
+-        with(preference.edit()) {
+-            remove("${data.ShoesTitle}-${data.ShoesSubTitle}")
+-            commit()
+-        }
+-
+-        with(allowAlarmPreference.edit()) {
+-            remove("${data.ShoesTitle}-${data.ShoesSubTitle}")
+-            commit()
+-        }
+-
+-        CoroutineScope(Dispatchers.IO).launch {
+-            mDao.deleteSpecialData(data.ShoesUrl!!)
+-        }
+-    }
+ }
+Index: app/src/main/java/com/nikealarm/nikedrawalarm/component/ProductNotifyWorker.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.nikealarm.nikedrawalarm.component\r\n\r\nimport android.app.NotificationChannel\r\nimport android.app.NotificationManager\r\nimport android.app.PendingIntent\r\nimport android.content.Context\r\nimport android.content.Intent\r\nimport android.net.Uri\r\nimport android.os.Build\r\nimport android.util.Log\r\nimport androidx.core.app.NotificationCompat\r\nimport androidx.core.app.NotificationManagerCompat\r\nimport androidx.work.Worker\r\nimport androidx.work.WorkerParameters\r\nimport com.nikealarm.nikedrawalarm.R\r\nimport com.nikealarm.nikedrawalarm.database.Dao\r\nimport com.nikealarm.nikedrawalarm.database.MyDataBase\r\nimport com.nikealarm.nikedrawalarm.database.SpecialShoesDataModel\r\nimport com.nikealarm.nikedrawalarm.other.Contents\r\nimport com.nikealarm.nikedrawalarm.ui.MainActivity\r\nimport com.squareup.picasso.Picasso\r\n\r\nclass ProductNotifyWorker(context: Context, workerParams: WorkerParameters) : Worker(\r\n    context,\r\n    workerParams\r\n) {\r\n    private lateinit var mDao: Dao\r\n\r\n    override fun doWork(): Result {\r\n        mDao = MyDataBase.getDatabase(applicationContext)!!.getDao()\r\n        val position = inputData.getInt(Contents.WORKER_INPUT_DATA_KEY, -1)\r\n\r\n        Log.i(\"Check5\", \"position: ${position}\")\r\n        if (position != -1) {\r\n            val drawData = mDao.getAllSpecialShoesData()[position]\r\n\r\n            createNotification(drawData, applicationContext)\r\n\r\n            // 알림 후 해당 상품을 db에서 지움\r\n            deleteShoesData(drawData)\r\n        }\r\n\r\n        return Result.success()\r\n    }\r\n\r\n    private fun createNotification(specialInfo: SpecialShoesDataModel, context: Context) {\r\n        val vibrate = LongArray(4).apply {\r\n            set(0, 0)\r\n            set(1, 100)\r\n            set(2, 200)\r\n            set(3, 300)\r\n        }\r\n\r\n        val goEventPendingIntent = PendingIntent.getActivity(\r\n            context,\r\n            5000,\r\n            Intent(context, MainActivity::class.java).also {\r\n                it.action = Contents.INTENT_ACTION_GOTO_WEBSITE\r\n                it.putExtra(Contents.DRAW_URL, specialInfo.ShoesUrl)\r\n            },\r\n            PendingIntent.FLAG_ONE_SHOT\r\n        )\r\n        val bitmap = Picasso.get().load(Uri.parse(specialInfo.ShoesImageUrl)).get()\r\n        val notificationBuilder = NotificationCompat.Builder(context, \"Default\")\r\n            .setSmallIcon(R.mipmap.ic_launcher)\r\n            .setContentTitle(\"${specialInfo.ShoesSubTitle} - ${specialInfo.ShoesTitle}\")\r\n            .setVibrate(vibrate)\r\n            .setLargeIcon(bitmap)\r\n            .setStyle(NotificationCompat.BigTextStyle())\r\n            .setStyle(\r\n                NotificationCompat.BigPictureStyle()\r\n                    .bigPicture(bitmap)\r\n                    .bigLargeIcon(null)\r\n            )\r\n            .setContentText(\"해당 상품이 출시되었습니다.\")\r\n            .addAction(0, \"바로가기\", goEventPendingIntent)\r\n\r\n        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {\r\n            val channel = NotificationChannel(\r\n                \"Default\",\r\n                specialInfo.ShoesTitle,\r\n                NotificationManager.IMPORTANCE_DEFAULT\r\n            )\r\n            val notificationManager =\r\n                context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager\r\n\r\n            notificationManager.createNotificationChannel(channel)\r\n        }\r\n\r\n\r\n        with(NotificationManagerCompat.from(context)) {\r\n            notify(100, notificationBuilder.build())\r\n        }\r\n    }\r\n\r\n    // 데이터를 지움\r\n    private fun deleteShoesData(data: SpecialShoesDataModel) {\r\n        val timeSharedPreference = applicationContext.getSharedPreferences(\r\n            Contents.PREFERENCE_NAME_TIME,\r\n            Context.MODE_PRIVATE\r\n        )\r\n        val allowAlarmPreference = applicationContext.getSharedPreferences(\r\n            Contents.PREFERENCE_NAME_ALLOW_ALARM,\r\n            Context.MODE_PRIVATE\r\n        )\r\n\r\n        with(timeSharedPreference.edit()) {\r\n            remove(\"${data.ShoesTitle}-${data.ShoesSubTitle}\")\r\n            commit()\r\n        }\r\n\r\n        mDao.deleteSpecialData(data.ShoesUrl!!)\r\n        with(allowAlarmPreference.edit()) {\r\n            remove(\"${data.ShoesTitle}-${data.ShoesSubTitle}\")\r\n            commit()\r\n        }\r\n\r\n    }\r\n}
+===================================================================
+--- app/src/main/java/com/nikealarm/nikedrawalarm/component/ProductNotifyWorker.kt	(revision 2a4adaf47544d23e0e8bcddf3e1c5532f684ff3d)
++++ app/src/main/java/com/nikealarm/nikedrawalarm/component/worker/ProductNotifyWorker.kt	(date 1604142136129)
+@@ -1,15 +1,18 @@
+-package com.nikealarm.nikedrawalarm.component
++package com.nikealarm.nikedrawalarm.component.worker
+ 
+ import android.app.NotificationChannel
+ import android.app.NotificationManager
+ import android.app.PendingIntent
+ import android.content.Context
+ import android.content.Intent
++import android.content.SharedPreferences
+ import android.net.Uri
+ import android.os.Build
+ import android.util.Log
+ import androidx.core.app.NotificationCompat
+ import androidx.core.app.NotificationManagerCompat
++import androidx.hilt.Assisted
++import androidx.hilt.work.WorkerInject
+ import androidx.work.Worker
+ import androidx.work.WorkerParameters
+ import com.nikealarm.nikedrawalarm.R
+@@ -19,15 +22,20 @@
+ import com.nikealarm.nikedrawalarm.other.Contents
+ import com.nikealarm.nikedrawalarm.ui.MainActivity
+ import com.squareup.picasso.Picasso
++import javax.inject.Named
+ 
+-class ProductNotifyWorker(context: Context, workerParams: WorkerParameters) : Worker(
+-    context,
++class ProductNotifyWorker @WorkerInject constructor(
++    @Assisted appContext: Context,
++    @Assisted workerParams: WorkerParameters,
++    @Named(Contents.PREFERENCE_NAME_TIME) val timePreferences: SharedPreferences,
++    @Named(Contents.PREFERENCE_NAME_ALLOW_ALARM) val allowAlarmPreferences: SharedPreferences,
++    val mDao: Dao
++) : Worker(
++    appContext,
+     workerParams
+ ) {
+-    private lateinit var mDao: Dao
+ 
+     override fun doWork(): Result {
+-        mDao = MyDataBase.getDatabase(applicationContext)!!.getDao()
+         val position = inputData.getInt(Contents.WORKER_INPUT_DATA_KEY, -1)
+ 
+         Log.i("Check5", "position: ${position}")
+@@ -60,7 +68,7 @@
+             },
+             PendingIntent.FLAG_ONE_SHOT
+         )
+-        val bitmap = Picasso.get().load(Uri.parse(specialInfo.ShoesImageUrl)).get()
++        val bitmap = Picasso.get().load(specialInfo.ShoesImageUrl).get()
+         val notificationBuilder = NotificationCompat.Builder(context, "Default")
+             .setSmallIcon(R.mipmap.ic_launcher)
+             .setContentTitle("${specialInfo.ShoesSubTitle} - ${specialInfo.ShoesTitle}")
+@@ -95,25 +103,15 @@
+ 
+     // 데이터를 지움
+     private fun deleteShoesData(data: SpecialShoesDataModel) {
+-        val timeSharedPreference = applicationContext.getSharedPreferences(
+-            Contents.PREFERENCE_NAME_TIME,
+-            Context.MODE_PRIVATE
+-        )
+-        val allowAlarmPreference = applicationContext.getSharedPreferences(
+-            Contents.PREFERENCE_NAME_ALLOW_ALARM,
+-            Context.MODE_PRIVATE
+-        )
+-
+-        with(timeSharedPreference.edit()) {
++        with(timePreferences.edit()) {
+             remove("${data.ShoesTitle}-${data.ShoesSubTitle}")
+             commit()
+         }
+ 
+         mDao.deleteSpecialData(data.ShoesUrl!!)
+-        with(allowAlarmPreference.edit()) {
++        with(allowAlarmPreferences.edit()) {
+             remove("${data.ShoesTitle}-${data.ShoesSubTitle}")
+             commit()
+         }
+-
+     }
+ }
+\ No newline at end of file
+Index: app/src/main/java/com/nikealarm/nikedrawalarm/viewmodel/MyRepository.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.nikealarm.nikedrawalarm.viewmodel\r\n\r\nimport android.app.Application\r\nimport androidx.lifecycle.LiveData\r\nimport androidx.paging.LivePagedListBuilder\r\nimport androidx.paging.PagedList\r\nimport com.nikealarm.nikedrawalarm.database.MyDataBase\r\nimport com.nikealarm.nikedrawalarm.database.ShoesDataModel\r\nimport com.nikealarm.nikedrawalarm.database.SpecialDataModel\r\nimport com.nikealarm.nikedrawalarm.database.SpecialShoesDataModel\r\n\r\nclass MyRepository(application: Application) {\r\n    private val mDao = MyDataBase.getDatabase(application)!!.getDao()\r\n\r\n    // ShoesData\r\n    fun getShoesData(shoesCategory: String): LiveData<PagedList<ShoesDataModel>> {\r\n        return LivePagedListBuilder(mDao.getShoesData(shoesCategory), 20).build()\r\n    }\r\n\r\n    // SpecialShoesData\r\n    fun getAllSpecialShoesData(): LiveData<PagedList<SpecialShoesDataModel>> {\r\n        return LivePagedListBuilder(mDao.getAllSpecialShoesPagingData(), 20).build()\r\n    }\r\n\r\n    fun getSpecialShoesData(upcomingCategory: String): LiveData<PagedList<SpecialShoesDataModel>> {\r\n        return LivePagedListBuilder(mDao.getSpecialShoesPagingData(upcomingCategory), 20).build()\r\n    }\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/nikealarm/nikedrawalarm/viewmodel/MyRepository.kt	(revision 2a4adaf47544d23e0e8bcddf3e1c5532f684ff3d)
++++ app/src/main/java/com/nikealarm/nikedrawalarm/viewmodel/MyRepository.kt	(date 1604142136148)
+@@ -1,16 +1,11 @@
+ package com.nikealarm.nikedrawalarm.viewmodel
+ 
+-import android.app.Application
+ import androidx.lifecycle.LiveData
+ import androidx.paging.LivePagedListBuilder
+ import androidx.paging.PagedList
+-import com.nikealarm.nikedrawalarm.database.MyDataBase
+-import com.nikealarm.nikedrawalarm.database.ShoesDataModel
+-import com.nikealarm.nikedrawalarm.database.SpecialDataModel
+-import com.nikealarm.nikedrawalarm.database.SpecialShoesDataModel
++import com.nikealarm.nikedrawalarm.database.*
+ 
+-class MyRepository(application: Application) {
+-    private val mDao = MyDataBase.getDatabase(application)!!.getDao()
++class MyRepository(private val mDao: Dao) {
+ 
+     // ShoesData
+     fun getShoesData(shoesCategory: String): LiveData<PagedList<ShoesDataModel>> {
+Index: app/src/main/java/com/nikealarm/nikedrawalarm/viewmodel/MyViewModel.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.nikealarm.nikedrawalarm.viewmodel\r\n\r\nimport android.app.Application\r\nimport androidx.arch.core.util.Function\r\nimport androidx.lifecycle.*\r\nimport androidx.paging.PagedList\r\nimport com.nikealarm.nikedrawalarm.database.ShoesDataModel\r\nimport com.nikealarm.nikedrawalarm.database.SpecialShoesDataModel\r\n\r\nclass MyViewModel(application: Application) : AndroidViewModel(application) {\r\n    private val repository =\r\n        MyRepository(application)\r\n\r\n    // 전체 목록\r\n    private val shoesCategory = MutableLiveData<String>(ShoesDataModel.CATEGORY_RELEASED)\r\n\r\n    fun setShoesCategory(category: String) {\r\n        shoesCategory.value = category\r\n    }\r\n\r\n    fun getShoesCategory(): MutableLiveData<String> {\r\n        return shoesCategory\r\n    }\r\n\r\n    private val shoesList: LiveData<PagedList<ShoesDataModel>> = Transformations.switchMap(\r\n        shoesCategory, Function {\r\n            repository.getShoesData(it)\r\n        }\r\n    )\r\n\r\n    fun getShoesData(): LiveData<PagedList<ShoesDataModel>> {\r\n        return shoesList\r\n    }\r\n\r\n    // 특정 신발의 웹 주소\r\n    private val url = MutableLiveData<String>()\r\n\r\n    fun setUrl(url: String) {\r\n        this.url.value = url\r\n    }\r\n\r\n    fun getUrl(): MutableLiveData<String> {\r\n        return url\r\n    }\r\n\r\n    val shoesImageUrl = MutableLiveData<String>()\r\n\r\n    // Special 목록\r\n    val upcomingCategory = MutableLiveData<String>()\r\n\r\n    val specialShoesList: LiveData<PagedList<SpecialShoesDataModel>> = Transformations.switchMap(\r\n        upcomingCategory, Function {\r\n            if(it == \"DEFAULT\") {\r\n                repository.getAllSpecialShoesData()\r\n            } else {\r\n                repository.getSpecialShoesData(it)\r\n            }\r\n        }\r\n    )\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/nikealarm/nikedrawalarm/viewmodel/MyViewModel.kt	(revision 2a4adaf47544d23e0e8bcddf3e1c5532f684ff3d)
++++ app/src/main/java/com/nikealarm/nikedrawalarm/viewmodel/MyViewModel.kt	(date 1604142136149)
+@@ -1,16 +1,17 @@
+ package com.nikealarm.nikedrawalarm.viewmodel
+ 
+-import android.app.Application
+ import androidx.arch.core.util.Function
++import androidx.hilt.Assisted
++import androidx.hilt.lifecycle.ViewModelInject
+ import androidx.lifecycle.*
+ import androidx.paging.PagedList
+ import com.nikealarm.nikedrawalarm.database.ShoesDataModel
+ import com.nikealarm.nikedrawalarm.database.SpecialShoesDataModel
+ 
+-class MyViewModel(application: Application) : AndroidViewModel(application) {
+-    private val repository =
+-        MyRepository(application)
+-
++class MyViewModel @ViewModelInject constructor(
++    private val repository: MyRepository,
++    @Assisted private val savedStateHandle: SavedStateHandle
++) : ViewModel() {
+     // 전체 목록
+     private val shoesCategory = MutableLiveData<String>(ShoesDataModel.CATEGORY_RELEASED)
+ 
+@@ -32,25 +33,12 @@
+         return shoesList
+     }
+ 
+-    // 특정 신발의 웹 주소
+-    private val url = MutableLiveData<String>()
+-
+-    fun setUrl(url: String) {
+-        this.url.value = url
+-    }
+-
+-    fun getUrl(): MutableLiveData<String> {
+-        return url
+-    }
+-
+-    val shoesImageUrl = MutableLiveData<String>()
+-
+     // Special 목록
+     val upcomingCategory = MutableLiveData<String>()
+ 
+     val specialShoesList: LiveData<PagedList<SpecialShoesDataModel>> = Transformations.switchMap(
+         upcomingCategory, Function {
+-            if(it == "DEFAULT") {
++            if (it == "DEFAULT") {
+                 repository.getAllSpecialShoesData()
+             } else {
+                 repository.getSpecialShoesData(it)
+Index: app/src/main/java/com/nikealarm/nikedrawalarm/component/FindDrawWorker.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.nikealarm.nikedrawalarm.component\r\n\r\nimport android.app.NotificationChannel\r\nimport android.app.NotificationManager\r\nimport android.app.PendingIntent\r\nimport android.content.Context\r\nimport android.content.Intent\r\nimport android.os.Build\r\nimport androidx.core.app.NotificationCompat\r\nimport androidx.core.app.NotificationManagerCompat\r\nimport androidx.work.Worker\r\nimport androidx.work.WorkerParameters\r\nimport com.nikealarm.nikedrawalarm.R\r\nimport com.nikealarm.nikedrawalarm.database.SpecialDataModel\r\nimport com.nikealarm.nikedrawalarm.database.MyDataBase\r\nimport com.nikealarm.nikedrawalarm.database.ShoesDataModel\r\nimport com.nikealarm.nikedrawalarm.database.SpecialShoesDataModel\r\nimport com.nikealarm.nikedrawalarm.other.Contents\r\nimport com.nikealarm.nikedrawalarm.ui.MainActivity\r\nimport com.squareup.picasso.Picasso\r\nimport org.jsoup.Jsoup\r\n\r\nclass FindDrawWorker(context: Context, workerParams: WorkerParameters) : Worker(\r\n    context,\r\n    workerParams\r\n) {\r\n    private val mContext = context\r\n    private val mDao = MyDataBase.getDatabase(mContext)!!.getDao()\r\n\r\n    private val allShoesList = mutableListOf<ShoesDataModel>()\r\n\r\n    override fun doWork(): Result {\r\n        parseData()\r\n\r\n        return Result.success()\r\n    }\r\n\r\n    // 크롤링\r\n    private fun parseData() {\r\n        parseReleasedData()\r\n        parseSpecialData()\r\n//        repeatNotification()\r\n\r\n        checkSpecialData()\r\n    }\r\n\r\n    // FEED 파싱\r\n    private fun parseReleasedData() {\r\n        val url = \"https://www.nike.com/kr/launch/?type=feed\"\r\n        val doc = Jsoup.connect(url) // nike UPCOMING 창을 읽어옴\r\n            .userAgent(\"19.0.1.84.52\")\r\n            .get()\r\n        val elementsData = doc.select(\"div.launch-list-item\")\r\n\r\n        for (elementData in elementsData) {\r\n            val shoesInfo = elementData.select(\"div.info-sect\") // 신발 정보\r\n                .select(\"div.btn-box\")\r\n                .select(\"span\")\r\n                .text()\r\n\r\n            if (shoesInfo == \"LEARN MORE\") {\r\n                continue\r\n            }\r\n\r\n            val shoesSubTitle = elementData.select(\"div.text-box\")\r\n                .select(\"p.txt-subject\")\r\n                .text()\r\n            val shoesTitle = elementData.select(\"div.text-box\")\r\n                .select(\"p.txt-description\")\r\n                .text()\r\n            val innerUrl = \"https://www.nike.com\" + elementData.select(\"a\")\r\n                .attr(\"href\") // 해당 draw 링크창을 읽어옴\r\n\r\n            // draw가 없을 시\r\n            if (!mDao.getAllShoesData().contains(ShoesDataModel(0, shoesSubTitle, shoesTitle))) {\r\n                if (shoesInfo == \"THE DRAW 진행예정\") {\r\n                    val innerDoc = Jsoup.connect(innerUrl)\r\n                        .userAgent(\"19.0.1.84.52\")\r\n                        .get()\r\n\r\n                    // 신발 정보를 가져옴\r\n                    val shoesPrice = \"가격 : \" + innerDoc.select(\"div.price\") // draw 신발 가격\r\n                        .text()\r\n                    val shoesImageUrl = innerDoc.select(\"li.uk-width-1-2\") // draw 신발 이미지\r\n                        .select(\"img\")\r\n                        .eq(0)\r\n                        .attr(\"src\")\r\n\r\n                    val innerElementData = innerDoc.select(\"span.uk-text-bold\")\r\n\r\n                    var howToEvent = \"\" // 이벤트 참여방법\r\n                    for (j in 0..2) {\r\n                        howToEvent += innerElementData.select(\"p\")\r\n                            .eq(j)\r\n                            .text() + \"\\n\"\r\n                    }\r\n\r\n                    howToEvent += shoesPrice\r\n\r\n                    val shoesData =\r\n                        ShoesDataModel(\r\n                            null,\r\n                            shoesSubTitle,\r\n                            shoesTitle,\r\n                            howToEvent,\r\n                            shoesImageUrl,\r\n                            innerUrl,\r\n                            ShoesDataModel.CATEGORY_DRAW\r\n                        )\r\n\r\n                    insertShoesData(shoesData)\r\n                }\r\n            }\r\n\r\n            allShoesList.add(ShoesDataModel(0, shoesSubTitle, shoesTitle, null, null, innerUrl))\r\n        }\r\n    }\r\n\r\n    // UPCOMING 파싱\r\n    private fun parseSpecialData() {\r\n        val url = \"https://www.nike.com/kr/launch/?type=upcoming&activeDate=date-filter:AFTER\"\r\n        val doc = Jsoup.connect(url) // nike UPCOMING창을 읽어옴\r\n            .userAgent(\"19.0.1.84.52\")\r\n            .get()\r\n        val elementsData = doc.select(\"div.launch-list-item\")\r\n        var channelId = 0\r\n\r\n        for (elementData in elementsData) {\r\n            val category = elementData.select(\"div.info-sect\")\r\n                .select(\"div.btn-box\")\r\n                .select(\"span.btn-link\")\r\n                .text()\r\n            val specialUrl = \"https://www.nike.com\" + elementData.select(\"a\").attr(\"href\")\r\n\r\n            if (category != \"THE DRAW 진행예정\" || mDao.getAllSpecialData()\r\n                    .contains(SpecialDataModel(0, specialUrl))\r\n            ) { // DRAW가 아니고 이미 데이터가 존재할 시\r\n                continue\r\n            }\r\n\r\n            val month = elementData.select(\"div.img-sect\")\r\n                .select(\"div.date\")\r\n                .select(\"span.month\")\r\n                .text()\r\n            val day = elementData.select(\"div.img-sect\")\r\n                .select(\"div.date\")\r\n                .select(\"span.day\")\r\n                .text()\r\n            val whenStartEvent = elementData.select(\"div.info-sect\")\r\n                .select(\"div.text-box\")\r\n                .select(\"p.txt-subject\")\r\n                .text()\r\n            val order = \"${month.split(\"월\")[0]}${day}\".toInt()\r\n\r\n            val specialShoesData = SpecialDataModel(\r\n                null,\r\n                specialUrl,\r\n                month,\r\n                day,\r\n                whenStartEvent,\r\n                order\r\n            )\r\n\r\n            insertSpecialShoesData(specialShoesData)\r\n\r\n            val index = mDao.getAllSpecialShoesData().indexOf(SpecialShoesDataModel(0, \"\", \"\", null, null, specialUrl))\r\n            createNotification(mDao.getAllSpecialShoesData()[index], channelId)\r\n\r\n            channelId++\r\n        }\r\n    }\r\n\r\n    private fun repeatNotification() { // DRAW 데이터들을 알림 생성 메서드로 보냄\r\n        for (channelId in mDao.getAllSpecialShoesData().indices) {\r\n            val specialShoes = mDao.getAllSpecialShoesData()[channelId]\r\n            createNotification(specialShoes, channelId)\r\n        }\r\n    }\r\n\r\n    // 알림 생성\r\n    private fun createNotification(data: SpecialShoesDataModel, channelId: Int) {\r\n        val vibrate = LongArray(4).apply {\r\n            set(0, 0)\r\n            set(1, 100)\r\n            set(2, 200)\r\n            set(3, 300)\r\n        }\r\n\r\n        // 자세히 보기\r\n        val learnMoreIntent = Intent(mContext, MainActivity::class.java).apply {\r\n            action = Contents.INTENT_ACTION_GOTO_WEBSITE\r\n            putExtra(Contents.CHANNEL_ID, channelId)\r\n            putExtra(Contents.DRAW_URL, data.ShoesUrl)\r\n        }\r\n        val setAlarmIntent = Intent(mContext, MainActivity::class.java).apply { // 알림 설정하기\r\n            action = Contents.INTENT_ACTION_GOTO_DRAWLIST\r\n        }\r\n\r\n        val learnMorePendingIntent = PendingIntent.getActivity(\r\n            mContext,\r\n            channelId,\r\n            learnMoreIntent,\r\n            PendingIntent.FLAG_ONE_SHOT\r\n        )\r\n        val setAlarmPendingIntent =\r\n            PendingIntent.getActivity(mContext, 100, setAlarmIntent, PendingIntent.FLAG_ONE_SHOT)\r\n\r\n        val bitmap = Picasso.get().load(data.ShoesImageUrl).get()\r\n        val notificationBuilder = NotificationCompat.Builder(mContext, \"Default\")\r\n            .setSmallIcon(R.mipmap.ic_launcher)\r\n            .setContentTitle(\"${data.ShoesSubTitle} - ${data.ShoesTitle}\")\r\n            .setVibrate(vibrate)\r\n            .setLargeIcon(bitmap)\r\n            .setStyle(NotificationCompat.BigTextStyle())\r\n            .setStyle(\r\n                NotificationCompat.BigPictureStyle()\r\n                    .bigPicture(bitmap)\r\n                    .bigLargeIcon(null)\r\n            )\r\n            .setContentText(data.ShoesPrice!!.split(\"\\n\")[0])\r\n            .setAutoCancel(true)\r\n            .addAction(0, \"자세히 보기\", learnMorePendingIntent)\r\n            .addAction(0, \"알림 설정하기\", setAlarmPendingIntent)\r\n\r\n        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {\r\n            val channel = NotificationChannel(\r\n                \"Default\",\r\n                data.ShoesTitle,\r\n                NotificationManager.IMPORTANCE_DEFAULT\r\n            )\r\n            val notificationManager =\r\n                mContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager\r\n\r\n            notificationManager.createNotificationChannel(channel)\r\n        }\r\n\r\n        with(NotificationManagerCompat.from(mContext)) {\r\n            notify(channelId, notificationBuilder.build())\r\n        }\r\n    }\r\n\r\n    // 데이터베이스 접근\r\n    private fun insertSpecialShoesData(insertData: SpecialDataModel) {\r\n        mDao.insertSpecialData(insertData)\r\n    }\r\n\r\n    private fun insertShoesData(insertData: ShoesDataModel) {\r\n        mDao.insertShoesData(insertData)\r\n    }\r\n\r\n    private fun checkSpecialData() {\r\n        for (shoesData in mDao.getAllSpecialShoesData()) {\r\n            if (!allShoesList.contains(\r\n                    ShoesDataModel(\r\n                        0,\r\n                        shoesData.ShoesSubTitle,\r\n                        shoesData.ShoesTitle\r\n                    )\r\n                ) && shoesData.ShoesCategory == ShoesDataModel.CATEGORY_DRAW\r\n            ) {\r\n                deleteShoesData(shoesData)\r\n            }\r\n        }\r\n    }\r\n\r\n    private fun deleteShoesData(deleteData: SpecialShoesDataModel) {\r\n        mDao.deleteShoesData(deleteData.ShoesTitle, deleteData.ShoesSubTitle)\r\n        mDao.deleteSpecialData(deleteData.ShoesUrl!!)\r\n    }\r\n}
+===================================================================
+--- app/src/main/java/com/nikealarm/nikedrawalarm/component/FindDrawWorker.kt	(revision 2a4adaf47544d23e0e8bcddf3e1c5532f684ff3d)
++++ app/src/main/java/com/nikealarm/nikedrawalarm/component/worker/FindDrawWorker.kt	(date 1604142136126)
+@@ -1,4 +1,4 @@
+-package com.nikealarm.nikedrawalarm.component
++package com.nikealarm.nikedrawalarm.component.worker
+ 
+ import android.app.NotificationChannel
+ import android.app.NotificationManager
+@@ -8,24 +8,26 @@
+ import android.os.Build
+ import androidx.core.app.NotificationCompat
+ import androidx.core.app.NotificationManagerCompat
++import androidx.hilt.Assisted
++import androidx.hilt.work.WorkerInject
+ import androidx.work.Worker
+ import androidx.work.WorkerParameters
+ import com.nikealarm.nikedrawalarm.R
+-import com.nikealarm.nikedrawalarm.database.SpecialDataModel
+-import com.nikealarm.nikedrawalarm.database.MyDataBase
+-import com.nikealarm.nikedrawalarm.database.ShoesDataModel
+-import com.nikealarm.nikedrawalarm.database.SpecialShoesDataModel
++import com.nikealarm.nikedrawalarm.database.*
+ import com.nikealarm.nikedrawalarm.other.Contents
+ import com.nikealarm.nikedrawalarm.ui.MainActivity
+ import com.squareup.picasso.Picasso
+ import org.jsoup.Jsoup
+ 
+-class FindDrawWorker(context: Context, workerParams: WorkerParameters) : Worker(
++class FindDrawWorker @WorkerInject constructor(
++    @Assisted context: Context,
++    @Assisted workerParams: WorkerParameters,
++    val mDao: Dao
++) : Worker(
+     context,
+     workerParams
+ ) {
+     private val mContext = context
+-    private val mDao = MyDataBase.getDatabase(mContext)!!.getDao()
+ 
+     private val allShoesList = mutableListOf<ShoesDataModel>()
+ 
+@@ -39,7 +41,6 @@
+     private fun parseData() {
+         parseReleasedData()
+         parseSpecialData()
+-//        repeatNotification()
+ 
+         checkSpecialData()
+     }
+@@ -163,20 +164,14 @@
+ 
+             insertSpecialShoesData(specialShoesData)
+ 
+-            val index = mDao.getAllSpecialShoesData().indexOf(SpecialShoesDataModel(0, "", "", null, null, specialUrl))
++            val index = mDao.getAllSpecialShoesData()
++                .indexOf(SpecialShoesDataModel(0, "", "", null, null, specialUrl))
+             createNotification(mDao.getAllSpecialShoesData()[index], channelId)
+ 
+             channelId++
+         }
+     }
+ 
+-    private fun repeatNotification() { // DRAW 데이터들을 알림 생성 메서드로 보냄
+-        for (channelId in mDao.getAllSpecialShoesData().indices) {
+-            val specialShoes = mDao.getAllSpecialShoesData()[channelId]
+-            createNotification(specialShoes, channelId)
+-        }
+-    }
+-
+     // 알림 생성
+     private fun createNotification(data: SpecialShoesDataModel, channelId: Int) {
+         val vibrate = LongArray(4).apply {
+Index: app/src/main/java/com/nikealarm/nikedrawalarm/component/GetImageWorker.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.nikealarm.nikedrawalarm.component\r\n\r\nimport android.content.Context\r\nimport android.util.Log\r\nimport androidx.work.Worker\r\nimport androidx.work.WorkerParameters\r\nimport androidx.work.workDataOf\r\nimport com.nikealarm.nikedrawalarm.other.Contents\r\nimport org.jsoup.Jsoup\r\n\r\nclass GetImageWorker(context: Context, workerParams: WorkerParameters) : Worker(context,\r\n    workerParams\r\n) {\r\n    private val imageMutableList = mutableListOf<String>()\r\n\r\n    override fun doWork(): Result {\r\n        val url = inputData.getString(Contents.WORKER_GET_IMAGE_INPUT_KEY)\r\n\r\n        if(url != null) {\r\n            parsing(url)\r\n\r\n            if(imageMutableList.size != 0) {\r\n                return Result.success(workDataOf(Contents.WORKER_GET_IMAGE_OUTPUT_KEY to imageMutableList.toTypedArray()))\r\n            }\r\n        }\r\n\r\n        return Result.failure()\r\n    }\r\n\r\n    private fun parsing(url: String) {\r\n        val doc = Jsoup.connect(url)\r\n            .userAgent(\"19.0.1.84.52\")\r\n            .get()\r\n\r\n        val elementsData = doc.select(\"li.uk-width-1-2\")\r\n        for(elementData in elementsData) {\r\n            val imageUrl = elementData.select(\"img\")\r\n                .attr(\"src\")\r\n\r\n            imageMutableList.add(imageUrl)\r\n            Log.i(\"Check\", \"${imageMutableList.size}\")\r\n        }\r\n    }\r\n}
+===================================================================
+--- app/src/main/java/com/nikealarm/nikedrawalarm/component/GetImageWorker.kt	(revision 2a4adaf47544d23e0e8bcddf3e1c5532f684ff3d)
++++ app/src/main/java/com/nikealarm/nikedrawalarm/component/worker/GetImageWorker.kt	(date 1604142136127)
+@@ -1,4 +1,4 @@
+-package com.nikealarm.nikedrawalarm.component
++package com.nikealarm.nikedrawalarm.component.worker
+ 
+ import android.content.Context
+ import android.util.Log
+Index: app/src/main/java/com/nikealarm/nikedrawalarm/component/ParsingWorker.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.nikealarm.nikedrawalarm.component\r\n\r\nimport android.content.Context\r\nimport android.util.Log\r\nimport androidx.work.Worker\r\nimport androidx.work.WorkerParameters\r\nimport androidx.work.workDataOf\r\nimport com.nikealarm.nikedrawalarm.database.Dao\r\nimport com.nikealarm.nikedrawalarm.database.SpecialDataModel\r\nimport com.nikealarm.nikedrawalarm.database.MyDataBase\r\nimport com.nikealarm.nikedrawalarm.database.ShoesDataModel\r\nimport com.nikealarm.nikedrawalarm.other.Contents\r\nimport org.jsoup.Jsoup\r\n\r\nclass ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(\r\n    context,\r\n    workerParams\r\n) {\r\n    private lateinit var mDao: Dao\r\n\r\n    private val allShoesList = mutableListOf<ShoesDataModel>()\r\n\r\n    override fun doWork(): Result {\r\n        mDao = MyDataBase.getDatabase(applicationContext)!!.getDao()\r\n\r\n        parsingData() // 데이터를 파싱함\r\n        if(isStopped) { // cancel 됐을 때\r\n            return Result.failure()\r\n        }\r\n\r\n        syncData() // 데이터를 갱신함\r\n\r\n        Log.i(\"CheckSize\", \"${mDao.getAllShoesData().size}\")\r\n        Log.i(\"CheckDrawSize\", \"${mDao.getAllSpecialData().size}\")\r\n        return Result.success()\r\n    }\r\n\r\n    // 데이터 파싱\r\n    private fun parsingData() {\r\n        parseReleasedData()\r\n        parseSpecialData()\r\n    }\r\n\r\n    // 데이터 갱신\r\n    private fun syncData() {\r\n        checkShoesData()\r\n        checkSpecialData()\r\n    }\r\n\r\n    // FEED 파싱\r\n    private fun parseReleasedData() {\r\n        val url = \"https://www.nike.com/kr/launch/?type=feed\"\r\n        val doc = Jsoup.connect(url) // nike SNKRS창을 읽어옴\r\n            .userAgent(\"19.0.1.84.52\")\r\n            .get()\r\n\r\n        val elementsData = doc.select(\"div.launch-list-item\") // 여러개의 신발\r\n        var progress = 0.0\r\n\r\n        for (elementData in elementsData) {\r\n            if(isStopped) { // cancel 됐을 때\r\n                return\r\n            }\r\n\r\n            val shoesInfo = elementData.select(\"div.info-sect\") // 신발 정보\r\n                .select(\"div.btn-box\")\r\n                .select(\"span\")\r\n                .text()\r\n\r\n            if (shoesInfo == \"LEARN MORE\") {\r\n                progress += 2.5\r\n                setProgressAsync(workDataOf(Contents.WORKER_PARSING_DATA_OUTPUT_KEY to progress.toInt()))\r\n\r\n                continue\r\n            }\r\n\r\n            val shoesSubTitle = elementData.select(\"div.text-box\")\r\n                .select(\"p.txt-subject\")\r\n                .text()\r\n            val shoesTitle = elementData.select(\"div.text-box\")\r\n                .select(\"p.txt-description\")\r\n                .text()\r\n            val innerUrl =\r\n                \"https://www.nike.com\" + elementData.select(\"a\").attr(\"href\") // 해당 신발의 링크창을 읽어옴\r\n\r\n            if (mDao.getAllShoesData().contains(ShoesDataModel(0, shoesSubTitle, shoesTitle))) { // 해당 데이터가 이미 존재 시\r\n                val category = when (shoesInfo) {\r\n                    \"THE DRAW 진행예정\", \"THE DRAW 응모하기\" -> ShoesDataModel.CATEGORY_DRAW\r\n                    \"THE DRAW 응모 마감\", \"THE DRAW 당첨 결과 확인\", \"THE DRAW 종료\" -> ShoesDataModel.CATEGORY_DRAW_END\r\n                    \"COMING SOON\" -> ShoesDataModel.CATEGORY_COMING_SOON\r\n                    else -> ShoesDataModel.CATEGORY_RELEASED\r\n                }\r\n\r\n                updateData(\r\n                    ShoesDataModel(\r\n                        0,\r\n                        shoesSubTitle,\r\n                        shoesTitle,\r\n                        null,\r\n                        null,\r\n                        innerUrl,\r\n                        category\r\n                    )\r\n                )\r\n            } else { // 존재하지 않을 시\r\n                val innerDoc = Jsoup.connect(innerUrl)\r\n                    .userAgent(\"19.0.1.84.52\")\r\n                    .get()\r\n\r\n                // 신발 정보를 가져옴\r\n                val shoesPrice = \"가격 : \" + innerDoc.select(\"div.price\") // 신발 가격\r\n                    .text()\r\n\r\n                val shoesImageUrl = innerDoc.select(\"li.uk-width-1-2\") // 신발 이미지\r\n                    .select(\"img\")\r\n                    .eq(0)\r\n                    .attr(\"src\")\r\n\r\n                val insertShoesData: ShoesDataModel\r\n                when (shoesInfo) {\r\n                    \"THE DRAW 진행예정\", \"THE DRAW 응모하기\" -> {\r\n                        val innerElementData = innerDoc.select(\"span.uk-text-bold\")\r\n\r\n                        var howToEvent = \"\" // 이벤트 참여방법\r\n                        for (j in 0..2) {\r\n                            howToEvent += innerElementData.select(\"p\")\r\n                                .eq(j)\r\n                                .text() + \"\\n\"\r\n                        }\r\n                        howToEvent += shoesPrice\r\n\r\n                        insertShoesData = ShoesDataModel(\r\n                            null,\r\n                            shoesSubTitle,\r\n                            shoesTitle,\r\n                            howToEvent,\r\n                            shoesImageUrl,\r\n                            innerUrl,\r\n                            ShoesDataModel.CATEGORY_DRAW\r\n                        )\r\n                    }\r\n                    \"THE DRAW 응모 마감\", \"THE DRAW 당첨 결과 확인\", \"THE DRAW 종료\" -> {\r\n                        insertShoesData = ShoesDataModel(\r\n                            null,\r\n                            shoesSubTitle,\r\n                            shoesTitle,\r\n                            \"DRAW가 종료 되었습니다.\",\r\n                            shoesImageUrl,\r\n                            innerUrl,\r\n                            ShoesDataModel.CATEGORY_DRAW_END\r\n                        )\r\n                    }\r\n                    \"COMING SOON\" -> {\r\n                        val launchDate = \"${innerDoc.select(\"div.txt-date\").text()}\\n${shoesPrice}\"\r\n\r\n                        insertShoesData = ShoesDataModel(\r\n                            null,\r\n                            shoesSubTitle,\r\n                            shoesTitle,\r\n                            launchDate,\r\n                            shoesImageUrl,\r\n                            innerUrl,\r\n                            ShoesDataModel.CATEGORY_COMING_SOON\r\n                        )\r\n                    }\r\n                    else -> {\r\n                        insertShoesData = ShoesDataModel(\r\n                            null,\r\n                            shoesSubTitle,\r\n                            shoesTitle,\r\n                            shoesPrice,\r\n                            shoesImageUrl,\r\n                            innerUrl,\r\n                            ShoesDataModel.CATEGORY_RELEASED\r\n                        )\r\n                    }\r\n                }\r\n\r\n                insertData(insertShoesData)\r\n            }\r\n\r\n\r\n            progress += 2.5\r\n\r\n            setProgressAsync(workDataOf(Contents.WORKER_PARSING_DATA_OUTPUT_KEY to progress.toInt()))\r\n            allShoesList.add(ShoesDataModel(0, shoesSubTitle, shoesTitle, null, null, innerUrl))\r\n        }\r\n    }\r\n\r\n    // UPCOMING 파싱\r\n    private fun parseSpecialData() {\r\n        val url = \"https://www.nike.com/kr/launch/?type=upcoming&activeDate=date-filter:AFTER\"\r\n        val doc = Jsoup.connect(url) // nike SNKRS창을 읽어옴\r\n            .userAgent(\"19.0.1.84.52\")\r\n            .get()\r\n        val elementsData = doc.select(\"div.launch-list-item\")\r\n\r\n        for (elementData in elementsData) {\r\n            if(isStopped) { // cancel 됐을 때\r\n                return\r\n            }\r\n\r\n            val category = elementData.select(\"div.info-sect\")\r\n                .select(\"div.btn-box\")\r\n                .select(\"span.btn-link\")\r\n                .text()\r\n            val specialUrl = \"https://www.nike.com\" + elementData.select(\"a\").attr(\"href\")\r\n\r\n            if (checkCategory(category) || mDao.getAllSpecialData().contains(SpecialDataModel(0, specialUrl))) { // 이미 데이터 존재하지 않고 special이 아니면 continue\r\n                continue\r\n            }\r\n\r\n            val month = elementData.select(\"div.img-sect\")\r\n                .select(\"div.date\")\r\n                .select(\"span.month\")\r\n                .text()\r\n            val day = elementData.select(\"div.img-sect\")\r\n                .select(\"div.date\")\r\n                .select(\"span.day\")\r\n                .text()\r\n            val whenStartEvent = elementData.select(\"div.info-sect\")\r\n                .select(\"div.text-box\")\r\n                .select(\"p.txt-subject\")\r\n                .text()\r\n            val order = \"${month.split(\"월\")[0]}${day}\".toInt()\r\n\r\n            val specialData = SpecialDataModel(null, specialUrl, month, day, whenStartEvent, order)\r\n            insertSpecialData(specialData)\r\n        }\r\n    }\r\n\r\n    private fun checkCategory(category: String): Boolean {\r\n        return when (category) {\r\n            \"THE DRAW 진행예정\", \"THE DRAW 응모하기\", \"COMING SOON\" -> {\r\n                false\r\n            }\r\n            else -> {\r\n                true\r\n            }\r\n        }\r\n    }\r\n\r\n    // 갱신 설정\r\n    // ShoesData 리스트를 갱신 함\r\n    private fun checkShoesData() {\r\n\r\n        if (allShoesList.size < mDao.getAllShoesData().size) {\r\n            for (shoesData in mDao.getAllShoesData()) {\r\n\r\n                if (!allShoesList.contains(shoesData)) {\r\n                    mDao.deleteShoesData(shoesData.shoesTitle, shoesData.shoesSubTitle)\r\n                }\r\n            }\r\n        }\r\n    }\r\n\r\n    // SpecialData 리스트를 갱신 함\r\n    private fun checkSpecialData() {\r\n        for (specialData in mDao.getAllSpecialData()) {\r\n\r\n            if (!allShoesList.contains(ShoesDataModel(0, \"\", \"\", null, null, specialData.specialUrl))) {\r\n                deleteSpecialData(specialData)\r\n            }\r\n        }\r\n    }\r\n    // 갱신 끝\r\n\r\n    // 데이터베이스 설정\r\n    private fun insertData(shoesData: ShoesDataModel) {\r\n        mDao.insertShoesData(shoesData)\r\n    }\r\n\r\n    private fun updateData(newShoesData: ShoesDataModel) {\r\n        val index = mDao.getAllShoesData()\r\n            .indexOf(ShoesDataModel(0, newShoesData.shoesSubTitle, newShoesData.shoesTitle))\r\n        val ordinaryData = mDao.getAllShoesData()[index]\r\n\r\n        if (newShoesData.shoesCategory != ordinaryData.shoesCategory) { // CATEGORY -> RELEASED\r\n            if (ordinaryData.shoesCategory == ShoesDataModel.CATEGORY_COMING_SOON) {\r\n                val newShoesPrice = ordinaryData.shoesPrice?.split(\"\\n\")?.get(1) // 신발 가격\r\n\r\n                mDao.updateShoesCategory(\r\n                    newShoesPrice,\r\n                    newShoesData.shoesCategory,\r\n                    newShoesData.shoesTitle,\r\n                    newShoesData.shoesSubTitle\r\n                )\r\n\r\n                deleteSpecialData(SpecialDataModel(0, ordinaryData.shoesUrl!!))\r\n            } else if (ordinaryData.shoesCategory == ShoesDataModel.CATEGORY_DRAW) { // DRAW -> DRAW END\r\n                val newShoesPrice = \"DRAW가 종료 되었습니다.\"\r\n\r\n                mDao.updateShoesCategory(\r\n                    newShoesPrice,\r\n                    newShoesData.shoesCategory,\r\n                    newShoesData.shoesTitle,\r\n                    newShoesData.shoesSubTitle\r\n                )\r\n                mDao.deleteSpecialData(newShoesData.shoesUrl!!)\r\n            }\r\n        }\r\n\r\n        if (newShoesData.shoesUrl != ordinaryData.shoesUrl) { // URL이 바뀌었을 시\r\n            mDao.updateShoesUrl(\r\n                newShoesData.shoesUrl,\r\n                newShoesData.shoesTitle,\r\n                newShoesData.shoesSubTitle\r\n            )\r\n\r\n            if(mDao.getAllSpecialData().contains(SpecialDataModel(0, ordinaryData.shoesUrl!!))) { // Special이 존재 할 시\r\n                mDao.updateSpecialDataUrl(newShoesData.shoesUrl!!, ordinaryData.shoesUrl)\r\n            }\r\n        }\r\n    }\r\n\r\n    private fun clearData() {\r\n        mDao.clearShoesData()\r\n    }\r\n\r\n    private fun insertSpecialData(specialData: SpecialDataModel) {\r\n        mDao.insertSpecialData(specialData)\r\n    }\r\n\r\n    private fun deleteSpecialData(delete: SpecialDataModel) {\r\n        mDao.deleteSpecialData(delete.specialUrl)\r\n    }\r\n    // 데이터베이스 설정 끝\r\n}
+===================================================================
+--- app/src/main/java/com/nikealarm/nikedrawalarm/component/ParsingWorker.kt	(revision 2a4adaf47544d23e0e8bcddf3e1c5532f684ff3d)
++++ app/src/main/java/com/nikealarm/nikedrawalarm/component/worker/ParsingWorker.kt	(date 1604142136128)
+@@ -1,7 +1,9 @@
+-package com.nikealarm.nikedrawalarm.component
++package com.nikealarm.nikedrawalarm.component.worker
+ 
+ import android.content.Context
+ import android.util.Log
++import androidx.hilt.Assisted
++import androidx.hilt.work.WorkerInject
+ import androidx.work.Worker
+ import androidx.work.WorkerParameters
+ import androidx.work.workDataOf
+@@ -12,19 +14,20 @@
+ import com.nikealarm.nikedrawalarm.other.Contents
+ import org.jsoup.Jsoup
+ 
+-class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(
++class ParsingWorker @WorkerInject constructor(
++    @Assisted context: Context,
++    @Assisted workerParams: WorkerParameters,
++    val mDao: Dao
++) : Worker(
+     context,
+     workerParams
+ ) {
+-    private lateinit var mDao: Dao
+ 
+     private val allShoesList = mutableListOf<ShoesDataModel>()
+ 
+     override fun doWork(): Result {
+-        mDao = MyDataBase.getDatabase(applicationContext)!!.getDao()
+-
+         parsingData() // 데이터를 파싱함
+-        if(isStopped) { // cancel 됐을 때
++        if (isStopped) { // cancel 됐을 때
+             return Result.failure()
+         }
+ 
+@@ -58,7 +61,7 @@
+         var progress = 0.0
+ 
+         for (elementData in elementsData) {
+-            if(isStopped) { // cancel 됐을 때
++            if (isStopped) { // cancel 됐을 때
+                 return
+             }
+ 
+@@ -83,7 +86,9 @@
+             val innerUrl =
+                 "https://www.nike.com" + elementData.select("a").attr("href") // 해당 신발의 링크창을 읽어옴
+ 
+-            if (mDao.getAllShoesData().contains(ShoesDataModel(0, shoesSubTitle, shoesTitle))) { // 해당 데이터가 이미 존재 시
++            if (mDao.getAllShoesData()
++                    .contains(ShoesDataModel(0, shoesSubTitle, shoesTitle))
++            ) { // 해당 데이터가 이미 존재 시
+                 val category = when (shoesInfo) {
+                     "THE DRAW 진행예정", "THE DRAW 응모하기" -> ShoesDataModel.CATEGORY_DRAW
+                     "THE DRAW 응모 마감", "THE DRAW 당첨 결과 확인", "THE DRAW 종료" -> ShoesDataModel.CATEGORY_DRAW_END
+@@ -96,7 +101,7 @@
+                         0,
+                         shoesSubTitle,
+                         shoesTitle,
+-                        null,
++                        shoesInfo,
+                         null,
+                         innerUrl,
+                         category
+@@ -118,7 +123,7 @@
+ 
+                 val insertShoesData: ShoesDataModel
+                 when (shoesInfo) {
+-                    "THE DRAW 진행예정", "THE DRAW 응모하기" -> {
++                    "THE DRAW 진행예정", "THE DRAW 응모하기" -> { // DRAW
+                         val innerElementData = innerDoc.select("span.uk-text-bold")
+ 
+                         var howToEvent = "" // 이벤트 참여방법
+@@ -139,7 +144,7 @@
+                             ShoesDataModel.CATEGORY_DRAW
+                         )
+                     }
+-                    "THE DRAW 응모 마감", "THE DRAW 당첨 결과 확인", "THE DRAW 종료" -> {
++                    "THE DRAW 응모 마감", "THE DRAW 당첨 결과 확인", "THE DRAW 종료" -> { // DRAW END
+                         insertShoesData = ShoesDataModel(
+                             null,
+                             shoesSubTitle,
+@@ -150,7 +155,7 @@
+                             ShoesDataModel.CATEGORY_DRAW_END
+                         )
+                     }
+-                    "COMING SOON" -> {
++                    "COMING SOON" -> { // COMING SOON
+                         val launchDate = "${innerDoc.select("div.txt-date").text()}\n${shoesPrice}"
+ 
+                         insertShoesData = ShoesDataModel(
+@@ -163,12 +168,17 @@
+                             ShoesDataModel.CATEGORY_COMING_SOON
+                         )
+                     }
+-                    else -> {
++                    else -> { // RELEASED
++                        val stock: String = if (shoesInfo == ShoesDataModel.SHOES_SOLD_OUT) {
++                            shoesInfo
++                        } else {
++                            shoesPrice
++                        }
+                         insertShoesData = ShoesDataModel(
+                             null,
+                             shoesSubTitle,
+                             shoesTitle,
+-                            shoesPrice,
++                            stock,
+                             shoesImageUrl,
+                             innerUrl,
+                             ShoesDataModel.CATEGORY_RELEASED
+@@ -196,7 +206,7 @@
+         val elementsData = doc.select("div.launch-list-item")
+ 
+         for (elementData in elementsData) {
+-            if(isStopped) { // cancel 됐을 때
++            if (isStopped) { // cancel 됐을 때
+                 return
+             }
+ 
+@@ -206,7 +216,9 @@
+                 .text()
+             val specialUrl = "https://www.nike.com" + elementData.select("a").attr("href")
+ 
+-            if (checkCategory(category) || mDao.getAllSpecialData().contains(SpecialDataModel(0, specialUrl))) { // 이미 데이터 존재하지 않고 special이 아니면 continue
++            if (checkCategory(category) || mDao.getAllSpecialData()
++                    .contains(SpecialDataModel(0, specialUrl))
++            ) { // 이미 데이터 존재하지 않고 special이 아니면 continue
+                 continue
+             }
+ 
+@@ -258,7 +270,17 @@
+     private fun checkSpecialData() {
+         for (specialData in mDao.getAllSpecialData()) {
+ 
+-            if (!allShoesList.contains(ShoesDataModel(0, "", "", null, null, specialData.specialUrl))) {
++            if (!allShoesList.contains(
++                    ShoesDataModel(
++                        0,
++                        "",
++                        "",
++                        null,
++                        null,
++                        specialData.specialUrl
++                    )
++                )
++            ) {
+                 deleteSpecialData(specialData)
+             }
+         }
+@@ -273,10 +295,10 @@
+     private fun updateData(newShoesData: ShoesDataModel) {
+         val index = mDao.getAllShoesData()
+             .indexOf(ShoesDataModel(0, newShoesData.shoesSubTitle, newShoesData.shoesTitle))
+-        val ordinaryData = mDao.getAllShoesData()[index]
++        val ordinaryData = mDao.getAllShoesData()[index] // 기존의 있던 신발 데이터를 읽어옴
+ 
+-        if (newShoesData.shoesCategory != ordinaryData.shoesCategory) { // CATEGORY -> RELEASED
+-            if (ordinaryData.shoesCategory == ShoesDataModel.CATEGORY_COMING_SOON) {
++        if (newShoesData.shoesCategory != ordinaryData.shoesCategory) { // 카테고리가 바뀌었을 때
++            if (ordinaryData.shoesCategory == ShoesDataModel.CATEGORY_COMING_SOON) { // CATEGORY -> RELEASED
+                 val newShoesPrice = ordinaryData.shoesPrice?.split("\n")?.get(1) // 신발 가격
+ 
+                 mDao.updateShoesCategory(
+@@ -300,6 +322,24 @@
+             }
+         }
+ 
++        if (newShoesData.shoesCategory == ShoesDataModel.CATEGORY_RELEASED) { // 출시 된 상품의 재고가 바뀌었을 때
++            if (ordinaryData.shoesPrice != ShoesDataModel.SHOES_SOLD_OUT && newShoesData.shoesPrice == ShoesDataModel.SHOES_SOLD_OUT) { // 재고가 다 떨어졌을 경우
++                mDao.updateShoesCategory(
++                    ShoesDataModel.SHOES_SOLD_OUT,
++                    ShoesDataModel.CATEGORY_RELEASED,
++                    newShoesData.shoesTitle,
++                    newShoesData.shoesSubTitle
++                )
++            } else if (ordinaryData.shoesPrice == ShoesDataModel.SHOES_SOLD_OUT && newShoesData.shoesPrice != ShoesDataModel.SHOES_SOLD_OUT) { // 재고가 다시 생긴 경우
++                mDao.updateShoesCategory(
++                    "가격 : ${newShoesData.shoesPrice}",
++                    ShoesDataModel.CATEGORY_RELEASED,
++                    newShoesData.shoesTitle,
++                    newShoesData.shoesSubTitle
++                )
++            }
++        }
++
+         if (newShoesData.shoesUrl != ordinaryData.shoesUrl) { // URL이 바뀌었을 시
+             mDao.updateShoesUrl(
+                 newShoesData.shoesUrl,
+@@ -307,16 +347,14 @@
+                 newShoesData.shoesSubTitle
+             )
+ 
+-            if(mDao.getAllSpecialData().contains(SpecialDataModel(0, ordinaryData.shoesUrl!!))) { // Special이 존재 할 시
++            if (mDao.getAllSpecialData()
++                    .contains(SpecialDataModel(0, ordinaryData.shoesUrl!!))
++            ) { // Special이 존재 할 시
+                 mDao.updateSpecialDataUrl(newShoesData.shoesUrl!!, ordinaryData.shoesUrl)
+             }
+         }
+     }
+ 
+-    private fun clearData() {
+-        mDao.clearShoesData()
+-    }
+-
+     private fun insertSpecialData(specialData: SpecialDataModel) {
+         mDao.insertSpecialData(specialData)
+     }
+Index: app/src/main/java/com/nikealarm/nikedrawalarm/database/ShoesDataModel.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.nikealarm.nikedrawalarm.database\r\n\r\nimport androidx.room.ColumnInfo\r\nimport androidx.room.Entity\r\nimport androidx.room.PrimaryKey\r\n\r\n@Entity\r\ndata class ShoesDataModel(\r\n    @PrimaryKey(autoGenerate = true)\r\n    @ColumnInfo(name = \"ShoesId\")\r\n    val id: Int?,\r\n    @ColumnInfo(name = \"ShoesSubTitle\")\r\n    val shoesSubTitle: String,\r\n    @ColumnInfo(name = \"ShoesTitle\")\r\n    val shoesTitle: String,\r\n    @ColumnInfo(name = \"ShoesPrice\")\r\n    val shoesPrice: String? = null,\r\n    @ColumnInfo(name = \"ShoesImageUrl\")\r\n    val shoesImageUrl: String? = null,\r\n    @ColumnInfo(name = \"ShoesUrl\")\r\n    val shoesUrl: String? = null,\r\n    @ColumnInfo(name = \"ShoesCategory\")\r\n    val shoesCategory: String? = null\r\n) {\r\n    override fun equals(other: Any?): Boolean {\r\n        other as ShoesDataModel\r\n        return (shoesSubTitle == other.shoesSubTitle && shoesTitle == other.shoesTitle) || shoesUrl == other.shoesUrl\r\n    }\r\n\r\n    companion object {\r\n        const val CATEGORY_DRAW = \"DRAW\"\r\n        const val CATEGORY_DRAW_END = \"CATEGORY_DRAW_END\"\r\n        const val CATEGORY_COMING_SOON = \"COMING SOON\"\r\n        const val CATEGORY_RELEASED = \"RELEASED\"\r\n    }\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/nikealarm/nikedrawalarm/database/ShoesDataModel.kt	(revision 2a4adaf47544d23e0e8bcddf3e1c5532f684ff3d)
++++ app/src/main/java/com/nikealarm/nikedrawalarm/database/ShoesDataModel.kt	(date 1604142136134)
+@@ -32,5 +32,6 @@
+         const val CATEGORY_DRAW_END = "CATEGORY_DRAW_END"
+         const val CATEGORY_COMING_SOON = "COMING SOON"
+         const val CATEGORY_RELEASED = "RELEASED"
++        const val SHOES_SOLD_OUT = "SOLD OUT"
+     }
+ }
+\ No newline at end of file
+Index: app/src/main/java/com/nikealarm/nikedrawalarm/database/MyDataBase.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.nikealarm.nikedrawalarm.database\r\n\r\nimport android.content.Context\r\nimport androidx.room.Database\r\nimport androidx.room.Room\r\nimport androidx.room.RoomDatabase\r\nimport androidx.room.TypeConverters\r\n\r\n@Database(entities = [SpecialDataModel::class, ShoesDataModel::class], version = 5)\r\n@TypeConverters(Converter::class)\r\nabstract class MyDataBase : RoomDatabase() {\r\n    abstract fun getDao(): Dao\r\n\r\n    companion object {\r\n        private var instance: MyDataBase? = null\r\n//        val MIGRATION_1_2 = object : Migration(1, 2) {\r\n//            override fun migrate(database: SupportSQLiteDatabase) {\r\n//                database.execSQL(\"CREATE TABLE SpecialDataModel (SpecialShoesId INTEGER, SpecialShoesSubTitle TEXT, SpecialShoesTitle TEXT, HowToEvent TEXT, SpecialShoesUrl TEXT, SpecialShoesImageUrl TEXT, SpecialShoesMonth TEXT, SpecialShoesDay TEXT, SpecialShoesWhenEvent TEXT) \")\r\n//            }\r\n//        }\r\n\r\n        fun getDatabase(context: Context): MyDataBase? {\r\n            if(instance == null) {\r\n                synchronized(MyDataBase::class.java) {\r\n                    instance = Room.databaseBuilder(\r\n                        context,\r\n                        MyDataBase::class.java,\r\n                        \"database\")\r\n                        .fallbackToDestructiveMigration()\r\n                        .build()\r\n                }\r\n            }\r\n\r\n            return instance\r\n        }\r\n    }\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/nikealarm/nikedrawalarm/database/MyDataBase.kt	(revision 2a4adaf47544d23e0e8bcddf3e1c5532f684ff3d)
++++ app/src/main/java/com/nikealarm/nikedrawalarm/database/MyDataBase.kt	(date 1604142136133)
+@@ -10,28 +10,4 @@
+ @TypeConverters(Converter::class)
+ abstract class MyDataBase : RoomDatabase() {
+     abstract fun getDao(): Dao
+-
+-    companion object {
+-        private var instance: MyDataBase? = null
+-//        val MIGRATION_1_2 = object : Migration(1, 2) {
+-//            override fun migrate(database: SupportSQLiteDatabase) {
+-//                database.execSQL("CREATE TABLE SpecialDataModel (SpecialShoesId INTEGER, SpecialShoesSubTitle TEXT, SpecialShoesTitle TEXT, HowToEvent TEXT, SpecialShoesUrl TEXT, SpecialShoesImageUrl TEXT, SpecialShoesMonth TEXT, SpecialShoesDay TEXT, SpecialShoesWhenEvent TEXT) ")
+-//            }
+-//        }
+-
+-        fun getDatabase(context: Context): MyDataBase? {
+-            if(instance == null) {
+-                synchronized(MyDataBase::class.java) {
+-                    instance = Room.databaseBuilder(
+-                        context,
+-                        MyDataBase::class.java,
+-                        "database")
+-                        .fallbackToDestructiveMigration()
+-                        .build()
+-                }
+-            }
+-
+-            return instance
+-        }
+-    }
+ }
+\ No newline at end of file
+diff --git .idea/shelf/Uncommitted_changes_before_Checkout_at_2020-10-29__10_33__Default_Changelist_.xml .idea/shelf/Uncommitted_changes_before_Checkout_at_2020-10-29__10_33__Default_Changelist_.xml
+diff --git .idea/shelf/Uncommitted_changes_before_Checkout_at_2020-10-29__10_33__Default_Changelist_1.xml .idea/shelf/Uncommitted_changes_before_Checkout_at_2020-10-29__10_33__Default_Changelist_1.xml
+diff --git .idea/shelf/Uncommitted_changes_before_Checkout_at_2020-10-31__4_42__Default_Changelist_.xml .idea/shelf/Uncommitted_changes_before_Checkout_at_2020-10-31__4_42__Default_Changelist_.xml
+diff --git .idea/shelf/Uncommitted_changes_before_Checkout_at_2020-10-31__4_34__Default_Changelist_.xml .idea/shelf/Uncommitted_changes_before_Checkout_at_2020-10-31__4_34__Default_Changelist_.xml
+diff --git .idea/shelf/Uncommitted_changes_before_Checkout_at_2020-10-31__4_45__Default_Changelist_.xml .idea/shelf/Uncommitted_changes_before_Checkout_at_2020-10-31__4_45__Default_Changelist_.xml
+diff --git .idea/shelf/Uncommitted_changes_before_Checkout_at_2020-10-30__3_02__Default_Changelist_.xml .idea/shelf/Uncommitted_changes_before_Checkout_at_2020-10-30__3_02__Default_Changelist_.xml
+diff --git .idea/shelf/Uncommitted_changes_before_Checkout_at_2020-10-31__4_44__Default_Changelist_.xml .idea/shelf/Uncommitted_changes_before_Checkout_at_2020-10-31__4_44__Default_Changelist_.xml
+diff --git .idea/shelf/Uncommitted_changes_before_Checkout_at_2020-10-31__4_26__Default_Changelist_.xml .idea/shelf/Uncommitted_changes_before_Checkout_at_2020-10-31__4_26__Default_Changelist_.xml
+diff --git .idea/shelf/Uncommitted_changes_before_Checkout_at_2020-10-31__4_26__Default_Changelist_1.xml .idea/shelf/Uncommitted_changes_before_Checkout_at_2020-10-31__4_26__Default_Changelist_1.xml
+diff --git .idea/shelf/Uncommitted_changes_before_Checkout_at_2020-10-13__10_58__Default_Changelist_.xml .idea/shelf/Uncommitted_changes_before_Checkout_at_2020-10-13__10_58__Default_Changelist_.xml
+diff --git .idea/shelf/Uncommitted_changes_before_Checkout_at_2020-10-13__11_19__Default_Changelist_.xml .idea/shelf/Uncommitted_changes_before_Checkout_at_2020-10-13__11_19__Default_Changelist_.xml

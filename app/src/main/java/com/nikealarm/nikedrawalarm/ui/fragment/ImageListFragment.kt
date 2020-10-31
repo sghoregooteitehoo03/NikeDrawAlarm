@@ -14,23 +14,25 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
 import androidx.transition.TransitionInflater
 import androidx.viewpager2.widget.ViewPager2
 import androidx.work.*
 import com.bumptech.glide.Glide
 import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.adapter.ImageListPagerAdapter
-import com.nikealarm.nikedrawalarm.component.GetImageWorker
+import com.nikealarm.nikedrawalarm.component.worker.GetImageWorker
 import com.nikealarm.nikedrawalarm.other.Contents
 import com.nikealarm.nikedrawalarm.viewmodel.MyViewModel
 import kotlinx.android.synthetic.main.fragment_image_list.*
 
 class ImageListFragment : Fragment() {
-    private lateinit var mViewModel: MyViewModel
     private lateinit var dots: Array<ImageView?>
 
     private lateinit var viewPager: ViewPager2
     private lateinit var sliderDotspanel: LinearLayout
+
+    private val args: ImageListFragmentArgs by navArgs()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,10 +47,9 @@ class ImageListFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        mViewModel = ViewModelProvider(requireActivity())[MyViewModel::class.java]
         val getImageWork = OneTimeWorkRequestBuilder<GetImageWorker>()
             .addTag(Contents.WORKER_GET_IMAGE)
-            .setInputData(workDataOf(Contents.WORKER_GET_IMAGE_INPUT_KEY to mViewModel.getUrl().value))
+            .setInputData(workDataOf(Contents.WORKER_GET_IMAGE_INPUT_KEY to args.shoesUrl))
             .build()
 
         WorkManager.getInstance(requireContext())
@@ -64,9 +65,8 @@ class ImageListFragment : Fragment() {
 
         // id 설정
         with(imageListFrag_firstImage) {
-//            Picasso.get().load(mViewModel.shoesImageUrl.value).into(this)
-            Glide.with(context).load(mViewModel.shoesImageUrl.value).into(this)
-            transitionName = mViewModel.getUrl().value
+            Glide.with(context).load(args.shoesImageUrl).into(this)
+            transitionName = args.shoesUrl
         }
         viewPager = view.findViewById(R.id.imageListFrag_viewpager)
         sliderDotspanel = view.findViewById(R.id.imageListFrag_sliderDots)

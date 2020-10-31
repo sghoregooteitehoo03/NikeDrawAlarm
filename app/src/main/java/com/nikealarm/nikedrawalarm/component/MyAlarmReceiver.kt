@@ -8,20 +8,22 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Build
 import android.util.Log
-import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
-import com.nikealarm.nikedrawalarm.database.Dao
-import com.nikealarm.nikedrawalarm.database.MyDataBase
-import com.nikealarm.nikedrawalarm.database.SpecialShoesDataModel
+import com.nikealarm.nikedrawalarm.component.worker.FindDrawWorker
+import com.nikealarm.nikedrawalarm.component.worker.ProductNotifyWorker
+import com.nikealarm.nikedrawalarm.component.worker.ResetProductAlarmWorker
 import com.nikealarm.nikedrawalarm.other.Contents
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
+import javax.inject.Named
 
+@AndroidEntryPoint
 class MyAlarmReceiver : BroadcastReceiver() {
-    private lateinit var mDao: Dao
+    @Inject
+    @Named(Contents.PREFERENCE_NAME_TIME)
+    lateinit var timePreferences: SharedPreferences
 
     override fun onReceive(context: Context, intent: Intent) {
         // This method is called when the BroadcastReceiver is receiving an Intent broadcast.
@@ -59,9 +61,7 @@ class MyAlarmReceiver : BroadcastReceiver() {
     private fun reSetAlarm(context: Context) {
         Log.i("Check", "동작")
 
-        val mSharedPreferences =
-            context.getSharedPreferences(Contents.PREFERENCE_NAME_TIME, Context.MODE_PRIVATE)
-        var timeTrigger = mSharedPreferences.getLong(Contents.SYNC_ALARM_KEY, 0)
+        var timeTrigger = timePreferences.getLong(Contents.SYNC_ALARM_KEY, 0)
 
         if (timeTrigger != 0.toLong()) {
             Log.i("Check", "재설정")
@@ -82,7 +82,7 @@ class MyAlarmReceiver : BroadcastReceiver() {
                 PendingIntent.FLAG_UPDATE_CURRENT
             )
 
-            setPreference(mSharedPreferences, timeTrigger)
+            setPreference(timeTrigger)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 mAlarmManager.setExactAndAllowWhileIdle(
                     AlarmManager.RTC_WAKEUP,
@@ -102,79 +102,16 @@ class MyAlarmReceiver : BroadcastReceiver() {
     // 상품 알람 재설정
     private fun reSetProductAlarm(context: Context) {
         Log.i("Check2", "동작")
-        val mSharedPreferences =
-            context.getSharedPreferences(Contents.PREFERENCE_NAME_TIME, Context.MODE_PRIVATE)
-        mDao = MyDataBase.getDatabase(context)!!.getDao()
-
-        CoroutineScope(Dispatchers.IO).launch {
-            for (position in mDao.getAllSpecialShoesData().indices) {
-                val shoesData = mDao.getAllSpecialShoesData()[position]
-                val preferenceKey = "${shoesData.ShoesTitle}-${shoesData.ShoesSubTitle}"
-                val timeTrigger = mSharedPreferences.getLong(preferenceKey, 0)
-
-                if (timeTrigger != 0L) {
-                    Log.i("CheckTime", "${timeTrigger}")
-                    if (timeTrigger < System.currentTimeMillis()) {
-                        deleteDrawShoesData(mSharedPreferences, shoesData, context)
-                        continue
-                    }
-
-                    val mAlarmManager =
-                        context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-
-                    val reIntent = Intent(context, MyAlarmReceiver::class.java).apply {
-                        action = Contents.INTENT_ACTION_PRODUCT_ALARM
-                        putExtra(Contents.INTENT_KEY_POSITION, position)
-                    }
-
-                    val alarmPendingIntent = PendingIntent.getBroadcast(
-                        context,
-                        position,
-                        reIntent,
-                        PendingIntent.FLAG_UPDATE_CURRENT
-                    )
-
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        mAlarmManager.setExactAndAllowWhileIdle(
-                            AlarmManager.RTC_WAKEUP,
-                            timeTrigger,
-                            alarmPendingIntent
-                        )
-                    } else {
-                        mAlarmManager.setExact(
-                            AlarmManager.RTC_WAKEUP,
-                            timeTrigger,
-                            alarmPendingIntent
-                        )
-                    }
-                }
-            }
-        }
+        val resetProductAlarmWorkRequest = OneTimeWorkRequestBuilder<ResetProductAlarmWorker>()
+            .build()
+        WorkManager.getInstance(context).enqueue(resetProductAlarmWorkRequest)
     }
 
     // 데이터베이스 설정
-    private fun setPreference(preference: SharedPreferences, timeTrigger: Long) {
-        with(preference.edit()) {
+    private fun setPreference(timeTrigger: Long) {
+        with(timePreferences.edit()) {
             putLong(Contents.SYNC_ALARM_KEY, timeTrigger)
             commit()
-        }
-    }
-
-    private fun deleteDrawShoesData(preference: SharedPreferences, data: SpecialShoesDataModel, context: Context) {
-        val allowAlarmPreference = context.getSharedPreferences(Contents.PREFERENCE_NAME_ALLOW_ALARM, Context.MODE_PRIVATE)
-
-        with(preference.edit()) {
-            remove("${data.ShoesTitle}-${data.ShoesSubTitle}")
-            commit()
-        }
-
-        with(allowAlarmPreference.edit()) {
-            remove("${data.ShoesTitle}-${data.ShoesSubTitle}")
-            commit()
-        }
-
-        CoroutineScope(Dispatchers.IO).launch {
-            mDao.deleteSpecialData(data.ShoesUrl!!)
         }
     }
 }

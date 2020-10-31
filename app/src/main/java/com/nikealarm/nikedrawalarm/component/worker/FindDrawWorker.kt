@@ -1,4 +1,4 @@
-package com.nikealarm.nikedrawalarm.component
+package com.nikealarm.nikedrawalarm.component.worker
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -8,24 +8,26 @@ import android.content.Intent
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.hilt.Assisted
+import androidx.hilt.work.WorkerInject
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import com.nikealarm.nikedrawalarm.R
-import com.nikealarm.nikedrawalarm.database.SpecialDataModel
-import com.nikealarm.nikedrawalarm.database.MyDataBase
-import com.nikealarm.nikedrawalarm.database.ShoesDataModel
-import com.nikealarm.nikedrawalarm.database.SpecialShoesDataModel
+import com.nikealarm.nikedrawalarm.database.*
 import com.nikealarm.nikedrawalarm.other.Contents
 import com.nikealarm.nikedrawalarm.ui.MainActivity
 import com.squareup.picasso.Picasso
 import org.jsoup.Jsoup
 
-class FindDrawWorker(context: Context, workerParams: WorkerParameters) : Worker(
+class FindDrawWorker @WorkerInject constructor(
+    @Assisted context: Context,
+    @Assisted workerParams: WorkerParameters,
+    val mDao: Dao
+) : Worker(
     context,
     workerParams
 ) {
     private val mContext = context
-    private val mDao = MyDataBase.getDatabase(mContext)!!.getDao()
 
     private val allShoesList = mutableListOf<ShoesDataModel>()
 
@@ -39,7 +41,6 @@ class FindDrawWorker(context: Context, workerParams: WorkerParameters) : Worker(
     private fun parseData() {
         parseReleasedData()
         parseSpecialData()
-//        repeatNotification()
 
         checkSpecialData()
     }
@@ -163,17 +164,11 @@ class FindDrawWorker(context: Context, workerParams: WorkerParameters) : Worker(
 
             insertSpecialShoesData(specialShoesData)
 
-            val index = mDao.getAllSpecialShoesData().indexOf(SpecialShoesDataModel(0, "", "", null, null, specialUrl))
+            val index = mDao.getAllSpecialShoesData()
+                .indexOf(SpecialShoesDataModel(0, "", "", null, null, specialUrl))
             createNotification(mDao.getAllSpecialShoesData()[index], channelId)
 
             channelId++
-        }
-    }
-
-    private fun repeatNotification() { // DRAW 데이터들을 알림 생성 메서드로 보냄
-        for (channelId in mDao.getAllSpecialShoesData().indices) {
-            val specialShoes = mDao.getAllSpecialShoesData()[channelId]
-            createNotification(specialShoes, channelId)
         }
     }
 

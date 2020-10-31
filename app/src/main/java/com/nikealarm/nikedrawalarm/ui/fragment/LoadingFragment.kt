@@ -12,7 +12,7 @@ import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.work.*
 import com.nikealarm.nikedrawalarm.R
-import com.nikealarm.nikedrawalarm.component.ParsingWorker
+import com.nikealarm.nikedrawalarm.component.worker.ParsingWorker
 import com.nikealarm.nikedrawalarm.other.Contents
 import kotlinx.android.synthetic.main.fragment_loading.*
 

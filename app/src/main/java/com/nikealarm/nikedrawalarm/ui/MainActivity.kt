@@ -9,6 +9,7 @@ import android.util.Log
 import androidx.navigation.fragment.findNavController
 import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.other.Contents
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_main.*
 
 /*
@@ -18,6 +19,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 * UI 수정 및 최적화
 * 코드 최적화
 * */
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
