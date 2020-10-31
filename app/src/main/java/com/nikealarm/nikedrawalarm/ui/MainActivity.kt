@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import androidx.navigation.fragment.findNavController
 import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.other.Contents
@@ -27,6 +28,7 @@ class MainActivity : AppCompatActivity() {
 
         // 기존의 알림창이 존재 했을 때 알림창을 제거함
         ifNeedToMoveFragment(intent)
+        Log.i("Check", "test")
         cancelNotification()
     }
 
