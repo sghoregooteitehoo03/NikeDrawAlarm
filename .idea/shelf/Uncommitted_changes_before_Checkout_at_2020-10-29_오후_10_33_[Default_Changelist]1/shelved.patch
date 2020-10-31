@@ -1,0 +1,138 @@
+Index: app/src/main/java/com/nikealarm/nikedrawalarm/ui/MainApplication.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.nikealarm.nikedrawalarm.ui\r\n\r\nimport android.app.Application\r\nimport dagger.hilt.android.HiltAndroidApp\r\n\r\n@HiltAndroidApp\r\nclass MainApplication : Application() {\r\n}
+===================================================================
+--- app/src/main/java/com/nikealarm/nikedrawalarm/ui/MainApplication.kt	(revision 0b1efffa5b6922b7beac778554a2c623191a28cc)
++++ app/src/main/java/com/nikealarm/nikedrawalarm/ui/MainApplication.kt	(date 1603973168690)
+@@ -1,8 +1,19 @@
+ package com.nikealarm.nikedrawalarm.ui
+ 
+ import android.app.Application
++import androidx.hilt.work.HiltWorkerFactory
++import androidx.work.Configuration
+ import dagger.hilt.android.HiltAndroidApp
++import javax.inject.Inject
+ 
+ @HiltAndroidApp
+-class MainApplication : Application() {
++class MainApplication : Application(), Configuration.Provider {
++
++    @Inject
++    lateinit var workerFactory: HiltWorkerFactory
++
++    override fun getWorkManagerConfiguration(): Configuration =
++        Configuration.Builder()
++            .setWorkerFactory(workerFactory)
++            .build()
+ }
+\ No newline at end of file
+Index: app/src/main/AndroidManifest.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"\r\n    package=\"com.nikealarm.nikedrawalarm\">\r\n\r\n    <uses-permission android:name=\"android.permission.INTERNET\" />\r\n    <uses-permission android:name=\"android.permission.RECEIVE_BOOT_COMPLETED\" />\r\n\r\n    <application\r\n        android:name=\".ui.MainApplication\"\r\n        android:allowBackup=\"true\"\r\n        android:icon=\"@mipmap/ic_launcher\"\r\n        android:label=\"@string/app_name\"\r\n        android:roundIcon=\"@mipmap/ic_launcher_round\"\r\n        android:supportsRtl=\"true\"\r\n        android:theme=\"@style/AppTheme\"\r\n        android:usesCleartextTraffic=\"true\">\r\n\r\n        <receiver\r\n            android:name=\".component.MyAlarmReceiver\"\r\n            android:enabled=\"true\"\r\n            android:exported=\"true\">\r\n\r\n            <intent-filter>\r\n                <action android:name=\"android.intent.action.BOOT_COMPLETED\" />\r\n            </intent-filter>\r\n        </receiver>\r\n\r\n        <activity\r\n            android:name=\".ui.MainActivity\"\r\n            android:launchMode=\"singleTask\"\r\n            android:screenOrientation=\"portrait\">\r\n            <intent-filter>\r\n                <action android:name=\"android.intent.action.MAIN\" />\r\n\r\n                <category android:name=\"android.intent.category.LAUNCHER\" />\r\n            </intent-filter>\r\n        </activity>\r\n    </application>\r\n\r\n</manifest>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/AndroidManifest.xml	(revision 0b1efffa5b6922b7beac778554a2c623191a28cc)
++++ app/src/main/AndroidManifest.xml	(date 1603974243887)
+@@ -1,5 +1,6 @@
+ <?xml version="1.0" encoding="utf-8"?>
+ <manifest xmlns:android="http://schemas.android.com/apk/res/android"
++    xmlns:tools="http://schemas.android.com/tools"
+     package="com.nikealarm.nikedrawalarm">
+ 
+     <uses-permission android:name="android.permission.INTERNET" />
+@@ -35,6 +36,12 @@
+                 <category android:name="android.intent.category.LAUNCHER" />
+             </intent-filter>
+         </activity>
++
++        <provider
++            android:name="androidx.work.impl.WorkManagerInitializer"
++            android:authorities="${applicationId}.workmanager-init"
++            android:exported="false"
++            tools:node="remove" />
+     </application>
+ 
+ </manifest>
+\ No newline at end of file
+Index: app/src/main/java/com/nikealarm/nikedrawalarm/component/worker/ProductNotifyWorker.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.nikealarm.nikedrawalarm.component.worker\r\n\r\nimport android.app.NotificationChannel\r\nimport android.app.NotificationManager\r\nimport android.app.PendingIntent\r\nimport android.content.Context\r\nimport android.content.Intent\r\nimport android.net.Uri\r\nimport android.os.Build\r\nimport android.util.Log\r\nimport androidx.core.app.NotificationCompat\r\nimport androidx.core.app.NotificationManagerCompat\r\nimport androidx.work.Worker\r\nimport androidx.work.WorkerParameters\r\nimport com.nikealarm.nikedrawalarm.R\r\nimport com.nikealarm.nikedrawalarm.database.Dao\r\nimport com.nikealarm.nikedrawalarm.database.MyDataBase\r\nimport com.nikealarm.nikedrawalarm.database.SpecialShoesDataModel\r\nimport com.nikealarm.nikedrawalarm.other.Contents\r\nimport com.nikealarm.nikedrawalarm.ui.MainActivity\r\nimport com.squareup.picasso.Picasso\r\n\r\nclass ProductNotifyWorker(context: Context, workerParams: WorkerParameters) : Worker(\r\n    context,\r\n    workerParams\r\n) {\r\n    private lateinit var mDao: Dao\r\n\r\n    override fun doWork(): Result {\r\n        mDao = MyDataBase.getDatabase(applicationContext)!!.getDao()\r\n        val position = inputData.getInt(Contents.WORKER_INPUT_DATA_KEY, -1)\r\n\r\n        Log.i(\"Check5\", \"position: ${position}\")\r\n        if (position != -1) {\r\n            val drawData = mDao.getAllSpecialShoesData()[position]\r\n\r\n            createNotification(drawData, applicationContext)\r\n\r\n            // 알림 후 해당 상품을 db에서 지움\r\n            deleteShoesData(drawData)\r\n        }\r\n\r\n        return Result.success()\r\n    }\r\n\r\n    private fun createNotification(specialInfo: SpecialShoesDataModel, context: Context) {\r\n        val vibrate = LongArray(4).apply {\r\n            set(0, 0)\r\n            set(1, 100)\r\n            set(2, 200)\r\n            set(3, 300)\r\n        }\r\n\r\n        val goEventPendingIntent = PendingIntent.getActivity(\r\n            context,\r\n            5000,\r\n            Intent(context, MainActivity::class.java).also {\r\n                it.action = Contents.INTENT_ACTION_GOTO_WEBSITE\r\n                it.putExtra(Contents.DRAW_URL, specialInfo.ShoesUrl)\r\n            },\r\n            PendingIntent.FLAG_ONE_SHOT\r\n        )\r\n        val bitmap = Picasso.get().load(Uri.parse(specialInfo.ShoesImageUrl)).get()\r\n        val notificationBuilder = NotificationCompat.Builder(context, \"Default\")\r\n            .setSmallIcon(R.mipmap.ic_launcher)\r\n            .setContentTitle(\"${specialInfo.ShoesSubTitle} - ${specialInfo.ShoesTitle}\")\r\n            .setVibrate(vibrate)\r\n            .setLargeIcon(bitmap)\r\n            .setStyle(NotificationCompat.BigTextStyle())\r\n            .setStyle(\r\n                NotificationCompat.BigPictureStyle()\r\n                    .bigPicture(bitmap)\r\n                    .bigLargeIcon(null)\r\n            )\r\n            .setContentText(\"해당 상품이 출시되었습니다.\")\r\n            .addAction(0, \"바로가기\", goEventPendingIntent)\r\n\r\n        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {\r\n            val channel = NotificationChannel(\r\n                \"Default\",\r\n                specialInfo.ShoesTitle,\r\n                NotificationManager.IMPORTANCE_DEFAULT\r\n            )\r\n            val notificationManager =\r\n                context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager\r\n\r\n            notificationManager.createNotificationChannel(channel)\r\n        }\r\n\r\n\r\n        with(NotificationManagerCompat.from(context)) {\r\n            notify(100, notificationBuilder.build())\r\n        }\r\n    }\r\n\r\n    // 데이터를 지움\r\n    private fun deleteShoesData(data: SpecialShoesDataModel) {\r\n        val timeSharedPreference = applicationContext.getSharedPreferences(\r\n            Contents.PREFERENCE_NAME_TIME,\r\n            Context.MODE_PRIVATE\r\n        )\r\n        val allowAlarmPreference = applicationContext.getSharedPreferences(\r\n            Contents.PREFERENCE_NAME_ALLOW_ALARM,\r\n            Context.MODE_PRIVATE\r\n        )\r\n\r\n        with(timeSharedPreference.edit()) {\r\n            remove(\"${data.ShoesTitle}-${data.ShoesSubTitle}\")\r\n            commit()\r\n        }\r\n\r\n        mDao.deleteSpecialData(data.ShoesUrl!!)\r\n        with(allowAlarmPreference.edit()) {\r\n            remove(\"${data.ShoesTitle}-${data.ShoesSubTitle}\")\r\n            commit()\r\n        }\r\n\r\n    }\r\n}
+===================================================================
+--- app/src/main/java/com/nikealarm/nikedrawalarm/component/worker/ProductNotifyWorker.kt	(revision 0b1efffa5b6922b7beac778554a2c623191a28cc)
++++ app/src/main/java/com/nikealarm/nikedrawalarm/component/worker/ProductNotifyWorker.kt	(date 1603974606518)
+@@ -5,11 +5,14 @@
+ import android.app.PendingIntent
+ import android.content.Context
+ import android.content.Intent
++import android.content.SharedPreferences
+ import android.net.Uri
+ import android.os.Build
+ import android.util.Log
+ import androidx.core.app.NotificationCompat
+ import androidx.core.app.NotificationManagerCompat
++import androidx.hilt.Assisted
++import androidx.hilt.work.WorkerInject
+ import androidx.work.Worker
+ import androidx.work.WorkerParameters
+ import com.nikealarm.nikedrawalarm.R
+@@ -19,9 +22,15 @@
+ import com.nikealarm.nikedrawalarm.other.Contents
+ import com.nikealarm.nikedrawalarm.ui.MainActivity
+ import com.squareup.picasso.Picasso
++import javax.inject.Named
+ 
+-class ProductNotifyWorker(context: Context, workerParams: WorkerParameters) : Worker(
+-    context,
++class ProductNotifyWorker @WorkerInject constructor(
++    @Assisted appContext: Context,
++    @Assisted workerParams: WorkerParameters,
++    @Named(Contents.PREFERENCE_NAME_TIME) val timePreferences: SharedPreferences,
++    @Named(Contents.PREFERENCE_NAME_ALLOW_ALARM) val allowAlarmPreferences: SharedPreferences
++) : Worker(
++    appContext,
+     workerParams
+ ) {
+     private lateinit var mDao: Dao
+@@ -95,25 +104,26 @@
+ 
+     // 데이터를 지움
+     private fun deleteShoesData(data: SpecialShoesDataModel) {
+-        val timeSharedPreference = applicationContext.getSharedPreferences(
+-            Contents.PREFERENCE_NAME_TIME,
+-            Context.MODE_PRIVATE
+-        )
+-        val allowAlarmPreference = applicationContext.getSharedPreferences(
+-            Contents.PREFERENCE_NAME_ALLOW_ALARM,
+-            Context.MODE_PRIVATE
+-        )
++//        val timeSharedPreference = applicationContext.getSharedPreferences(
++//            Contents.PREFERENCE_NAME_TIME,
++//            Context.MODE_PRIVATE
++//        )
++//        val allowAlarmPreference = applicationContext.getSharedPreferences(
++//            Contents.PREFERENCE_NAME_ALLOW_ALARM,
++//            Context.MODE_PRIVATE
++//        )
+ 
+-        with(timeSharedPreference.edit()) {
++        with(timePreferences.edit()) {
+             remove("${data.ShoesTitle}-${data.ShoesSubTitle}")
+             commit()
+         }
+ 
+         mDao.deleteSpecialData(data.ShoesUrl!!)
+-        with(allowAlarmPreference.edit()) {
++        Log.i("Check", "${allowAlarmPreferences.getBoolean("${data.ShoesTitle}-${data.ShoesSubTitle}", false)}")
++        with(allowAlarmPreferences.edit()) {
+             remove("${data.ShoesTitle}-${data.ShoesSubTitle}")
+             commit()
+         }
+-
++        Log.i("Check", "${allowAlarmPreferences.getBoolean("${data.ShoesTitle}-${data.ShoesSubTitle}", false)}")
+     }
+ }
+\ No newline at end of file
