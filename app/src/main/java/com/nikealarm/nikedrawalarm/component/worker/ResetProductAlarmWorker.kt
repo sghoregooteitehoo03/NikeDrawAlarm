@@ -22,13 +22,11 @@ class ResetProductAlarmWorker @WorkerInject constructor(
     @Assisted appContext: Context,
     @Assisted workerParams: WorkerParameters,
     @Named(Contents.PREFERENCE_NAME_TIME) val timePreferences: SharedPreferences,
-    @Named(Contents.PREFERENCE_NAME_ALLOW_ALARM) val allowAlarmPreferences: SharedPreferences
+    @Named(Contents.PREFERENCE_NAME_ALLOW_ALARM) val allowAlarmPreferences: SharedPreferences,
+    val mDao: Dao
 ) : Worker(appContext, workerParams) {
-    private lateinit var mDao: Dao
 
     override fun doWork(): Result {
-        mDao = MyDataBase.getDatabase(applicationContext)!!.getDao()
-
         resetProductAlarm()
         return Result.success()
     }

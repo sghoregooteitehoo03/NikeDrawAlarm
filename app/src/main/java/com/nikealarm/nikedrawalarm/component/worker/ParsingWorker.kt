@@ -2,6 +2,8 @@ package com.nikealarm.nikedrawalarm.component.worker
 
 import android.content.Context
 import android.util.Log
+import androidx.hilt.Assisted
+import androidx.hilt.work.WorkerInject
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
@@ -12,17 +14,18 @@ import com.nikealarm.nikedrawalarm.database.ShoesDataModel
 import com.nikealarm.nikedrawalarm.other.Contents
 import org.jsoup.Jsoup
 
-class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(
+class ParsingWorker @WorkerInject constructor(
+    @Assisted context: Context,
+    @Assisted workerParams: WorkerParameters,
+    val mDao: Dao
+) : Worker(
     context,
     workerParams
 ) {
-    private lateinit var mDao: Dao
 
     private val allShoesList = mutableListOf<ShoesDataModel>()
 
     override fun doWork(): Result {
-        mDao = MyDataBase.getDatabase(applicationContext)!!.getDao()
-
         parsingData() // 데이터를 파싱함
         if (isStopped) { // cancel 됐을 때
             return Result.failure()
@@ -166,7 +169,7 @@ class ParsingWorker(context: Context, workerParams: WorkerParameters) : Worker(
                         )
                     }
                     else -> { // RELEASED
-                        val stock: String = if(shoesInfo == ShoesDataModel.SHOES_SOLD_OUT) {
+                        val stock: String = if (shoesInfo == ShoesDataModel.SHOES_SOLD_OUT) {
                             shoesInfo
                         } else {
                             shoesPrice

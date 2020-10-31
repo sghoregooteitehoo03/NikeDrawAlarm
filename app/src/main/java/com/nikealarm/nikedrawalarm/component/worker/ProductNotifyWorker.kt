@@ -28,15 +28,14 @@ class ProductNotifyWorker @WorkerInject constructor(
     @Assisted appContext: Context,
     @Assisted workerParams: WorkerParameters,
     @Named(Contents.PREFERENCE_NAME_TIME) val timePreferences: SharedPreferences,
-    @Named(Contents.PREFERENCE_NAME_ALLOW_ALARM) val allowAlarmPreferences: SharedPreferences
+    @Named(Contents.PREFERENCE_NAME_ALLOW_ALARM) val allowAlarmPreferences: SharedPreferences,
+    val mDao: Dao
 ) : Worker(
     appContext,
     workerParams
 ) {
-    private lateinit var mDao: Dao
 
     override fun doWork(): Result {
-        mDao = MyDataBase.getDatabase(applicationContext)!!.getDao()
         val position = inputData.getInt(Contents.WORKER_INPUT_DATA_KEY, -1)
 
         Log.i("Check5", "position: ${position}")
@@ -69,7 +68,7 @@ class ProductNotifyWorker @WorkerInject constructor(
             },
             PendingIntent.FLAG_ONE_SHOT
         )
-        val bitmap = Picasso.get().load(Uri.parse(specialInfo.ShoesImageUrl)).get()
+        val bitmap = Picasso.get().load(specialInfo.ShoesImageUrl).get()
         val notificationBuilder = NotificationCompat.Builder(context, "Default")
             .setSmallIcon(R.mipmap.ic_launcher)
             .setContentTitle("${specialInfo.ShoesSubTitle} - ${specialInfo.ShoesTitle}")

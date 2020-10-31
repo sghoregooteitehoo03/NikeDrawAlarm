@@ -1,14 +1,11 @@
 package com.nikealarm.nikedrawalarm.viewmodel
 
-import android.app.Application
 import androidx.lifecycle.LiveData
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
 import com.nikealarm.nikedrawalarm.database.*
-import javax.inject.Inject
 
-class MyRepository(application: Application) {
-    private val mDao = MyDataBase.getDatabase(application)!!.getDao()
+class MyRepository(private val mDao: Dao) {
 
     // ShoesData
     fun getShoesData(shoesCategory: String): LiveData<PagedList<ShoesDataModel>> {

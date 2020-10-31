@@ -2,8 +2,10 @@ package com.nikealarm.nikedrawalarm.other.di
 
 import android.content.Context
 import androidx.room.Room
+import com.nikealarm.nikedrawalarm.database.Dao
 import com.nikealarm.nikedrawalarm.database.MyDataBase
 import com.nikealarm.nikedrawalarm.other.Contents
+import com.nikealarm.nikedrawalarm.viewmodel.MyRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -49,4 +51,8 @@ object AppModule {
     @Provides
     fun provideDao(database: MyDataBase) =
         database.getDao()
+
+    @Provides
+    fun provideRepository(dao: Dao) =
+        MyRepository(dao)
 }
