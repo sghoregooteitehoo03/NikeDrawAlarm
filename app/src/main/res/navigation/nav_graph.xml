@@ -21,10 +21,6 @@
         android:label="fragment_main"
         tools:layout="@layout/fragment_web" />
     <fragment
-        android:id="@+id/settingScreenPreference"
-        android:name="com.nikealarm.nikedrawalarm.ui.fragment.SettingScreenPreference"
-        android:label="SettingScreenPreference" />
-    <fragment
         android:id="@+id/drawListFragment"
         android:name="com.nikealarm.nikedrawalarm.ui.fragment.ShoesListFragment"
         android:label="fragment_draw_list"
@@ -91,4 +87,9 @@
         android:id="@+id/upcomingListFragment"
         android:name="com.nikealarm.nikedrawalarm.ui.fragment.UpcomingListFragment"
         android:label="UpcomingListFragment" />
+    <fragment
+        android:id="@+id/testFragment"
+        android:name="com.nikealarm.nikedrawalarm.TestFragment"
+        android:label="fragment_test"
+        tools:layout="@layout/fragment_test" />
 </navigation>

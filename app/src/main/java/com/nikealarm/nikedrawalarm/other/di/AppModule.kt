@@ -52,6 +52,7 @@ object AppModule {
     fun provideDao(database: MyDataBase) =
         database.getDao()
 
+    @Singleton
     @Provides
     fun provideRepository(dao: Dao) =
         MyRepository(dao)

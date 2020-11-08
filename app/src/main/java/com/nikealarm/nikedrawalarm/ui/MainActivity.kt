@@ -14,6 +14,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 /*
 * 자동응모 기능
+* 새벽에 드로우 알림 안울리게 하기
 * UPCOMING 정보 시 분 초 표시 (서버 필요)
 * 진행중인 상품 알려주기
 * UI 수정 및 최적화
