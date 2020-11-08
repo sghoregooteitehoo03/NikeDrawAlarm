@@ -6,9 +6,10 @@
     <!-- 키 -->
     <string name="setting_preference_switchKey">isAllowSync</string>
     <string name="setting_preference_showListPreferenceKey">showList</string>
-    <string name="setting_preference_share">shareApp</string>
     <string name="setting_preference_email">Email</string>
     <string name="setting_preference_version">Version</string>
+    <string name="setting_preference_autoEnter">autoEnter</string>
+    <string name="setting_preference_editInfo">editInfo</string>
 
     <string name="open_drawer">Open</string>
     <string name="close_drawer">Close</string>

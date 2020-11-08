@@ -62,7 +62,11 @@
     <fragment
         android:id="@+id/settingFragment"
         android:name="com.nikealarm.nikedrawalarm.ui.fragment.SettingFragment"
-        android:label="SettingFragment" />
+        android:label="SettingFragment" >
+        <action
+            android:id="@+id/action_settingFragment_to_editInfoDialog"
+            app:destination="@id/editInfoDialog" />
+    </fragment>
     <fragment
         android:id="@+id/imageListFragment"
         android:name="com.nikealarm.nikedrawalarm.ui.fragment.ImageListFragment"
@@ -92,4 +96,8 @@
         android:name="com.nikealarm.nikedrawalarm.TestFragment"
         android:label="fragment_test"
         tools:layout="@layout/fragment_test" />
+    <dialog
+        android:id="@+id/editInfoDialog"
+        android:name="com.nikealarm.nikedrawalarm.ui.dialog.EditInfoDialog"
+        android:label="EditInfoDialog" />
 </navigation>

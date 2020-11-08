@@ -38,12 +38,21 @@ object AppModule {
 
     @Singleton
     @Provides
+    @Named(Contents.PREFERENCE_NAME_AUTO_ENTER)
+    fun provideAutoEnterPreferences(@ApplicationContext context: Context) =
+        context.getSharedPreferences(
+            Contents.PREFERENCE_NAME_AUTO_ENTER,
+            Context.MODE_PRIVATE
+        )
+
+    @Singleton
+    @Provides
     fun provideDatabase(@ApplicationContext context: Context) =
         Room.databaseBuilder(
             context,
             MyDataBase::class.java,
             "database"
-            )
+        )
             .fallbackToDestructiveMigration()
             .build()
 
