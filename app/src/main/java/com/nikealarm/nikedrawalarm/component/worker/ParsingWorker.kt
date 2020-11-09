@@ -86,9 +86,7 @@ class ParsingWorker @WorkerInject constructor(
             val innerUrl =
                 "https://www.nike.com" + elementData.select("a").attr("href") // 해당 신발의 링크창을 읽어옴
 
-            if (mDao.getAllShoesData()
-                    .contains(ShoesDataModel(0, shoesSubTitle, shoesTitle))
-            ) { // 해당 데이터가 이미 존재 시
+            if (mDao.existsShoesData(shoesTitle, shoesSubTitle, innerUrl)) { // 해당 데이터가 이미 존재 시
                 val category = when (shoesInfo) {
                     "THE DRAW 진행예정", "THE DRAW 응모하기" -> ShoesDataModel.CATEGORY_DRAW
                     "THE DRAW 응모 마감", "THE DRAW 당첨 결과 확인", "THE DRAW 종료" -> ShoesDataModel.CATEGORY_DRAW_END
@@ -216,9 +214,7 @@ class ParsingWorker @WorkerInject constructor(
                 .text()
             val specialUrl = "https://www.nike.com" + elementData.select("a").attr("href")
 
-            if (checkCategory(category) || mDao.getAllSpecialData()
-                    .contains(SpecialDataModel(0, specialUrl))
-            ) { // 이미 데이터 존재하지 않고 special이 아니면 continue
+            if (checkCategory(category) || mDao.existsSpecialData(specialUrl)) { // 이미 데이터 존재하지 않고 special이 아니면 continue
                 continue
             }
 
@@ -294,7 +290,7 @@ class ParsingWorker @WorkerInject constructor(
 
     private fun updateData(newShoesData: ShoesDataModel) {
         val index = mDao.getAllShoesData()
-            .indexOf(ShoesDataModel(0, newShoesData.shoesSubTitle, newShoesData.shoesTitle))
+            .indexOf(ShoesDataModel(0, "", "", null, null, newShoesData.shoesUrl))
         val ordinaryData = mDao.getAllShoesData()[index] // 기존의 있던 신발 데이터를 읽어옴
 
         if (newShoesData.shoesCategory != ordinaryData.shoesCategory) { // 카테고리가 바뀌었을 때
@@ -347,9 +343,7 @@ class ParsingWorker @WorkerInject constructor(
                 newShoesData.shoesSubTitle
             )
 
-            if (mDao.getAllSpecialData()
-                    .contains(SpecialDataModel(0, ordinaryData.shoesUrl!!))
-            ) { // Special이 존재 할 시
+            if (mDao.existsSpecialData(ordinaryData.shoesUrl!!)) { // Special이 존재 할 시
                 mDao.updateSpecialDataUrl(newShoesData.shoesUrl!!, ordinaryData.shoesUrl)
             }
         }

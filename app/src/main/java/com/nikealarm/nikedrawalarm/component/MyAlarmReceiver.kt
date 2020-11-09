@@ -43,11 +43,11 @@ class MyAlarmReceiver : BroadcastReceiver() {
             // 특정 상품의 알림을 울림
             else if (intent.action == Contents.INTENT_ACTION_PRODUCT_ALARM) {
                 // 상품의 대한 알림을 울림
-                val dataPosition = intent.getIntExtra(Contents.INTENT_KEY_POSITION, -1)
+                val dataPosition = intent.getStringExtra(Contents.INTENT_KEY_POSITION)
                 Log.i("Check3", "동작")
 
-                if (dataPosition != -1) {
-                    Log.i("Check4", "동작 ${dataPosition}")
+                dataPosition?.let {
+                    Log.i("Check4", "동작 $dataPosition")
                     val productNotifyWorkRequest = OneTimeWorkRequestBuilder<ProductNotifyWorker>()
                         .setInputData(workDataOf(Contents.WORKER_INPUT_DATA_KEY to dataPosition))
                         .build()

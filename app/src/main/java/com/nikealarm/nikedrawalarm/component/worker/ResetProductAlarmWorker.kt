@@ -49,7 +49,7 @@ class ResetProductAlarmWorker @WorkerInject constructor(
 
                 val reIntent = Intent(applicationContext, MyAlarmReceiver::class.java).apply {
                     action = Contents.INTENT_ACTION_PRODUCT_ALARM
-                    putExtra(Contents.INTENT_KEY_POSITION, position)
+                    putExtra(Contents.INTENT_KEY_POSITION, shoesData.ShoesUrl)
                 }
 
                 val alarmPendingIntent = PendingIntent.getBroadcast(

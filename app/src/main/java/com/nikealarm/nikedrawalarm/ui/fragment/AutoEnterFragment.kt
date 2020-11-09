@@ -1,33 +1,46 @@
-package com.nikealarm.nikedrawalarm
+package com.nikealarm.nikedrawalarm.ui.fragment
 
+import android.content.SharedPreferences
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.*
+import com.nikealarm.nikedrawalarm.R
+import com.nikealarm.nikedrawalarm.other.Contents
 import com.nikealarm.nikedrawalarm.other.WebState
-import kotlinx.android.synthetic.main.fragment_test.*
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.android.synthetic.main.fragment_auto_enter.*
+import javax.inject.Inject
+import javax.inject.Named
 
-class TestFragment : Fragment() {
+@AndroidEntryPoint
+class AutoEnterFragment : Fragment() {
+    @Inject
+    @Named(Contents.PREFERENCE_NAME_AUTO_ENTER)
+    lateinit var autoEnterPref: SharedPreferences
+
     private var state: String? = WebState.WEB_LOGIN
-    private val id = "lovehjong@naver.com"
-    private val password = "ssf1215021019@@@"
+    private lateinit var id: String
+    private lateinit var password: String
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_test, container, false)
+        return inflater.inflate(R.layout.fragment_auto_enter, container, false)
     }
 
     // 시작
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        with(testFrag_webView) {
+        id = autoEnterPref.getString(Contents.AUTO_ENTER_ID, "")!!
+        password = autoEnterPref.getString(Contents.AUTO_ENTER_PASSWORD, "")!!
+
+        with(autoEnterFrag_webView) {
             clearCookie()
             settings.javaScriptEnabled = true
             webViewClient = testWebViewClient
@@ -49,17 +62,23 @@ class TestFragment : Fragment() {
 
             when (state) {
                 WebState.WEB_LOGIN -> { // 웹 로그인
-                    testFrag_webView
-                        .loadUrl("javascript:(function(){$('i.brz-icon-checkbox').click(), document.getElementById('j_username').value = '${id}', document.getElementById('j_password').value = '${password}', $('button.button.large.width-max').click()})()")
-                    state = WebState.WEB_AFTER_LOGIN
+                    if(id.isNotEmpty() && password.isNotEmpty()) {
+                        autoEnterFrag_webView
+                            .loadUrl("javascript:(function(){$('i.brz-icon-checkbox').click(), document.getElementById('j_username').value = '${id}', document.getElementById('j_password').value = '${password}', $('button.button.large.width-max').click()})()")
+                        state = WebState.WEB_AFTER_LOGIN
+                    }
                 }
                 WebState.WEB_AFTER_LOGIN -> { // 웹 로그인 후
-                    testFrag_webView
-                        .loadUrl("https://www.nike.com/kr/launch/t/men/fw/basketball/CZ5725-700/veso24/air-jordan-5-retro-se")
-                    state = WebState.WEB_SELECT_SIZE
+                    val url = requireActivity().intent.getStringExtra(Contents.DRAW_URL)
+
+                    url?.let {
+                        autoEnterFrag_webView
+                            .loadUrl(it)
+                        state = WebState.WEB_SELECT_SIZE
+                    }
                 }
                 WebState.WEB_SELECT_SIZE -> { // 신발 사이즈 선택
-                    testFrag_webView
+                    autoEnterFrag_webView
                         .loadUrl("javascript:(function(){$('#selectSize option[value=38]').prop('selected', 'selected').change(), $('a#btn-buy.btn-link.xlarge.btn-order.width-max.right').click()})()")
                     state = null
                 }

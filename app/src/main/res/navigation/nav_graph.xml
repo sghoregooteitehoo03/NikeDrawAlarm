@@ -92,12 +92,12 @@
         android:name="com.nikealarm.nikedrawalarm.ui.fragment.UpcomingListFragment"
         android:label="UpcomingListFragment" />
     <fragment
-        android:id="@+id/testFragment"
-        android:name="com.nikealarm.nikedrawalarm.TestFragment"
-        android:label="fragment_test"
-        tools:layout="@layout/fragment_test" />
+        android:id="@+id/autoEnterFragment"
+        android:name="com.nikealarm.nikedrawalarm.ui.fragment.AutoEnterFragment"
+        android:label="fragment_auto_enter"
+        tools:layout="@layout/fragment_auto_enter" />
     <dialog
         android:id="@+id/editInfoDialog"
         android:name="com.nikealarm.nikedrawalarm.ui.dialog.EditInfoDialog"
-        android:label="EditInfoDialog" />
+        android:label="EditInfoDialog" /><action android:id="@+id/action_global_autoEnterFragment" app:destination="@id/autoEnterFragment"/>
 </navigation>

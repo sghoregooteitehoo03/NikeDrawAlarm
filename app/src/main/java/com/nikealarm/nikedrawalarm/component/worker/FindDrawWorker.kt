@@ -73,7 +73,7 @@ class FindDrawWorker @WorkerInject constructor(
                 .attr("href") // 해당 draw 링크창을 읽어옴
 
             // draw가 없을 시
-            if (!mDao.getAllShoesData().contains(ShoesDataModel(0, shoesSubTitle, shoesTitle))) {
+            if (!mDao.existsShoesData(shoesTitle, shoesSubTitle, innerUrl)) {
                 if (shoesInfo == "THE DRAW 진행예정") {
                     val innerDoc = Jsoup.connect(innerUrl)
                         .userAgent("19.0.1.84.52")
@@ -133,9 +133,7 @@ class FindDrawWorker @WorkerInject constructor(
                 .text()
             val specialUrl = "https://www.nike.com" + elementData.select("a").attr("href")
 
-            if (category != "THE DRAW 진행예정" || mDao.getAllSpecialData()
-                    .contains(SpecialDataModel(0, specialUrl))
-            ) { // DRAW가 아니고 이미 데이터가 존재할 시
+            if (category != "THE DRAW 진행예정" || mDao.existsSpecialData(specialUrl)) { // DRAW가 아니고 이미 데이터가 존재할 시
                 continue
             }
 
