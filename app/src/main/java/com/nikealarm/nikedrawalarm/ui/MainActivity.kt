@@ -14,6 +14,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 /*
 * 자동응모 기능
+* 새벽에 드로우 알림 안울리게 하기
 * UPCOMING 정보 시 분 초 표시 (서버 필요)
 * 진행중인 상품 알려주기
 * UI 수정 및 최적화
@@ -37,14 +38,22 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun ifNeedToMoveFragment(intent: Intent?) {
-        if(intent?.action == Contents.INTENT_ACTION_GOTO_WEBSITE) {
-            setIntent(intent)
-            cancelNotification()
-            nav_host_fragment.findNavController().navigate(R.id.action_global_mainFragment)
-        } else if(intent?.action == Contents.INTENT_ACTION_GOTO_DRAWLIST) {
-            setIntent(intent)
-            cancelNotification()
-            nav_host_fragment.findNavController().navigate(R.id.action_global_drawListFragment)
+        when(intent?.action) {
+            Contents.INTENT_ACTION_GOTO_WEBSITE -> {
+                setIntent(intent)
+                cancelNotification()
+                nav_host_fragment.findNavController().navigate(R.id.action_global_mainFragment)
+            }
+            Contents.INTENT_ACTION_GOTO_DRAWLIST -> {
+                setIntent(intent)
+                cancelNotification()
+                nav_host_fragment.findNavController().navigate(R.id.action_global_drawListFragment)
+            }
+            Contents.INTENT_ACTION_GOTO_AUTO_ENTER -> {
+                setIntent(intent)
+                cancelNotification()
+                nav_host_fragment.findNavController().navigate(R.id.action_global_autoEnterFragment)
+            }
         }
     }
 

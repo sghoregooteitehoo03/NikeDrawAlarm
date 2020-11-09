@@ -33,6 +33,8 @@ class MyViewModel @ViewModelInject constructor(
         return shoesList
     }
 
+    val allowAutoEnter = MutableLiveData<Boolean>()
+
     // Special 목록
     val upcomingCategory = MutableLiveData<String>()
 

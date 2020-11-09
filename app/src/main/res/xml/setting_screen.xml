@@ -14,12 +14,25 @@
 
     <PreferenceCategory
         app:iconSpaceReserved="false"
-        app:title="기타">
+        app:title="응모">
 
-        <!--        <Preference-->
-        <!--            app:iconSpaceReserved="false"-->
-        <!--            app:key="@string/setting_preference_share"-->
-        <!--            app:title="공유하기" />-->
+        <SwitchPreferenceCompat
+            app:iconSpaceReserved="false"
+            app:key="@string/setting_preference_autoEnter"
+            app:summary="자동응모 기능을 사용합니다."
+            app:title="자동응모 허용" />
+
+        <Preference
+            app:enabled="false"
+            app:iconSpaceReserved="false"
+            app:key="@string/setting_preference_editInfo"
+            app:summary="아이디 및 비밀번호를 수정합니다."
+            app:title="정보 수정" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:iconSpaceReserved="false"
+        app:title="기타">
 
         <Preference
             app:iconSpaceReserved="false"

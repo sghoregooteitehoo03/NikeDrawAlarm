@@ -21,10 +21,6 @@
         android:label="fragment_main"
         tools:layout="@layout/fragment_web" />
     <fragment
-        android:id="@+id/settingScreenPreference"
-        android:name="com.nikealarm.nikedrawalarm.ui.fragment.SettingScreenPreference"
-        android:label="SettingScreenPreference" />
-    <fragment
         android:id="@+id/drawListFragment"
         android:name="com.nikealarm.nikedrawalarm.ui.fragment.ShoesListFragment"
         android:label="fragment_draw_list"
@@ -66,7 +62,11 @@
     <fragment
         android:id="@+id/settingFragment"
         android:name="com.nikealarm.nikedrawalarm.ui.fragment.SettingFragment"
-        android:label="SettingFragment" />
+        android:label="SettingFragment" >
+        <action
+            android:id="@+id/action_settingFragment_to_editInfoDialog"
+            app:destination="@id/editInfoDialog" />
+    </fragment>
     <fragment
         android:id="@+id/imageListFragment"
         android:name="com.nikealarm.nikedrawalarm.ui.fragment.ImageListFragment"
@@ -91,4 +91,13 @@
         android:id="@+id/upcomingListFragment"
         android:name="com.nikealarm.nikedrawalarm.ui.fragment.UpcomingListFragment"
         android:label="UpcomingListFragment" />
+    <fragment
+        android:id="@+id/autoEnterFragment"
+        android:name="com.nikealarm.nikedrawalarm.ui.fragment.AutoEnterFragment"
+        android:label="fragment_auto_enter"
+        tools:layout="@layout/fragment_auto_enter" />
+    <dialog
+        android:id="@+id/editInfoDialog"
+        android:name="com.nikealarm.nikedrawalarm.ui.dialog.EditInfoDialog"
+        android:label="EditInfoDialog" /><action android:id="@+id/action_global_autoEnterFragment" app:destination="@id/autoEnterFragment"/>
 </navigation>
