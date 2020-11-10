@@ -45,8 +45,8 @@ interface Dao {
     @Query("UPDATE ShoesDataModel SET ShoesPrice = :updatePrice, ShoesCategory = :updateCategory WHERE ShoesUrl = :shoesUrl") // U
     fun updateShoesCategory(updatePrice: String?, updateCategory: String?, shoesUrl: String)
 
-    @Query("UPDATE ShoesDataModel SET ShoesUrl = :updateUrl WHERE ShoesTitle = :shoesTitle AND ShoesSubTitle = :shoesSubTitle") // U
-    fun updateShoesUrl(updateUrl: String?, shoesTitle: String, shoesSubTitle: String)
+    @Query("UPDATE ShoesDataModel SET ShoesUrl = :updateUrl WHERE ShoesUrl = :ordinaryUrl") // U
+    fun updateShoesUrl(updateUrl: String?, ordinaryUrl: String?)
 
     @Insert(entity = ShoesDataModel::class) // C
     fun insertShoesData(insertData: ShoesDataModel)
