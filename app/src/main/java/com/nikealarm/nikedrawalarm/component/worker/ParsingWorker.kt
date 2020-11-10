@@ -9,7 +9,6 @@ import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import com.nikealarm.nikedrawalarm.database.Dao
 import com.nikealarm.nikedrawalarm.database.SpecialDataModel
-import com.nikealarm.nikedrawalarm.database.MyDataBase
 import com.nikealarm.nikedrawalarm.database.ShoesDataModel
 import com.nikealarm.nikedrawalarm.other.Contents
 import org.jsoup.Jsoup
@@ -303,7 +302,7 @@ class ParsingWorker @WorkerInject constructor(
                     ordinaryData.shoesUrl!!
                 )
 
-                deleteSpecialData(SpecialDataModel(0, ordinaryData.shoesUrl!!))
+                deleteSpecialData(SpecialDataModel(0, ordinaryData.shoesUrl))
             } else if (ordinaryData.shoesCategory == ShoesDataModel.CATEGORY_DRAW) { // DRAW -> DRAW END
                 val newShoesPrice = "DRAW가 종료 되었습니다."
 
@@ -333,10 +332,7 @@ class ParsingWorker @WorkerInject constructor(
         }
 
         if (newShoesData.shoesUrl != ordinaryData.shoesUrl) { // URL이 바뀌었을 시
-            mDao.updateShoesUrl(
-                newShoesData.shoesUrl,
-                ordinaryData.shoesUrl
-            )
+            mDao.updateShoesUrl(newShoesData.shoesUrl, ordinaryData.shoesUrl)
 
             if (mDao.existsSpecialData(ordinaryData.shoesUrl!!)) { // Special이 존재 할 시
                 mDao.updateSpecialDataUrl(newShoesData.shoesUrl!!, ordinaryData.shoesUrl)
