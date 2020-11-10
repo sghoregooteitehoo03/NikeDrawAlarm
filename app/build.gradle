@@ -13,8 +13,8 @@ android {
         applicationId "com.nikealarm.nikedrawalarm"
         minSdkVersion 21
         targetSdkVersion 30
-        versionCode 11
-        versionName "2.1.8"
+        versionCode 12
+        versionName "2.2.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -73,7 +73,7 @@ dependencies {
     implementation 'com.github.bumptech.glide:glide:4.11.0'
 
     // Preference
-    implementation 'androidx.preference:preference:1.1.1'
+    implementation 'androidx.preference:preference-ktx:1.1.1'
 
     // Room
     def room_version = "2.2.5"
@@ -105,4 +105,7 @@ dependencies {
     implementation 'androidx.hilt:hilt-work:1.0.0-alpha02'
     implementation 'androidx.hilt:hilt-lifecycle-viewmodel:1.0.0-alpha02'
     kapt 'androidx.hilt:hilt-compiler:1.0.0-alpha02'
+
+    // PasswordEditText
+    implementation 'com.maksim88:PasswordEditText:v0.9'
 }

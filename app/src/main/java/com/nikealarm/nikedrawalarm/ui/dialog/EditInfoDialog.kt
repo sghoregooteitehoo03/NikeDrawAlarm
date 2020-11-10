@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.fragment.app.DialogFragment
@@ -53,7 +54,7 @@ class EditInfoDialog : DialogFragment() {
 
     override fun onDismiss(dialog: DialogInterface) {
         super.onDismiss(dialog)
-        if(checkIsEmpty()) {
+        if (checkIsEmpty()) {
             mViewModel.allowAutoEnter.value = false
         }
     }
@@ -63,25 +64,57 @@ class EditInfoDialog : DialogFragment() {
         val password = autoEnterPreference.getString(Contents.AUTO_ENTER_PASSWORD, "")!!
 
         editInfoDialogFrag_idEdit.setText(id)
-        editInfoDialogFrag_passEdit.setText(password)
+        with(editInfoDialogFrag_passEdit) {
+            setText(password)
+            setOnEditorActionListener { v, actionId, event ->
+                when(actionId) {
+                    EditorInfo.IME_ACTION_DONE -> {
+                        setData()
+                    }
+                }
+                true
+            }
+        }
 
         editInfoDialogFrag_checkButton.setOnClickListener {
-            if(!checkIsEmpty()) {
-                with(autoEnterPreference.edit()) {
-                    putString(Contents.AUTO_ENTER_ID, editInfoDialogFrag_idEdit.text.toString())
-                    putString(Contents.AUTO_ENTER_PASSWORD, editInfoDialogFrag_passEdit.text.toString())
-                    commit()
-                }
-
-                Toast.makeText(requireContext(), "아이디 비밀번호가 저장되었습니다.", Toast.LENGTH_SHORT).show()
-                imm.hideSoftInputFromWindow(editInfoDialogFrag_idEdit.windowToken, 0)
-                imm.hideSoftInputFromWindow(editInfoDialogFrag_passEdit.windowToken, 0)
-            } else {
-                Toast.makeText(requireContext(), "아이디 및 비밀번호를 입력해주세요.", Toast.LENGTH_SHORT).show()
-            }
+            setData()
         }
         editInfoDialogFrag_cancelButton.setOnClickListener {
             dismiss()
+        }
+    }
+
+    private fun setData() {
+        if (!checkIsEmpty()) {
+            with(autoEnterPreference.edit()) {
+                putString(Contents.AUTO_ENTER_ID, editInfoDialogFrag_idEdit.text.toString())
+                putString(
+                    Contents.AUTO_ENTER_PASSWORD,
+                    editInfoDialogFrag_passEdit.text.toString()
+                )
+                commit()
+            }
+
+            Toast.makeText(requireContext(), "아이디 비밀번호가 저장되었습니다.", Toast.LENGTH_SHORT).show()
+
+            editInfoDialogFrag_idEdit.clearFocus()
+            editInfoDialogFrag_passEdit.clearFocus()
+            imm.hideSoftInputFromWindow(editInfoDialogFrag_idEdit.windowToken, 0)
+            imm.hideSoftInputFromWindow(editInfoDialogFrag_passEdit.windowToken, 0)
+        } else {
+            if (editInfoDialogFrag_idEdit.text.toString().isEmpty()) { // id가 비어있을 때
+                Toast.makeText(requireContext(), "아이디를 입력해주세요.", Toast.LENGTH_SHORT).show()
+
+                editInfoDialogFrag_idLayout.requestFocus()
+                imm.showSoftInput(editInfoDialogFrag_idEdit, 0)
+            } else if (editInfoDialogFrag_passEdit.text.toString()
+                    .isEmpty()
+            ) { // password가 비어있을 때
+                Toast.makeText(requireContext(), "비밀번호를 입력해주세요.", Toast.LENGTH_SHORT).show()
+
+                editInfoDialogFrag_passLayout.requestFocus()
+                imm.showSoftInput(editInfoDialogFrag_passEdit, 0)
+            }
         }
     }
 
