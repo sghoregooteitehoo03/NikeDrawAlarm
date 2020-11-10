@@ -300,8 +300,7 @@ class ParsingWorker @WorkerInject constructor(
                 mDao.updateShoesCategory(
                     newShoesPrice,
                     newShoesData.shoesCategory,
-                    newShoesData.shoesTitle,
-                    newShoesData.shoesSubTitle
+                    ordinaryData.shoesUrl!!
                 )
 
                 deleteSpecialData(SpecialDataModel(0, ordinaryData.shoesUrl!!))
@@ -311,8 +310,7 @@ class ParsingWorker @WorkerInject constructor(
                 mDao.updateShoesCategory(
                     newShoesPrice,
                     newShoesData.shoesCategory,
-                    newShoesData.shoesTitle,
-                    newShoesData.shoesSubTitle
+                    ordinaryData.shoesUrl!!
                 )
                 mDao.deleteSpecialData(newShoesData.shoesUrl!!)
             }
@@ -323,15 +321,13 @@ class ParsingWorker @WorkerInject constructor(
                 mDao.updateShoesCategory(
                     ShoesDataModel.SHOES_SOLD_OUT,
                     ShoesDataModel.CATEGORY_RELEASED,
-                    newShoesData.shoesTitle,
-                    newShoesData.shoesSubTitle
+                    ordinaryData.shoesUrl!!
                 )
             } else if (ordinaryData.shoesPrice == ShoesDataModel.SHOES_SOLD_OUT && newShoesData.shoesPrice != ShoesDataModel.SHOES_SOLD_OUT) { // 재고가 다시 생긴 경우
                 mDao.updateShoesCategory(
                     "가격 : ${newShoesData.shoesPrice}",
                     ShoesDataModel.CATEGORY_RELEASED,
-                    newShoesData.shoesTitle,
-                    newShoesData.shoesSubTitle
+                    ordinaryData.shoesUrl!!
                 )
             }
         }

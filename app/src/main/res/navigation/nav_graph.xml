@@ -7,7 +7,7 @@
 
     <action
         android:id="@+id/action_global_mainFragment"
-        app:destination="@id/mainFragment"
+        app:destination="@id/WebFragment"
         app:launchSingleTop="true" />
 
     <action
@@ -16,9 +16,9 @@
         app:launchSingleTop="true" />
 
     <fragment
-        android:id="@+id/mainFragment"
+        android:id="@+id/WebFragment"
         android:name="com.nikealarm.nikedrawalarm.ui.fragment.WebFragment"
-        android:label="fragment_main"
+        android:label="fragment_web"
         tools:layout="@layout/fragment_web" />
     <fragment
         android:id="@+id/drawListFragment"
