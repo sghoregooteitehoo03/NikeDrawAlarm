@@ -79,7 +79,7 @@ class AutoEnterFragment : Fragment() {
                 }
                 WebState.WEB_SELECT_SIZE -> { // 신발 사이즈 선택
                     autoEnterFrag_webView
-                        .loadUrl("javascript:(function(){$('#selectSize option[value=38]').prop('selected', 'selected').change(), $('a#btn-buy.btn-link.xlarge.btn-order.width-max.right').click()})()")
+                        .loadUrl("javascript:(function(){$('i.brz-icon-checkbox').click(), $('#selectSize option[data-value=250]').prop('selected', 'selected').change(), $('a#btn-login.btn-link.xlarge.btn-order.width-max').click()})()")
                     state = null
                 }
                 else -> {  }

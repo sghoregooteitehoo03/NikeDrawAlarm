@@ -42,8 +42,8 @@ interface Dao {
     @Query("SELECT * FROM ShoesDataModel") // R
     fun getAllShoesData(): List<ShoesDataModel>
 
-    @Query("UPDATE ShoesDataModel SET ShoesPrice = :updatePrice, ShoesCategory = :updateCategory WHERE ShoesTitle = :shoesTitle AND ShoesSubTitle = :shoesSubTitle") // U
-    fun updateShoesCategory(updatePrice: String?, updateCategory: String?, shoesTitle: String, shoesSubTitle: String)
+    @Query("UPDATE ShoesDataModel SET ShoesPrice = :updatePrice, ShoesCategory = :updateCategory WHERE ShoesUrl = :shoesUrl") // U
+    fun updateShoesCategory(updatePrice: String?, updateCategory: String?, shoesUrl: String)
 
     @Query("UPDATE ShoesDataModel SET ShoesUrl = :updateUrl WHERE ShoesTitle = :shoesTitle AND ShoesSubTitle = :shoesSubTitle") // U
     fun updateShoesUrl(updateUrl: String?, shoesTitle: String, shoesSubTitle: String)
