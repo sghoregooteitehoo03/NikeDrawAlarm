@@ -335,8 +335,7 @@ class ParsingWorker @WorkerInject constructor(
         if (newShoesData.shoesUrl != ordinaryData.shoesUrl) { // URL이 바뀌었을 시
             mDao.updateShoesUrl(
                 newShoesData.shoesUrl,
-                newShoesData.shoesTitle,
-                newShoesData.shoesSubTitle
+                ordinaryData.shoesUrl
             )
 
             if (mDao.existsSpecialData(ordinaryData.shoesUrl!!)) { // Special이 존재 할 시
