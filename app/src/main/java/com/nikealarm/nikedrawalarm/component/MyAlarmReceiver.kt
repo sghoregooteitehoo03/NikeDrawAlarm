@@ -16,6 +16,7 @@ import com.nikealarm.nikedrawalarm.component.worker.ProductNotifyWorker
 import com.nikealarm.nikedrawalarm.component.worker.ResetProductAlarmWorker
 import com.nikealarm.nikedrawalarm.other.Contents
 import dagger.hilt.android.AndroidEntryPoint
+import java.util.*
 import javax.inject.Inject
 import javax.inject.Named
 
@@ -36,9 +37,11 @@ class MyAlarmReceiver : BroadcastReceiver() {
             if (intent.action == Contents.INTENT_ACTION_SYNC_ALARM) {
                 reSetAlarm(context)
 
-                val parsingWorkRequest = OneTimeWorkRequestBuilder<FindDrawWorker>()
-                    .build()
-                WorkManager.getInstance(context).enqueue(parsingWorkRequest)
+                if(isNotDawn()) { // 새벽이 아닐 때만 동작
+                    val parsingWorkRequest = OneTimeWorkRequestBuilder<FindDrawWorker>()
+                        .build()
+                    WorkManager.getInstance(context).enqueue(parsingWorkRequest)
+                }
             }
             // 특정 상품의 알림을 울림
             else if (intent.action == Contents.INTENT_ACTION_PRODUCT_ALARM) {
@@ -54,6 +57,15 @@ class MyAlarmReceiver : BroadcastReceiver() {
                     WorkManager.getInstance(context).enqueue(productNotifyWorkRequest)
                 }
             }
+        }
+    }
+
+    // 시간 확인
+    private fun isNotDawn(): Boolean {
+        with(Calendar.getInstance()) {
+            timeInMillis = System.currentTimeMillis()
+
+            return this.get(Calendar.HOUR_OF_DAY) > 6
         }
     }
 

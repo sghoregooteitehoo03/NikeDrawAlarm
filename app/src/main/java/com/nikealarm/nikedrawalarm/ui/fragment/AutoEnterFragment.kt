@@ -19,9 +19,9 @@ import javax.inject.Inject
 import javax.inject.Named
 
 /*
+* DRAW 있을 때 고칠것들
 * 생길 수 있는 오류
 * 로그인 실패 O
-* 인터넷 끊김
 * 상품 사이즈 미존재
 * DRAW 종료
 * */
