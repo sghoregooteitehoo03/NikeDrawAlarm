@@ -11,6 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
+import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModelProvider
@@ -63,11 +64,47 @@ class EditInfoDialog : DialogFragment() {
         val id = autoEnterPreference.getString(Contents.AUTO_ENTER_ID, "")!!
         val password = autoEnterPreference.getString(Contents.AUTO_ENTER_PASSWORD, "")!!
 
+        val spinnerAdapter =
+            ArrayAdapter(
+                requireContext(),
+                android.R.layout.simple_spinner_dropdown_item,
+                listOf(
+                    "신발 사이즈 선택",
+                    "240",
+                    "245",
+                    "250",
+                    "255",
+                    "260",
+                    "265",
+                    "270",
+                    "275",
+                    "280",
+                    "285",
+                    "290",
+                    "295",
+                    "300",
+                    "310"
+                )
+            )
+        with(editInfoDialogFrag_spinner) {
+            adapter = spinnerAdapter
+
+            val size = autoEnterPreference.getString(Contents.AUTO_ENTER_SIZE, "")!!
+            setSelection(
+                if (size.isEmpty()) {
+                    0
+                } else {
+                    spinnerAdapter.getPosition(size)
+                }
+            )
+        }
+
         editInfoDialogFrag_idEdit.setText(id)
+        // EditText Key Action
         with(editInfoDialogFrag_passEdit) {
             setText(password)
             setOnEditorActionListener { v, actionId, event ->
-                when(actionId) {
+                when (actionId) {
                     EditorInfo.IME_ACTION_DONE -> {
                         setData()
                     }
@@ -84,6 +121,7 @@ class EditInfoDialog : DialogFragment() {
         }
     }
 
+    // Preferences 저장
     private fun setData() {
         if (!checkIsEmpty()) {
             with(autoEnterPreference.edit()) {
@@ -92,10 +130,14 @@ class EditInfoDialog : DialogFragment() {
                     Contents.AUTO_ENTER_PASSWORD,
                     editInfoDialogFrag_passEdit.text.toString()
                 )
+                putString(
+                    Contents.AUTO_ENTER_SIZE,
+                    editInfoDialogFrag_spinner.selectedItem as String
+                )
                 commit()
             }
 
-            Toast.makeText(requireContext(), "아이디 비밀번호가 저장되었습니다.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), "정보가 저장되었습니다.", Toast.LENGTH_SHORT).show()
 
             editInfoDialogFrag_idEdit.clearFocus()
             editInfoDialogFrag_passEdit.clearFocus()
@@ -114,13 +156,16 @@ class EditInfoDialog : DialogFragment() {
 
                 editInfoDialogFrag_passLayout.requestFocus()
                 imm.showSoftInput(editInfoDialogFrag_passEdit, 0)
+            } else if (editInfoDialogFrag_spinner.selectedItemPosition == 0) { // 사이즈 선택 안했을 때
+                Toast.makeText(requireContext(), "사이즈를 선택해주세요.", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
+    // 데이터 유효성 검사
     private fun checkIsEmpty(): Boolean {
-        // 텍스트가 안 비어있을 때
         return !(editInfoDialogFrag_idEdit.text.toString()
-            .isNotEmpty() && editInfoDialogFrag_passEdit.text.toString().isNotEmpty())
+            .isNotEmpty() && editInfoDialogFrag_passEdit.text.toString()
+            .isNotEmpty() && editInfoDialogFrag_spinner.selectedItemPosition != 0)
     }
 }
