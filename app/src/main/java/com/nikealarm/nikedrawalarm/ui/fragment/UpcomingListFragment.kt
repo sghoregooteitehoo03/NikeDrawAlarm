@@ -17,7 +17,6 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.TextView
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -26,7 +25,7 @@ import androidx.paging.PagedList
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.SimpleItemAnimator
 import com.nikealarm.nikedrawalarm.R
-import com.nikealarm.nikedrawalarm.adapter.SpecialShoesListAdapter
+import com.nikealarm.nikedrawalarm.adapter.UpcomingListAdapter
 import com.nikealarm.nikedrawalarm.component.MyAlarmReceiver
 import com.nikealarm.nikedrawalarm.database.EventDay
 import com.nikealarm.nikedrawalarm.database.ShoesDataModel
@@ -42,9 +41,9 @@ import javax.inject.Inject
 import javax.inject.Named
 
 @AndroidEntryPoint
-class UpcomingListFragment : Fragment(), SpecialShoesListAdapter.AlarmListener {
+class UpcomingListFragment : Fragment(), UpcomingListAdapter.AlarmListener {
     private lateinit var mViewModel: MyViewModel
-    private lateinit var mAdapter: SpecialShoesListAdapter
+    private lateinit var mAdapter: UpcomingListAdapter
 
     private var isStarted = false
     private lateinit var specialShoesList: PagedList<SpecialShoesDataModel>
@@ -71,7 +70,7 @@ class UpcomingListFragment : Fragment(), SpecialShoesListAdapter.AlarmListener {
 
         // 인스턴스 설정
         mViewModel = ViewModelProvider(this)[MyViewModel::class.java]
-        mAdapter = SpecialShoesListAdapter(requireContext(), allowAlarmPreferences).apply {
+        mAdapter = UpcomingListAdapter(requireContext(), allowAlarmPreferences).apply {
             setHasStableIds(true)
             setOnAlarmListener(this@UpcomingListFragment)
         }

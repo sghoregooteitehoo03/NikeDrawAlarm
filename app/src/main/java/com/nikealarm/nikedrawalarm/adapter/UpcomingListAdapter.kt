@@ -23,8 +23,8 @@ import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.database.ShoesDataModel
 import com.nikealarm.nikedrawalarm.database.SpecialShoesDataModel
 
-class SpecialShoesListAdapter(private val context: Context, private val allowAlarmPreferences: SharedPreferences) :
-    PagedListAdapter<SpecialShoesDataModel, SpecialShoesListAdapter.SpecialShoesListViewHolder>(
+class UpcomingListAdapter(private val context: Context, private val allowAlarmPreferences: SharedPreferences) :
+    PagedListAdapter<SpecialShoesDataModel, UpcomingListAdapter.SpecialShoesListViewHolder>(
         diffCallback
     ) {
 
