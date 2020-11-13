@@ -12,29 +12,24 @@ import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.other.Contents
+import com.nikealarm.nikedrawalarm.other.JavaScriptInterface
 import com.nikealarm.nikedrawalarm.other.WebState
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_auto_enter.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Named
-
-/*
-* DRAW 있을 때 고칠것들
-* 생길 수 있는 오류
-* 로그인 실패 O
-* 상품 사이즈 미존재
-* DRAW 종료
-* */
 
 @AndroidEntryPoint
 class AutoEnterFragment : Fragment() {
     @Inject
     @Named(Contents.PREFERENCE_NAME_AUTO_ENTER)
     lateinit var autoEnterPref: SharedPreferences
+    private val javaScriptInterface = JavaScriptInterface()
 
     private var state: String? = WebState.WEB_LOGIN
-    private lateinit var id: String
-    private lateinit var password: String
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -52,6 +47,7 @@ class AutoEnterFragment : Fragment() {
         with(autoEnterFrag_webView) {
             clearCookie()
             settings.javaScriptEnabled = true
+            addJavascriptInterface(javaScriptInterface, "Android")
             webViewClient = testWebViewClient
             webChromeClient = WebChromeClient()
 
@@ -70,8 +66,8 @@ class AutoEnterFragment : Fragment() {
         override fun onPageFinished(view: WebView?, url: String?) {
             super.onPageFinished(view, url)
 
-            if(url == "https://www.nike.com/kr/launch/login?error=true") { // 로그인 실패 시
-                state = WebState.WEB_LOGIN_FAIL
+            if (url == "https://www.nike.com/kr/launch/login?error=true") { // 로그인 실패 시
+                state = WebState.WEB_FAIL
             }
 
             when (state) {
@@ -85,9 +81,6 @@ class AutoEnterFragment : Fragment() {
                         state = WebState.WEB_AFTER_LOGIN
                     }
                 }
-                WebState.WEB_LOGIN_FAIL -> { // 웹 로그인 실패
-                    Log.i("Check", "로그인 실패")
-                }
                 WebState.WEB_AFTER_LOGIN -> { // 웹 로그인 후
                     val shoesUrl = requireActivity().intent.getStringExtra(Contents.DRAW_URL)
 
@@ -95,18 +88,34 @@ class AutoEnterFragment : Fragment() {
                         autoEnterFrag_webView
                             .loadUrl(it)
                         state = WebState.WEB_SELECT_SIZE
+                    }?:let {
+                        state = WebState.WEB_FAIL
+                        autoEnterFrag_webView.reload()
                     }
                 }
                 WebState.WEB_SELECT_SIZE -> { // 신발 사이즈 선택
                     val size = autoEnterPref.getString(Contents.AUTO_ENTER_SIZE, "")!!
 
                     if (size.isNotEmpty()) {
-                        autoEnterFrag_webView
-                            .loadUrl("javascript:(function(){$('#selectSize option[data-value=${size}]').prop('selected', 'selected').change(), $('i.brz-icon-checkbox').click(), $('a#btn-login.btn-link.xlarge.btn-order.width-max').click()})()")
-                        state = null
+                        javaScriptInterface.setSize(size)
+                        autoEnterFrag_webView.loadUrl("javascript:window.Android.getHtml(document.getElementsByTagName('body')[0].innerHTML);")
+
+                        if (javaScriptInterface.checkData()) {
+                            autoEnterFrag_webView
+                                .loadUrl("javascript:(function(){$('#selectSize option[data-value=${size}]').prop('selected', 'selected').change(), $('i.brz-icon-checkbox').click(), $('a#btn-buy.btn-link.xlarge.btn-order.width-max').click()})()")
+                            state = null
+                        } else { // 사이즈가 없거나 응모가 끝났을 때
+                            state = WebState.WEB_FAIL
+                            autoEnterFrag_webView.reload()
+                        }
                     }
                 }
-                else -> {  }
+                WebState.WEB_FAIL -> { // 오류 처리
+                    Toast.makeText(requireContext(), "응모과정중 오류가 발생하였습니다.", Toast.LENGTH_SHORT)
+                        .show()
+                }
+                else -> {
+                }
             }
         }
     }

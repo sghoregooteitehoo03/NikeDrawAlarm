@@ -51,6 +51,7 @@ class UpcomingListFragment : Fragment(), UpcomingListAdapter.AlarmListener {
     @Inject
     @Named(Contents.PREFERENCE_NAME_TIME)
     lateinit var timePreferences: SharedPreferences
+
     @Inject
     @Named(Contents.PREFERENCE_NAME_ALLOW_ALARM)
     lateinit var allowAlarmPreferences: SharedPreferences
@@ -74,13 +75,20 @@ class UpcomingListFragment : Fragment(), UpcomingListAdapter.AlarmListener {
             setHasStableIds(true)
             setOnAlarmListener(this@UpcomingListFragment)
         }
-        val spinnerAdapter = ArrayAdapter<String>(requireContext(), android.R.layout.simple_spinner_dropdown_item, listOf("DEFAULT", "DRAW", "COMING"))
+        val spinnerAdapter = ArrayAdapter<String>(
+            requireContext(),
+            android.R.layout.simple_spinner_dropdown_item,
+            listOf("DEFAULT", "DRAW", "COMING")
+        )
 
         // 옵저버 설정
         mViewModel.specialShoesList.observe(viewLifecycleOwner, Observer {
-            mAdapter.submitList(it)
+            with(mAdapter) {
+                submitList(it)
+                notifyDataSetChanged()
+            }
 
-            if(!isStarted) {
+            if (!isStarted) {
                 specialShoesList = it
                 isStarted = true
             }
@@ -102,8 +110,13 @@ class UpcomingListFragment : Fragment(), UpcomingListAdapter.AlarmListener {
         with(upcomingFrag_spinner) { // 스피너
             adapter = spinnerAdapter
             onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(adapterView: AdapterView<*>?, v: View?, pos: Int, id: Long) {
-                    mViewModel.upcomingCategory.value = when(pos) {
+                override fun onItemSelected(
+                    adapterView: AdapterView<*>?,
+                    v: View?,
+                    pos: Int,
+                    id: Long
+                ) {
+                    mViewModel.upcomingCategory.value = when (pos) {
                         0 -> "DEFAULT"
                         1 -> ShoesDataModel.CATEGORY_DRAW
                         2 -> ShoesDataModel.CATEGORY_COMING_SOON
@@ -131,7 +144,7 @@ class UpcomingListFragment : Fragment(), UpcomingListAdapter.AlarmListener {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when(item.itemId) {
+        return when (item.itemId) {
             android.R.id.home -> {
                 findNavController().navigateUp()
                 true
@@ -145,7 +158,7 @@ class UpcomingListFragment : Fragment(), UpcomingListAdapter.AlarmListener {
         pos: Int,
         isChecked: Boolean
     ) {
-        if(isChecked) { // 알림이 설정 되어있을 때
+        if (isChecked) { // 알림이 설정 되어있을 때
             removeNotification(specialShoesData!!, pos)
         } else { // 알림이 설정 되어있지 않을 때6
             setNotification(specialShoesData!!, pos)
@@ -162,10 +175,10 @@ class UpcomingListFragment : Fragment(), UpcomingListAdapter.AlarmListener {
     private fun setNotification(specialShoesData: SpecialShoesDataModel, pos: Int) {
         val timeTrigger = getTimeInMillis(
             EventDay(
-            specialShoesData.SpecialMonth!!,
-            specialShoesData.SpecialDay!!,
-            specialShoesData.SpecialWhenEvent!!
-        )
+                specialShoesData.SpecialMonth!!,
+                specialShoesData.SpecialDay!!,
+                specialShoesData.SpecialWhenEvent!!
+            )
         )
         AlarmDialog.getAlarmDialog("알림 설정", "이 상품의 알림을 설정하시겠습니까?")
             .show(requireActivity().supportFragmentManager, AlarmDialog.ALARM_DIALOG_TAG)
@@ -173,7 +186,10 @@ class UpcomingListFragment : Fragment(), UpcomingListAdapter.AlarmListener {
         AlarmDialog.setOnCheckClickListener(object : AlarmDialog.CheckClickListener {
             override fun onCheckClickListener(dialog: Dialog) {
                 setAlarm(timeTrigger, specialShoesData)
-                setPreference("${specialShoesData.ShoesTitle}-${specialShoesData.ShoesSubTitle}", timeTrigger)
+                setPreference(
+                    "${specialShoesData.ShoesTitle}-${specialShoesData.ShoesSubTitle}",
+                    timeTrigger
+                )
 
                 mAdapter.notifyItemChanged(pos)
                 dialog.dismiss()
@@ -201,7 +217,7 @@ class UpcomingListFragment : Fragment(), UpcomingListAdapter.AlarmListener {
     private fun setAlarm(timeTrigger: Long, specialShoesData: SpecialShoesDataModel) {
         val index = specialShoesList.indexOf(specialShoesData)
 
-        if(index != -1) {
+        if (index != -1) {
             val alarmIntent = Intent(requireContext(), MyAlarmReceiver::class.java).apply {
                 action = Contents.INTENT_ACTION_PRODUCT_ALARM
                 putExtra(Contents.INTENT_KEY_POSITION, specialShoesData.ShoesUrl)
@@ -212,7 +228,8 @@ class UpcomingListFragment : Fragment(), UpcomingListAdapter.AlarmListener {
                 alarmIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT
             )
-            val alarmManager = requireContext().getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            val alarmManager =
+                requireContext().getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 alarmManager.setExactAndAllowWhileIdle(
@@ -234,7 +251,7 @@ class UpcomingListFragment : Fragment(), UpcomingListAdapter.AlarmListener {
     private fun removeAlarm(specialShoesData: SpecialShoesDataModel) {
         val index = specialShoesList.indexOf(specialShoesData)
 
-        if(index != -1) {
+        if (index != -1) {
             val alarmIntent = Intent(requireContext(), MyAlarmReceiver::class.java).apply {
                 action = Contents.INTENT_ACTION_PRODUCT_ALARM
                 putExtra(Contents.INTENT_KEY_POSITION, specialShoesData.ShoesUrl)
@@ -251,7 +268,8 @@ class UpcomingListFragment : Fragment(), UpcomingListAdapter.AlarmListener {
                     PendingIntent.FLAG_UPDATE_CURRENT
                 )
 
-                val alarmManager = requireContext().getSystemService(Context.ALARM_SERVICE) as AlarmManager
+                val alarmManager =
+                    requireContext().getSystemService(Context.ALARM_SERVICE) as AlarmManager
                 alarmManager.cancel(alarmPendingIntent)
                 alarmPendingIntent.cancel()
 
@@ -271,13 +289,13 @@ class UpcomingListFragment : Fragment(), UpcomingListAdapter.AlarmListener {
 
         return alarmPendingIntent?.let {
             true
-        }?:let {
+        } ?: let {
             false
         }
     }
 
     private fun getTimeInMillis(eventDay: EventDay): Long {
-        val month = if(eventDay.eventMonth[1].toString() != "월") {
+        val month = if (eventDay.eventMonth[1].toString() != "월") {
             "${eventDay.eventMonth[0]}${eventDay.eventMonth[1]}".toIntOrNull() // 10월, 11월, 12월 처리
         } else {
             eventDay.eventMonth[0].toString().toIntOrNull()

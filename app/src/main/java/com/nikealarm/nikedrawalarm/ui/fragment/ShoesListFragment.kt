@@ -70,7 +70,7 @@ class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
         }
 
         // 옵저버 설정
-        mViewModel.getShoesCategory().observe(viewLifecycleOwner, Observer {
+        mViewModel.shoesCategory.observe(viewLifecycleOwner, Observer {
             mToolbar.title = it
 
             if (drawListFrag_scrollUp_Button.isEnabled) {
@@ -78,7 +78,7 @@ class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
             }
 //            disappearButton()
         })
-        mViewModel.getShoesData().observe(viewLifecycleOwner, Observer {
+        mViewModel.shoesList.observe(viewLifecycleOwner, Observer {
             mAdapter.submitList(it)
             if (it.size == 0) {
                 appearText()
@@ -202,7 +202,7 @@ class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
     }
 
     private fun setToolbarTitle(shoesCategory: String) {
-        mViewModel.setShoesCategory(shoesCategory)
+        mViewModel.shoesCategory.value = shoesCategory
     }
 
     private val backPressedCallback = object : OnBackPressedCallback(true) {
