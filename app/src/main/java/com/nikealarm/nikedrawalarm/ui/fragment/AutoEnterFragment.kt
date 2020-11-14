@@ -150,7 +150,7 @@ class AutoEnterFragment : Fragment() {
     private fun success() { // 응모 성공
         animationSuccess()
 
-        activity?.finish()
+//        activity?.finish()
     }
 
     private fun fail(errorMessage: String) { // 응모 실패
