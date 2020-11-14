@@ -29,8 +29,6 @@ class AutoEnterFragment : Fragment() {
     lateinit var autoEnterPref: SharedPreferences
     private val javaScriptInterface = JavaScriptInterface()
 
-    private var state: String? = WebState.WEB_LOGIN
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -44,6 +42,10 @@ class AutoEnterFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         // 뷰 설정
+        initView()
+    }
+
+    private fun initView() { // 뷰 설정
         with(autoEnterFrag_webView) {
             clearCookie()
             settings.javaScriptEnabled = true
@@ -52,6 +54,9 @@ class AutoEnterFragment : Fragment() {
             webChromeClient = WebChromeClient()
 
             loadUrl("https://www.nike.com/kr/launch/login")
+        }
+        autoEnterFrag_exitButton.setOnClickListener {
+            terminationApp()
         }
     }
 
@@ -62,12 +67,20 @@ class AutoEnterFragment : Fragment() {
         }
     }
 
+    private fun terminationApp() {
+        activity?.finish()
+    }
+
     private val testWebViewClient = object : WebViewClient() {
+        var errorMessage = ""
+        var state: String? = WebState.WEB_LOGIN
+
         override fun onPageFinished(view: WebView?, url: String?) {
             super.onPageFinished(view, url)
 
             if (url == "https://www.nike.com/kr/launch/login?error=true") { // 로그인 실패 시
                 state = WebState.WEB_FAIL
+                errorMessage = WebState.ERROR_LOGIN
             }
 
             when (state) {
@@ -79,18 +92,25 @@ class AutoEnterFragment : Fragment() {
                         autoEnterFrag_webView
                             .loadUrl("javascript:(function(){$('i.brz-icon-checkbox').click(), document.getElementById('j_username').value = '${id}', document.getElementById('j_password').value = '${password}', $('button.button.large.width-max').click()})()")
                         state = WebState.WEB_AFTER_LOGIN
+                    } else { // 오류 처리
+                        errorMessage = WebState.ERROR_OTHER
+                        state = WebState.WEB_FAIL
+
+                        autoEnterFrag_webView.loadUrl("")
                     }
                 }
                 WebState.WEB_AFTER_LOGIN -> { // 웹 로그인 후
-                    val shoesUrl = requireActivity().intent.getStringExtra(Contents.DRAW_URL)
+                    val shoesUrl: String? = activity?.intent?.getStringExtra(Contents.DRAW_URL)
 
                     shoesUrl?.let {
                         autoEnterFrag_webView
                             .loadUrl(it)
                         state = WebState.WEB_SELECT_SIZE
-                    }?:let {
+                    } ?: let { // 오류 처리
+                        errorMessage = WebState.ERROR_OTHER
                         state = WebState.WEB_FAIL
-                        autoEnterFrag_webView.reload()
+
+                        autoEnterFrag_webView.loadUrl("")
                     }
                 }
                 WebState.WEB_SELECT_SIZE -> { // 신발 사이즈 선택
@@ -100,23 +120,120 @@ class AutoEnterFragment : Fragment() {
                         javaScriptInterface.setSize(size)
                         autoEnterFrag_webView.loadUrl("javascript:window.Android.getHtml(document.getElementsByTagName('body')[0].innerHTML);")
 
-                        if (javaScriptInterface.checkData()) {
+                        errorMessage = javaScriptInterface.checkData()
+                        if (errorMessage == WebState.NOT_ERROR) { // 사이즈가 존재하고 응모가 있을 때
                             autoEnterFrag_webView
                                 .loadUrl("javascript:(function(){$('#selectSize option[data-value=${size}]').prop('selected', 'selected').change(), $('i.brz-icon-checkbox').click(), $('a#btn-buy.btn-link.xlarge.btn-order.width-max').click()})()")
                             state = null
+
+                            success()
                         } else { // 사이즈가 없거나 응모가 끝났을 때
                             state = WebState.WEB_FAIL
-                            autoEnterFrag_webView.reload()
+                            autoEnterFrag_webView.loadUrl("")
                         }
+                    } else { // 오류 처리
+                        errorMessage = WebState.ERROR_OTHER
+                        state = WebState.WEB_FAIL
+
+                        autoEnterFrag_webView.loadUrl("")
                     }
                 }
                 WebState.WEB_FAIL -> { // 오류 처리
-                    Toast.makeText(requireContext(), "응모과정중 오류가 발생하였습니다.", Toast.LENGTH_SHORT)
-                        .show()
+                    fail(errorMessage)
                 }
                 else -> {
                 }
             }
         }
     }
+
+    private fun success() { // 응모 성공
+        animationSuccess()
+
+        activity?.finish()
+    }
+
+    private fun fail(errorMessage: String) { // 응모 실패
+        autoEnterFrag_errorText.text = errorMessage
+
+        when (errorMessage) {
+            WebState.ERROR_LOGIN -> { // 로그인 오류 처리
+                animationFailLoginOrSize()
+            }
+            WebState.ERROR_SIZE -> { // 사이즈 미존재
+                animationFailLoginOrSize()
+            }
+            WebState.ERROR_END_DRAW -> { // Draw 종료
+                animationEndDraw()
+            }
+            WebState.ERROR_OTHER -> { // 기타 오류
+                animationFailOther()
+            }
+        }
+    }
+
+    // 애니메이션 설정
+    private fun animationSuccess() { // 응모 성공 애니메이션
+        autoEnterFrag_progressBar.animate()
+            .alpha(0f)
+            .setDuration(200)
+            .withLayer()
+        with(autoEnterFrag_successImage) {
+            visibility = View.VISIBLE
+
+            animate().alpha(1f)
+                .setDuration(200)
+                .withLayer()
+        }
+
+        autoEnterFrag_stateText.text = "응모 완료!"
+    }
+
+    private fun animationFailLoginOrSize() { // 로그인 실패 및 사이즈 미 존재 애니메이션
+        autoEnterFrag_loadingLayout.animate()
+            .alpha(0f)
+            .setDuration(200)
+            .withLayer()
+        with(autoEnterFrag_errorLayout) {
+            visibility = View.VISIBLE
+
+            animate().alpha(1f)
+                .setDuration(200)
+                .withLayer()
+        }
+    }
+
+    private fun animationEndDraw() { // Draw 종료
+        autoEnterFrag_loadingLayout.animate()
+            .alpha(0f)
+            .setDuration(200)
+            .withLayer()
+        with(autoEnterFrag_errorLayout) {
+            visibility = View.VISIBLE
+
+            animate().alpha(1f)
+                .setDuration(200)
+                .withLayer()
+        }
+
+        autoEnterFrag_reloadingButton.visibility = View.GONE
+        autoEnterFrag_goManual_button.visibility = View.GONE
+    }
+
+    private fun animationFailOther() { // 기타 오류
+        autoEnterFrag_loadingLayout.animate()
+            .alpha(0f)
+            .setDuration(200)
+            .withLayer()
+        with(autoEnterFrag_errorLayout) {
+            visibility = View.VISIBLE
+
+            animate().alpha(1f)
+                .setDuration(200)
+                .withLayer()
+        }
+
+        autoEnterFrag_reloadingButton.visibility = View.GONE
+    }
+    // 애니메이션 설정 끝
 }

@@ -13,9 +13,9 @@ class JavaScriptInterface() {
         html = _html
     }
 
-    fun checkData(): Boolean {
+    fun checkData(): String {
         do {
-            if(html != null) {
+            if (html != null) {
                 val doc = Jsoup.parse(html)
                 val sizeList = doc.select("div.select-box")
                     .select("select")
@@ -25,13 +25,15 @@ class JavaScriptInterface() {
                     .select("span")
                     .text()
 
-                if (!sizeList.contains(shoesSize) || drawState != "THE DRAW 응모하기") {
-                    return false
+                if (drawState != "THE DRAW 응모하기") {
+                    return WebState.ERROR_END_DRAW
+                } else if (!sizeList.contains(shoesSize)) {
+                    return WebState.ERROR_SIZE
                 }
             }
-        } while(html == null)
+        } while (html == null)
 
-        return true
+        return WebState.NOT_ERROR
     }
 
     fun setSize(_shoesSize: String) {
