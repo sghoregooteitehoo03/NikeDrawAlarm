@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import androidx.navigation.fragment.findNavController
 import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.other.Contents
@@ -41,7 +40,7 @@ class MainActivity : AppCompatActivity() {
             Contents.INTENT_ACTION_GOTO_WEBSITE -> {
                 setIntent(intent)
                 cancelNotification()
-                nav_host_fragment.findNavController().navigate(R.id.action_global_mainFragment)
+                nav_host_fragment.findNavController().navigate(R.id.action_global_WebFragment)
             }
             Contents.INTENT_ACTION_GOTO_DRAWLIST -> {
                 setIntent(intent)

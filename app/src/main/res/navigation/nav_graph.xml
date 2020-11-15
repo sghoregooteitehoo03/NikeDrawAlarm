@@ -6,13 +6,18 @@
     app:startDestination="@id/loadingFragment">
 
     <action
-        android:id="@+id/action_global_mainFragment"
+        android:id="@+id/action_global_WebFragment"
         app:destination="@id/WebFragment"
         app:launchSingleTop="true" />
 
     <action
         android:id="@+id/action_global_drawListFragment"
         app:destination="@id/loadingFragment"
+        app:launchSingleTop="true" />
+
+    <action
+        android:id="@+id/action_global_autoEnterFragment"
+        app:destination="@id/autoEnterFragment"
         app:launchSingleTop="true" />
 
     <fragment
@@ -53,16 +58,16 @@
     <fragment
         android:id="@+id/mainWebFragment"
         android:name="com.nikealarm.nikedrawalarm.ui.fragment.MainWebFragment"
-        android:label="MainWebFragment" >
+        android:label="MainWebFragment">
         <argument
             android:name="shoesUrl"
-            app:argType="string"
-            android:defaultValue="https://www.nike.com/kr/launch/?type=feed" />
+            android:defaultValue="https://www.nike.com/kr/launch/?type=feed"
+            app:argType="string" />
     </fragment>
     <fragment
         android:id="@+id/settingFragment"
         android:name="com.nikealarm.nikedrawalarm.ui.fragment.SettingFragment"
-        android:label="SettingFragment" >
+        android:label="SettingFragment">
         <action
             android:id="@+id/action_settingFragment_to_editInfoDialog"
             app:destination="@id/editInfoDialog" />
@@ -70,11 +75,11 @@
     <fragment
         android:id="@+id/imageListFragment"
         android:name="com.nikealarm.nikedrawalarm.ui.fragment.ImageListFragment"
-        android:label="ImageListFragment" >
+        android:label="ImageListFragment">
         <argument
             android:name="shoesUrl"
-            app:argType="string"
-            android:defaultValue="https://www.nike.com/kr/launch/?type=feed" />
+            android:defaultValue="https://www.nike.com/kr/launch/?type=feed"
+            app:argType="string" />
         <argument
             android:name="shoesImageUrl"
             app:argType="string" />
@@ -95,9 +100,17 @@
         android:id="@+id/autoEnterFragment"
         android:name="com.nikealarm.nikedrawalarm.ui.fragment.AutoEnterFragment"
         android:label="fragment_auto_enter"
-        tools:layout="@layout/fragment_auto_enter" />
+        tools:layout="@layout/fragment_auto_enter">
+        <action
+            android:id="@+id/action_autoEnterFragment_to_reEditDialog"
+            app:destination="@id/reEditDialog" />
+    </fragment>
     <dialog
         android:id="@+id/editInfoDialog"
         android:name="com.nikealarm.nikedrawalarm.ui.dialog.EditInfoDialog"
-        android:label="EditInfoDialog" /><action android:id="@+id/action_global_autoEnterFragment" app:destination="@id/autoEnterFragment"/>
+        android:label="EditInfoDialog" />
+    <dialog
+        android:id="@+id/reEditDialog"
+        android:name="com.nikealarm.nikedrawalarm.ui.dialog.ReEditDialog"
+        android:label="ReEditDialog" />
 </navigation>

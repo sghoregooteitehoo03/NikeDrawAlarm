@@ -1,24 +1,23 @@
 package com.nikealarm.nikedrawalarm.ui.fragment
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.content.SharedPreferences
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.*
-import android.widget.Toast
-import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.other.Contents
 import com.nikealarm.nikedrawalarm.other.JavaScriptInterface
 import com.nikealarm.nikedrawalarm.other.WebState
+import com.nikealarm.nikedrawalarm.viewmodel.MyViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_auto_enter.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Named
 
@@ -28,6 +27,9 @@ class AutoEnterFragment : Fragment() {
     @Named(Contents.PREFERENCE_NAME_AUTO_ENTER)
     lateinit var autoEnterPref: SharedPreferences
     private val javaScriptInterface = JavaScriptInterface()
+    private lateinit var mViewModel: MyViewModel
+
+    private var state: String? = WebState.WEB_LOGIN
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -41,21 +43,40 @@ class AutoEnterFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // 인스턴스 설정
+        mViewModel = ViewModelProvider(requireActivity())[MyViewModel::class.java]
+
         // 뷰 설정
         initView()
+
+        // 옵저버 설정
+        mViewModel.retryEnter.observe(viewLifecycleOwner, {
+            if (it) {
+                retry()
+            }
+        })
     }
 
     private fun initView() { // 뷰 설정
         with(autoEnterFrag_webView) {
             clearCookie()
             settings.javaScriptEnabled = true
+
             addJavascriptInterface(javaScriptInterface, "Android")
             webViewClient = testWebViewClient
             webChromeClient = WebChromeClient()
+            setLayerType(View.LAYER_TYPE_HARDWARE, null)
 
             loadUrl("https://www.nike.com/kr/launch/login")
         }
-        autoEnterFrag_exitButton.setOnClickListener {
+
+        autoEnterFrag_reloadingButton.setOnClickListener { // 재시도 버튼
+            findNavController().navigate(R.id.action_autoEnterFragment_to_reEditDialog)
+        }
+        autoEnterFrag_goManual_button.setOnClickListener {  // 직접 응모 버튼
+            findNavController().navigate(R.id.action_global_WebFragment)
+        }
+        autoEnterFrag_exitButton.setOnClickListener { // 종료 버튼
             terminationApp()
         }
     }
@@ -73,7 +94,6 @@ class AutoEnterFragment : Fragment() {
 
     private val testWebViewClient = object : WebViewClient() {
         var errorMessage = ""
-        var state: String? = WebState.WEB_LOGIN
 
         override fun onPageFinished(view: WebView?, url: String?) {
             super.onPageFinished(view, url)
@@ -172,17 +192,34 @@ class AutoEnterFragment : Fragment() {
         }
     }
 
+    private fun retry() { // 재시도
+        with(autoEnterFrag_webView) {
+            clearCookie()
+            loadUrl("https://www.nike.com/kr/launch/login")
+
+            state = WebState.WEB_LOGIN
+        }
+
+        animationRetry()
+    }
+
     // 애니메이션 설정
     private fun animationSuccess() { // 응모 성공 애니메이션
         autoEnterFrag_progressBar.animate()
             .alpha(0f)
             .setDuration(200)
+            .setListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator?) {
+                    autoEnterFrag_progressBar.visibility = View.GONE
+                }
+            })
             .withLayer()
         with(autoEnterFrag_successImage) {
             visibility = View.VISIBLE
 
             animate().alpha(1f)
                 .setDuration(200)
+                .setListener(null)
                 .withLayer()
         }
 
@@ -193,12 +230,18 @@ class AutoEnterFragment : Fragment() {
         autoEnterFrag_loadingLayout.animate()
             .alpha(0f)
             .setDuration(200)
+            .setListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator?) {
+                    autoEnterFrag_loadingLayout.visibility = View.GONE
+                }
+            })
             .withLayer()
         with(autoEnterFrag_errorLayout) {
             visibility = View.VISIBLE
 
             animate().alpha(1f)
                 .setDuration(200)
+                .setListener(null)
                 .withLayer()
         }
     }
@@ -207,12 +250,18 @@ class AutoEnterFragment : Fragment() {
         autoEnterFrag_loadingLayout.animate()
             .alpha(0f)
             .setDuration(200)
+            .setListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator?) {
+                    autoEnterFrag_loadingLayout.visibility = View.GONE
+                }
+            })
             .withLayer()
         with(autoEnterFrag_errorLayout) {
             visibility = View.VISIBLE
 
             animate().alpha(1f)
                 .setDuration(200)
+                .setListener(null)
                 .withLayer()
         }
 
@@ -224,16 +273,42 @@ class AutoEnterFragment : Fragment() {
         autoEnterFrag_loadingLayout.animate()
             .alpha(0f)
             .setDuration(200)
+            .setListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator?) {
+                    autoEnterFrag_loadingLayout.visibility = View.GONE
+                }
+            })
             .withLayer()
         with(autoEnterFrag_errorLayout) {
             visibility = View.VISIBLE
 
             animate().alpha(1f)
                 .setDuration(200)
+                .setListener(null)
                 .withLayer()
         }
 
         autoEnterFrag_reloadingButton.visibility = View.GONE
+    }
+
+    private fun animationRetry() { // 재시도
+        with(autoEnterFrag_loadingLayout) {
+            visibility = View.VISIBLE
+
+            animate().alpha(1f)
+                .setDuration(200)
+                .setListener(null)
+                .withLayer()
+        }
+        autoEnterFrag_errorLayout.animate()
+            .alpha(0f)
+            .setDuration(200)
+            .setListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator?) {
+                    autoEnterFrag_errorLayout.visibility = View.GONE
+                }
+            })
+            .withLayer()
     }
     // 애니메이션 설정 끝
 }

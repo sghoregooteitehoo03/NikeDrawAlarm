@@ -21,8 +21,6 @@ class MyViewModel @ViewModelInject constructor(
         }
     )
 
-    val allowAutoEnter = MutableLiveData<Boolean>()
-
     // Special 목록
     val upcomingCategory = MutableLiveData<String>()
 
@@ -35,4 +33,8 @@ class MyViewModel @ViewModelInject constructor(
             }
         }
     )
+
+    // 기타
+    val allowAutoEnter = MutableLiveData<Boolean>()
+    val retryEnter = MutableLiveData<Boolean>(false)
 }
