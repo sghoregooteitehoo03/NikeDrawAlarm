@@ -14,7 +14,7 @@ class JavaScriptInterface() {
     }
 
     fun checkData(): String {
-        do {
+        while (true) {
             if (html != null) {
                 val doc = Jsoup.parse(html)
                 val sizeList = doc.select("div.select-box")
@@ -29,11 +29,11 @@ class JavaScriptInterface() {
                     return WebState.ERROR_END_DRAW
                 } else if (!sizeList.contains(shoesSize)) {
                     return WebState.ERROR_SIZE
+                } else {
+                    return WebState.NOT_ERROR
                 }
             }
-        } while (html == null)
-
-        return WebState.NOT_ERROR
+        }
     }
 
     fun setSize(_shoesSize: String) {

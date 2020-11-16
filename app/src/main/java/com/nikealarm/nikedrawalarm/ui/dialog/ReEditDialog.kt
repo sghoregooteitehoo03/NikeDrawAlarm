@@ -32,12 +32,6 @@ class ReEditDialog : DialogFragment() {
     private lateinit var mViewModel: MyViewModel
     private lateinit var imm: InputMethodManager
 
-    private lateinit var setDataListener: ReEditSetDataListener
-
-    interface ReEditSetDataListener {
-        fun onSetDataListener()
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -162,7 +156,6 @@ class ReEditDialog : DialogFragment() {
             }
         }
 
-//        setDataListener.onSetDataListener()
         mViewModel.retryEnter.value = true
         dismiss()
     }
@@ -172,9 +165,5 @@ class ReEditDialog : DialogFragment() {
         return !(editInfoDialogFrag_idEdit.text.toString()
             .isNotEmpty() && editInfoDialogFrag_passEdit.text.toString()
             .isNotEmpty() && editInfoDialogFrag_spinner.selectedItemPosition != 0)
-    }
-
-    fun setOnDataListener(_setDataListener: ReEditSetDataListener) {
-        setDataListener = _setDataListener
     }
 }

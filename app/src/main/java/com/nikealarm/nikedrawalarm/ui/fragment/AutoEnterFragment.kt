@@ -4,11 +4,13 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.*
+import androidx.activity.OnBackPressedCallback
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.nikealarm.nikedrawalarm.R
@@ -18,6 +20,10 @@ import com.nikealarm.nikedrawalarm.other.WebState
 import com.nikealarm.nikedrawalarm.viewmodel.MyViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_auto_enter.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Named
 
@@ -36,6 +42,7 @@ class AutoEnterFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
+        activity?.onBackPressedDispatcher?.addCallback(backPressedCallback)
         return inflater.inflate(R.layout.fragment_auto_enter, container, false)
     }
 
@@ -57,13 +64,27 @@ class AutoEnterFragment : Fragment() {
         })
     }
 
+    private val backPressedCallback = object : OnBackPressedCallback(true) {
+
+        override fun handleOnBackPressed() {
+            terminationApp()
+        }
+    }
+
     private fun initView() { // 뷰 설정
         with(autoEnterFrag_webView) {
             clearCookie()
             settings.javaScriptEnabled = true
+            settings.cacheMode = WebSettings.LOAD_CACHE_ELSE_NETWORK
+            settings.blockNetworkImage = true
+            settings.setAppCacheEnabled(true)
+            settings.domStorageEnabled = true
+            settings.layoutAlgorithm = WebSettings.LayoutAlgorithm.NARROW_COLUMNS
+            settings.useWideViewPort = true
 
             addJavascriptInterface(javaScriptInterface, "Android")
-            webViewClient = testWebViewClient
+            scrollBarStyle = View.SCROLLBARS_INSIDE_OVERLAY
+            webViewClient = customWebViewClient
             webChromeClient = WebChromeClient()
             setLayerType(View.LAYER_TYPE_HARDWARE, null)
 
@@ -89,10 +110,10 @@ class AutoEnterFragment : Fragment() {
     }
 
     private fun terminationApp() {
-        activity?.finish()
+        findNavController().navigate(R.id.action_autoEnterFragment_to_terminationDialog)
     }
 
-    private val testWebViewClient = object : WebViewClient() {
+    private val customWebViewClient = object : WebViewClient() {
         var errorMessage = ""
 
         override fun onPageFinished(view: WebView?, url: String?) {
@@ -140,16 +161,21 @@ class AutoEnterFragment : Fragment() {
                         javaScriptInterface.setSize(size)
                         autoEnterFrag_webView.loadUrl("javascript:window.Android.getHtml(document.getElementsByTagName('body')[0].innerHTML);")
 
-                        errorMessage = javaScriptInterface.checkData()
-                        if (errorMessage == WebState.NOT_ERROR) { // 사이즈가 존재하고 응모가 있을 때
-                            autoEnterFrag_webView
-                                .loadUrl("javascript:(function(){$('#selectSize option[data-value=${size}]').prop('selected', 'selected').change(), $('i.brz-icon-checkbox').click(), $('a#btn-buy.btn-link.xlarge.btn-order.width-max').click()})()")
-                            state = null
+                        CoroutineScope(Dispatchers.IO).launch {
+                            errorMessage = javaScriptInterface.checkData()
+                            Log.i("CheckErrorMsg", errorMessage)
+                            withContext(Dispatchers.Main) {
+                                if (errorMessage == WebState.NOT_ERROR) { // 사이즈가 존재하고 응모가 있을 때
+                                    autoEnterFrag_webView
+                                        .loadUrl("javascript:(function(){$('#selectSize option[data-value=${size}]').prop('selected', 'selected').change(), $('i.brz-icon-checkbox').click(), $('a#btn-buy.btn-link.xlarge.btn-order.width-max').click()})()")
+                                    state = null
 
-                            success()
-                        } else { // 사이즈가 없거나 응모가 끝났을 때
-                            state = WebState.WEB_FAIL
-                            autoEnterFrag_webView.loadUrl("")
+                                    success()
+                                } else { // 사이즈가 없거나 응모가 끝났을 때
+                                    state = WebState.WEB_FAIL
+                                    autoEnterFrag_webView.loadUrl("")
+                                }
+                            }
                         }
                     } else { // 오류 처리
                         errorMessage = WebState.ERROR_OTHER
@@ -208,11 +234,6 @@ class AutoEnterFragment : Fragment() {
         autoEnterFrag_progressBar.animate()
             .alpha(0f)
             .setDuration(200)
-            .setListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: Animator?) {
-                    autoEnterFrag_progressBar.visibility = View.GONE
-                }
-            })
             .withLayer()
         with(autoEnterFrag_successImage) {
             visibility = View.VISIBLE

@@ -90,7 +90,9 @@
         android:label="LoadingFragment">
         <action
             android:id="@+id/action_loadingFragment_to_drawListFragment"
-            app:destination="@id/drawListFragment" />
+            app:destination="@id/drawListFragment"
+            app:popUpTo="@id/loadingFragment"
+            app:popUpToInclusive="true" />
     </fragment>
     <fragment
         android:id="@+id/upcomingListFragment"
@@ -104,6 +106,9 @@
         <action
             android:id="@+id/action_autoEnterFragment_to_reEditDialog"
             app:destination="@id/reEditDialog" />
+        <action
+            android:id="@+id/action_autoEnterFragment_to_terminationDialog"
+            app:destination="@id/terminationDialog" />
     </fragment>
     <dialog
         android:id="@+id/editInfoDialog"
@@ -113,4 +118,8 @@
         android:id="@+id/reEditDialog"
         android:name="com.nikealarm.nikedrawalarm.ui.dialog.ReEditDialog"
         android:label="ReEditDialog" />
+    <dialog
+        android:id="@+id/terminationDialog"
+        android:name="com.nikealarm.nikedrawalarm.ui.dialog.TerminationDialog"
+        android:label="TerminationDialog" />
 </navigation>
