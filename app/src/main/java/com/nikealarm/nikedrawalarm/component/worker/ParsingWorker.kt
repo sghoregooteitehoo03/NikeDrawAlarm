@@ -52,12 +52,12 @@ class ParsingWorker @WorkerInject constructor(
 
     // FEED 파싱
     private fun parseReleasedData() {
-        val url = "https://www.nike.com/kr/launch/?type=feed"
+        val url = "https://www.nike.com/kr/launch/"
         val doc = Jsoup.connect(url) // nike SNKRS창을 읽어옴
             .userAgent("19.0.1.84.52")
             .get()
 
-        val elementsData = doc.select("div.launch-list-item") // 여러개의 신발
+        val elementsData = doc.select("li.launch-list-item") // 여러개의 신발
         var progress = 0.0
 
         for (elementData in elementsData) {
@@ -201,7 +201,7 @@ class ParsingWorker @WorkerInject constructor(
         val doc = Jsoup.connect(url) // nike SNKRS창을 읽어옴
             .userAgent("19.0.1.84.52")
             .get()
-        val elementsData = doc.select("div.launch-list-item")
+        val elementsData = doc.select("li.launch-list-item")
 
         for (elementData in elementsData) {
             if (isStopped) { // cancel 됐을 때

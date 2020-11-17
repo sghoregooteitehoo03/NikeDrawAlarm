@@ -187,7 +187,7 @@ class UpcomingListFragment : Fragment(), UpcomingListAdapter.AlarmListener {
             override fun onCheckClickListener(dialog: Dialog) {
                 setAlarm(timeTrigger, specialShoesData)
                 setPreference(
-                    "${specialShoesData.ShoesTitle}-${specialShoesData.ShoesSubTitle}",
+                    specialShoesData.ShoesUrl,
                     timeTrigger
                 )
 
@@ -205,7 +205,7 @@ class UpcomingListFragment : Fragment(), UpcomingListAdapter.AlarmListener {
         AlarmDialog.setOnCheckClickListener(object : AlarmDialog.CheckClickListener {
             override fun onCheckClickListener(dialog: Dialog) {
                 removeAlarm(specialShoesData)
-                removePreference("${specialShoesData.ShoesTitle}-${specialShoesData.ShoesSubTitle}")
+                removePreference(specialShoesData.ShoesUrl)
 
                 mAdapter.notifyItemChanged(pos)
                 dialog.dismiss()

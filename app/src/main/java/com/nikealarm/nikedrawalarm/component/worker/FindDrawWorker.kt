@@ -51,7 +51,7 @@ class FindDrawWorker @WorkerInject constructor(
         val doc = Jsoup.connect(url) // nike UPCOMING 창을 읽어옴
             .userAgent("19.0.1.84.52")
             .get()
-        val elementsData = doc.select("div.launch-list-item")
+        val elementsData = doc.select("li.launch-list-item")
 
         for (elementData in elementsData) {
             val shoesInfo = elementData.select("div.info-sect") // 신발 정보

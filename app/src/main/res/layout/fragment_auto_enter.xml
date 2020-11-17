@@ -55,7 +55,7 @@
                 android:id="@+id/autoEnterFrag_stateText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="응모 중..."
+                android:text="응모 중"
                 android:textSize="44sp"
                 android:textStyle="bold"
                 app:layout_constraintEnd_toEndOf="parent"

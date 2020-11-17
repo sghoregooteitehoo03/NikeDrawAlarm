@@ -34,7 +34,7 @@ class ResetProductAlarmWorker @WorkerInject constructor(
     private fun resetProductAlarm() {
         for (position in mDao.getAllSpecialShoesData().indices) {
             val shoesData = mDao.getAllSpecialShoesData()[position]
-            val preferenceKey = "${shoesData.ShoesTitle}-${shoesData.ShoesSubTitle}"
+            val preferenceKey = shoesData.ShoesUrl
             val timeTrigger = timePreferences.getLong(preferenceKey, 0)
 
             if (timeTrigger != 0L) {

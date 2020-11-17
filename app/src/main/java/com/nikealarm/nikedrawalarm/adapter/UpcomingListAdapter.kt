@@ -99,7 +99,7 @@ class UpcomingListAdapter(
                 }
             }
 
-            if (isChecked("${data.ShoesTitle}-${data.ShoesSubTitle}")) {
+            if (isChecked(data.ShoesUrl)) {
                 alarmImageButton.setImageResource(R.drawable.ic_baseline_notifications_active)
 
                 alarmImageButton.setOnClickListener {

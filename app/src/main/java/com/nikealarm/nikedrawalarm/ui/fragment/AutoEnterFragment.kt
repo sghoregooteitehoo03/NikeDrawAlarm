@@ -20,10 +20,7 @@ import com.nikealarm.nikedrawalarm.other.WebState
 import com.nikealarm.nikedrawalarm.viewmodel.MyViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_auto_enter.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import javax.inject.Inject
 import javax.inject.Named
 
@@ -89,6 +86,25 @@ class AutoEnterFragment : Fragment() {
             setLayerType(View.LAYER_TYPE_HARDWARE, null)
 
             loadUrl("https://www.nike.com/kr/launch/login")
+        }
+
+        CoroutineScope(Dispatchers.IO).launch {
+            val stateText = autoEnterFrag_stateText.text.toString()
+            var count = 0
+
+            while(state != null && state != WebState.WEB_FAIL) {
+                delay(500)
+                Log.i("Check", "응모 중")
+                withContext(Dispatchers.Main) {
+                    if(count < 3) {
+                        autoEnterFrag_stateText.text = autoEnterFrag_stateText.text.toString().plus(".")
+                        count++
+                    } else {
+                        autoEnterFrag_stateText.text = stateText
+                        count = 0
+                    }
+                }
+            }
         }
 
         autoEnterFrag_reloadingButton.setOnClickListener { // 재시도 버튼
