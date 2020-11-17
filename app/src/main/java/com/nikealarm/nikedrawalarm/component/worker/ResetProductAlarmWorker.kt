@@ -78,12 +78,12 @@ class ResetProductAlarmWorker @WorkerInject constructor(
 
     private fun deleteDrawShoesData(data: SpecialShoesDataModel) {
         with(timePreferences.edit()) {
-            remove("${data.ShoesTitle}-${data.ShoesSubTitle}")
+            remove(data.ShoesUrl)
             commit()
         }
 
         with(allowAlarmPreferences.edit()) {
-            remove("${data.ShoesTitle}-${data.ShoesSubTitle}")
+            remove(data.ShoesUrl)
             commit()
         }
 

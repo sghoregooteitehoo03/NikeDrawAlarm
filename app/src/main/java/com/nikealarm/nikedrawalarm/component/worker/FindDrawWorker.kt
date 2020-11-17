@@ -47,7 +47,7 @@ class FindDrawWorker @WorkerInject constructor(
 
     // FEED 파싱
     private fun parseReleasedData() {
-        val url = "https://www.nike.com/kr/launch/?type=feed"
+        val url = "https://www.nike.com/kr/launch/"
         val doc = Jsoup.connect(url) // nike UPCOMING 창을 읽어옴
             .userAgent("19.0.1.84.52")
             .get()
@@ -123,7 +123,7 @@ class FindDrawWorker @WorkerInject constructor(
         val doc = Jsoup.connect(url) // nike UPCOMING창을 읽어옴
             .userAgent("19.0.1.84.52")
             .get()
-        val elementsData = doc.select("div.launch-list-item")
+        val elementsData = doc.select("ls.launch-list-item")
         var channelId = 0
 
         for (elementData in elementsData) {

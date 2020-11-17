@@ -136,10 +136,11 @@ class ProductNotifyWorker @WorkerInject constructor(
             commit()
         }
 
-        mDao.deleteSpecialData(data.ShoesUrl!!)
         with(allowAlarmPreferences.edit()) {
             remove(data.ShoesUrl)
             commit()
         }
+
+        mDao.deleteSpecialData(data.ShoesUrl!!)
     }
 }
