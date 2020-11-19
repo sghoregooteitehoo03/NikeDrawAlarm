@@ -184,6 +184,8 @@ class AutoEnterFragment : Fragment() {
                                 if (errorMessage == WebState.NOT_ERROR) { // 사이즈가 존재하고 응모가 있을 때
                                     autoEnterFrag_webView
                                         .loadUrl("javascript:(function(){$('#selectSize option[data-value=${size}]').prop('selected', 'selected').change(), $('i.brz-icon-checkbox').click(), $('a#btn-buy.btn-link.xlarge.btn-order.width-max').click()})()")
+                                    // 내일 테스트 해보기
+                                    autoEnterFrag_webView.loadUrl("javascript:window.Android.getHtml(document.getElementsByTagName('body')[0].innerHTML);")
                                     state = null
 
                                     success()

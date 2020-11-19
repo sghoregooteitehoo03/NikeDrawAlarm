@@ -10,6 +10,7 @@ class JavaScriptInterface() {
 
     @JavascriptInterface
     fun getHtml(_html: String) {
+        Log.i("Check", _html)
         html = _html
     }
 
@@ -21,8 +22,7 @@ class JavaScriptInterface() {
                     .select("select")
                     .text()
                     .split(" ")
-                val drawState = doc.select("div.btn-box")
-                    .select("span")
+                val drawState = doc.select("span.btn-buy")
                     .text()
 
                 if (drawState != "THE DRAW 응모하기") {
