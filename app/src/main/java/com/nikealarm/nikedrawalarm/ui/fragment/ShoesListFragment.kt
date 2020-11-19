@@ -1,6 +1,8 @@
 package com.nikealarm.nikedrawalarm.ui.fragment
 
 import android.content.SharedPreferences
+import android.graphics.Color
+import android.net.Uri
 import android.os.Bundle
 import android.view.*
 import android.widget.ImageView
@@ -8,6 +10,9 @@ import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.widget.Toolbar
+import androidx.browser.customtabs.CustomTabsIntent
+import androidx.core.content.res.ResourcesCompat
+import androidx.core.graphics.drawable.toBitmap
 import androidx.core.view.GravityCompat
 import androidx.core.view.doOnPreDraw
 import androidx.drawerlayout.widget.DrawerLayout
@@ -24,6 +29,7 @@ import com.nikealarm.nikedrawalarm.adapter.ShoesListAdapter
 import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.database.ShoesDataModel
 import com.nikealarm.nikedrawalarm.other.Contents
+import com.nikealarm.nikedrawalarm.other.CustomTabsBuilder
 import com.nikealarm.nikedrawalarm.ui.MainActivity
 import com.nikealarm.nikedrawalarm.viewmodel.MyViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -72,8 +78,7 @@ class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
         mViewModel = ViewModelProvider(requireActivity())[MyViewModel::class.java]
 
         val mAdapter = ShoesListAdapter(
-            requireContext(),
-            requireActivity().supportFragmentManager
+            requireContext()
         ).apply {
             setOnItemClickListener(this@ShoesListFragment)
             setOnImageClickListener(this@ShoesListFragment)
@@ -148,9 +153,14 @@ class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
     }
 
     override fun onClickItem(newUrl: String?) {
-        val directions =
-            ShoesListFragmentDirections.actionDrawListFragmentToMainWebFragment(newUrl!!)
-        findNavController().navigate(directions)
+        val builder = CustomTabsBuilder().getBuilder()
+        with(builder) {
+            ResourcesCompat.getDrawable(resources, R.drawable.ic_back, null)?.toBitmap()?.let { bitmap ->
+                setCloseButtonIcon(bitmap)
+            }
+
+            build().launchUrl(requireContext(), Uri.parse(newUrl!!))
+        }
     }
 
     override fun onClickImage(newUrl: String, shoesImageUrl: String, imageView: ImageView) {

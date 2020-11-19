@@ -3,6 +3,8 @@ package com.nikealarm.nikedrawalarm.ui.fragment
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.content.SharedPreferences
+import android.graphics.Color
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -11,10 +13,14 @@ import android.view.View
 import android.view.ViewGroup
 import android.webkit.*
 import androidx.activity.OnBackPressedCallback
+import androidx.browser.customtabs.CustomTabsIntent
+import androidx.core.content.res.ResourcesCompat
+import androidx.core.graphics.drawable.toBitmap
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.other.Contents
+import com.nikealarm.nikedrawalarm.other.CustomTabsBuilder
 import com.nikealarm.nikedrawalarm.other.JavaScriptInterface
 import com.nikealarm.nikedrawalarm.other.WebState
 import com.nikealarm.nikedrawalarm.viewmodel.MyViewModel
@@ -111,7 +117,8 @@ class AutoEnterFragment : Fragment() {
             findNavController().navigate(R.id.action_autoEnterFragment_to_reEditDialog)
         }
         autoEnterFrag_goManual_button.setOnClickListener {  // 직접 응모 버튼
-            findNavController().navigate(R.id.action_global_WebFragment)
+//            findNavController().navigate(R.id.action_global_WebFragment)
+            showWeb()
         }
         autoEnterFrag_exitButton.setOnClickListener { // 종료 버튼
             terminationApp()
@@ -127,6 +134,16 @@ class AutoEnterFragment : Fragment() {
 
     private fun terminationApp() {
         findNavController().navigate(R.id.action_autoEnterFragment_to_terminationDialog)
+    }
+
+    private fun showWeb() {
+        val url = requireActivity().intent.getStringExtra(Contents.DRAW_URL)
+            ?: "https://www.nike.com/kr/launch/?type=feed"
+        val builder = CustomTabsBuilder().getBuilder()
+
+        with(builder) {
+            build().launchUrl(requireContext(), Uri.parse(url))
+        }
     }
 
     private val customWebViewClient = object : WebViewClient() {

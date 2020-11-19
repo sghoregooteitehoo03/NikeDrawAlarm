@@ -108,4 +108,7 @@ dependencies {
 
     // PasswordEditText
     implementation 'com.maksim88:PasswordEditText:v0.9'
+
+    // Custom Tabs
+    implementation "androidx.browser:browser:1.2.0"
 }

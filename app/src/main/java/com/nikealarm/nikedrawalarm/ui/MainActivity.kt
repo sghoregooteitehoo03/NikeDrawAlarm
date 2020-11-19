@@ -3,11 +3,17 @@ package com.nikealarm.nikedrawalarm.ui
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
+import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.browser.customtabs.CustomTabsIntent
+import androidx.core.content.res.ResourcesCompat
+import androidx.core.graphics.drawable.toBitmap
 import androidx.navigation.fragment.findNavController
 import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.other.Contents
+import com.nikealarm.nikedrawalarm.other.CustomTabsBuilder
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -40,7 +46,12 @@ class MainActivity : AppCompatActivity() {
             Contents.INTENT_ACTION_GOTO_WEBSITE -> {
                 setIntent(intent)
                 cancelNotification()
-                nav_host_fragment.findNavController().navigate(R.id.action_global_WebFragment)
+
+                val url = intent.getStringExtra(Contents.DRAW_URL)
+                    ?: "https://www.nike.com/kr/launch/"
+                val builder = CustomTabsBuilder().getBuilder()
+                builder.build()
+                    .launchUrl(this, Uri.parse(url))
             }
             Contents.INTENT_ACTION_GOTO_DRAWLIST -> {
                 setIntent(intent)
