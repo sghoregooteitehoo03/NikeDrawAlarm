@@ -54,6 +54,9 @@
             app:exitAnim="@animator/anim_exit"
             app:popEnterAnim="@animator/anim_pop_enter"
             app:popExitAnim="@animator/anim_pop_exit" />
+        <action
+            android:id="@+id/action_drawListFragment_to_updateDialog"
+            app:destination="@id/updateDialog" />
     </fragment>
     <fragment
         android:id="@+id/mainWebFragment"
@@ -122,4 +125,8 @@
         android:id="@+id/terminationDialog"
         android:name="com.nikealarm.nikedrawalarm.ui.dialog.TerminationDialog"
         android:label="TerminationDialog" />
+    <dialog
+        android:id="@+id/updateDialog"
+        android:name="com.nikealarm.nikedrawalarm.ui.dialog.UpdateDialog"
+        android:label="UpdateDialog" />
 </navigation>
