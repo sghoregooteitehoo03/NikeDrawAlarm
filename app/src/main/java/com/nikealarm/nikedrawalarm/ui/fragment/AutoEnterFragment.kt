@@ -3,7 +3,7 @@ package com.nikealarm.nikedrawalarm.ui.fragment
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.content.SharedPreferences
-import android.graphics.Color
+import android.graphics.drawable.AnimatedVectorDrawable
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -13,9 +13,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.webkit.*
 import androidx.activity.OnBackPressedCallback
-import androidx.browser.customtabs.CustomTabsIntent
-import androidx.core.content.res.ResourcesCompat
-import androidx.core.graphics.drawable.toBitmap
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.nikealarm.nikedrawalarm.R
@@ -37,6 +34,7 @@ class AutoEnterFragment : Fragment() {
     lateinit var autoEnterPref: SharedPreferences
     private val javaScriptInterface = JavaScriptInterface()
     private lateinit var mViewModel: MyViewModel
+    private lateinit var textJob: Job
 
     private var state: String? = WebState.WEB_LOGIN
 
@@ -67,6 +65,13 @@ class AutoEnterFragment : Fragment() {
         })
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        if(textJob.isActive) {
+            textJob.cancel()
+        }
+    }
+
     private val backPressedCallback = object : OnBackPressedCallback(true) {
 
         override fun handleOnBackPressed() {
@@ -94,7 +99,7 @@ class AutoEnterFragment : Fragment() {
             loadUrl("https://www.nike.com/kr/launch/login")
         }
 
-        CoroutineScope(Dispatchers.IO).launch {
+        textJob = CoroutineScope(Dispatchers.IO).launch {
             val stateText = autoEnterFrag_stateText.text.toString()
             var count = 0
 
@@ -117,7 +122,6 @@ class AutoEnterFragment : Fragment() {
             findNavController().navigate(R.id.action_autoEnterFragment_to_reEditDialog)
         }
         autoEnterFrag_goManual_button.setOnClickListener {  // 직접 응모 버튼
-//            findNavController().navigate(R.id.action_global_WebFragment)
             showWeb()
         }
         autoEnterFrag_exitButton.setOnClickListener { // 종료 버튼
@@ -133,7 +137,7 @@ class AutoEnterFragment : Fragment() {
     }
 
     private fun terminationApp() {
-        findNavController().navigate(R.id.action_autoEnterFragment_to_terminationDialog)
+        findNavController().navigate(R.id.terminationDialog)
     }
 
     private fun showWeb() {
@@ -197,11 +201,11 @@ class AutoEnterFragment : Fragment() {
                         CoroutineScope(Dispatchers.IO).launch {
                             errorMessage = javaScriptInterface.checkData()
                             Log.i("CheckErrorMsg", errorMessage)
+
                             withContext(Dispatchers.Main) {
                                 if (errorMessage == WebState.NOT_ERROR) { // 사이즈가 존재하고 응모가 있을 때
                                     autoEnterFrag_webView
                                         .loadUrl("javascript:(function(){$('#selectSize option[data-value=${size}]').prop('selected', 'selected').change(), $('i.brz-icon-checkbox').click(), $('a#btn-buy.btn-link.xlarge.btn-order.width-max').click()})()")
-                                    // 내일 테스트 해보기
                                     autoEnterFrag_webView.loadUrl("javascript:window.Android.getHtml(document.getElementsByTagName('body')[0].innerHTML);")
                                     state = null
 
@@ -229,6 +233,7 @@ class AutoEnterFragment : Fragment() {
     }
 
     private fun success() { // 응모 성공
+        textJob.cancel()
         animationSuccess()
 
 //        activity?.finish()
@@ -275,7 +280,16 @@ class AutoEnterFragment : Fragment() {
 
             animate().alpha(1f)
                 .setDuration(200)
-                .setListener(null)
+                .setListener(object : AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: Animator?) {
+                        with(autoEnterFrag_successImage) {
+                            setImageResource(R.drawable.ic_check)
+
+                            val animation = drawable as AnimatedVectorDrawable
+                            animation.start()
+                        }
+                    }
+                })
                 .withLayer()
         }
 

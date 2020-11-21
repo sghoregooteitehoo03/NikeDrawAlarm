@@ -133,7 +133,7 @@ class FindDrawWorker @WorkerInject constructor(
                 .text()
             val specialUrl = "https://www.nike.com" + elementData.select("a").attr("href")
 
-            if (category != "THE DRAW 진행예정" || mDao.existsSpecialData(specialUrl)) { // DRAW가 아니고 이미 데이터가 존재할 시
+            if (category != "THE DRAW 진행예정" || mDao.existsSpecialData(specialUrl)) { // DRAW가 아니거나 이미 데이터가 존재할 시
                 continue
             }
 

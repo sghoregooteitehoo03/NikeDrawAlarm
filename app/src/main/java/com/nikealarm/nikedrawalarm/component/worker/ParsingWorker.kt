@@ -239,7 +239,7 @@ class ParsingWorker @WorkerInject constructor(
 
     private fun checkCategory(category: String): Boolean {
         return when (category) {
-            "THE DRAW 진행예정", "THE DRAW 응모하기", "COMING SOON" -> {
+            "THE DRAW 진행예정", "COMING SOON" -> {
                 false
             }
             else -> {
@@ -303,7 +303,7 @@ class ParsingWorker @WorkerInject constructor(
                     ordinaryData.shoesUrl!!
                 )
 
-                deleteSpecialData(SpecialDataModel(0, ordinaryData.shoesUrl!!))
+                deleteSpecialData(SpecialDataModel(0, ordinaryData.shoesUrl))
             } else if (ordinaryData.shoesCategory == ShoesDataModel.CATEGORY_DRAW) { // DRAW -> DRAW END
                 val newShoesPrice = "DRAW가 종료 되었습니다."
 
