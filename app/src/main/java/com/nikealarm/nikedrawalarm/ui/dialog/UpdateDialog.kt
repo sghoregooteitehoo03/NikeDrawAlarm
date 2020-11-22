@@ -30,7 +30,8 @@ class UpdateDialog : DialogFragment() {
 
     private fun initView() {
         notifyDialogFrag_titleText.text = "업데이트"
-        notifyDialogFrag_messageText.text = "업데이트 내용"
+        notifyDialogFrag_messageText.text =
+            "- DRAW 상품 자동응모 기능 추가\n (설정에서 허용 가능)\n\n- 더이상 새벽에 알림이 울리지 않음\n\n (상품들의 알림을 다시 설정해주세요!)"
         notifyDialogFrag_cancelButton.visibility = View.GONE
         notifyDialogFrag_checkButton.setOnClickListener {
             dismiss()

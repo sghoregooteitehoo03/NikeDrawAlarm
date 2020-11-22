@@ -45,9 +45,6 @@ class UpcomingListFragment : Fragment(), UpcomingListAdapter.AlarmListener {
     private lateinit var mViewModel: MyViewModel
     private lateinit var mAdapter: UpcomingListAdapter
 
-    private var isStarted = false
-    private lateinit var specialShoesList: PagedList<SpecialShoesDataModel>
-
     @Inject
     @Named(Contents.PREFERENCE_NAME_TIME)
     lateinit var timePreferences: SharedPreferences
@@ -86,11 +83,6 @@ class UpcomingListFragment : Fragment(), UpcomingListAdapter.AlarmListener {
             with(mAdapter) {
                 submitList(it)
                 notifyDataSetChanged()
-            }
-
-            if (!isStarted) {
-                specialShoesList = it
-                isStarted = true
             }
 
             if (it.size == 0) {
@@ -215,66 +207,58 @@ class UpcomingListFragment : Fragment(), UpcomingListAdapter.AlarmListener {
 
     // 알람 설정
     private fun setAlarm(timeTrigger: Long, specialShoesData: SpecialShoesDataModel) {
-        val index = specialShoesList.indexOf(specialShoesData)
+        val alarmIntent = Intent(requireContext(), MyAlarmReceiver::class.java).apply {
+            action = Contents.INTENT_ACTION_PRODUCT_ALARM
+            putExtra(Contents.INTENT_KEY_POSITION, specialShoesData.ShoesUrl)
+        }
+        val alarmPendingIntent = PendingIntent.getBroadcast(
+            requireContext(),
+            specialShoesData.ShoesId!!,
+            alarmIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT
+        )
+        val alarmManager =
+            requireContext().getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
-        if (index != -1) {
-            val alarmIntent = Intent(requireContext(), MyAlarmReceiver::class.java).apply {
-                action = Contents.INTENT_ACTION_PRODUCT_ALARM
-                putExtra(Contents.INTENT_KEY_POSITION, specialShoesData.ShoesUrl)
-            }
-            val alarmPendingIntent = PendingIntent.getBroadcast(
-                requireContext(),
-                index,
-                alarmIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            alarmManager.setExactAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                timeTrigger,
+                alarmPendingIntent
             )
-            val alarmManager =
-                requireContext().getSystemService(Context.ALARM_SERVICE) as AlarmManager
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                alarmManager.setExactAndAllowWhileIdle(
-                    AlarmManager.RTC_WAKEUP,
-                    timeTrigger,
-                    alarmPendingIntent
-                )
-            } else {
-                alarmManager.setExact(
-                    AlarmManager.RTC_WAKEUP,
-                    timeTrigger,
-                    alarmPendingIntent
-                )
-            }
+        } else {
+            alarmManager.setExact(
+                AlarmManager.RTC_WAKEUP,
+                timeTrigger,
+                alarmPendingIntent
+            )
         }
     }
 
     // 알람 삭제
     private fun removeAlarm(specialShoesData: SpecialShoesDataModel) {
-        val index = specialShoesList.indexOf(specialShoesData)
+        val alarmIntent = Intent(requireContext(), MyAlarmReceiver::class.java).apply {
+            action = Contents.INTENT_ACTION_PRODUCT_ALARM
+            putExtra(Contents.INTENT_KEY_POSITION, specialShoesData.ShoesUrl)
+        }
 
-        if (index != -1) {
-            val alarmIntent = Intent(requireContext(), MyAlarmReceiver::class.java).apply {
-                action = Contents.INTENT_ACTION_PRODUCT_ALARM
-                putExtra(Contents.INTENT_KEY_POSITION, specialShoesData.ShoesUrl)
-            }
+        // 이미 설정된 알람이 있는지 확인
+        if (checkExistAlarm(alarmIntent, specialShoesData.ShoesId!!)) {
 
-            // 이미 설정된 알람이 있는지 확인
-            if (checkExistAlarm(alarmIntent, index)) {
+            // 설정된 알람이 있으면 삭제함
+            val alarmPendingIntent = PendingIntent.getBroadcast(
+                requireContext(),
+                specialShoesData.ShoesId,
+                alarmIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT
+            )
 
-                // 설정된 알람이 있으면 삭제함
-                val alarmPendingIntent = PendingIntent.getBroadcast(
-                    requireContext(),
-                    index,
-                    alarmIntent,
-                    PendingIntent.FLAG_UPDATE_CURRENT
-                )
+            val alarmManager =
+                requireContext().getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            alarmManager.cancel(alarmPendingIntent)
+            alarmPendingIntent.cancel()
 
-                val alarmManager =
-                    requireContext().getSystemService(Context.ALARM_SERVICE) as AlarmManager
-                alarmManager.cancel(alarmPendingIntent)
-                alarmPendingIntent.cancel()
-
-                Log.i("RemoveAlarm", "동작")
-            }
+            Log.i("RemoveAlarm", "동작")
         }
     }
 

@@ -54,7 +54,7 @@ class ResetProductAlarmWorker @WorkerInject constructor(
 
                 val alarmPendingIntent = PendingIntent.getBroadcast(
                     applicationContext,
-                    position,
+                    shoesData.ShoesId!!,
                     reIntent,
                     PendingIntent.FLAG_UPDATE_CURRENT
                 )
