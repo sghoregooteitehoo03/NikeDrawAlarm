@@ -152,6 +152,7 @@ class AutoEnterFragment : Fragment() {
 
     private val customWebViewClient = object : WebViewClient() {
         var errorMessage = ""
+        var shoesUrl: String? = null
 
         override fun onPageFinished(view: WebView?, url: String?) {
             super.onPageFinished(view, url)
@@ -178,7 +179,7 @@ class AutoEnterFragment : Fragment() {
                     }
                 }
                 WebState.WEB_AFTER_LOGIN -> { // 웹 로그인 후
-                    val shoesUrl: String? = activity?.intent?.getStringExtra(Contents.DRAW_URL)
+                    shoesUrl = activity?.intent?.getStringExtra(Contents.DRAW_URL)
 
                     shoesUrl?.let {
                         autoEnterFrag_webView
@@ -206,10 +207,9 @@ class AutoEnterFragment : Fragment() {
                                 if (errorMessage == WebState.NOT_ERROR) { // 사이즈가 존재하고 응모가 있을 때
                                     autoEnterFrag_webView
                                         .loadUrl("javascript:(function(){$('#selectSize option[data-value=${size}]').prop('selected', 'selected').change(), $('i.brz-icon-checkbox').click(), $('a#btn-buy.btn-link.xlarge.btn-order.width-max').click()})()")
-                                    autoEnterFrag_webView.loadUrl("javascript:window.Android.getHtml(document.getElementsByTagName('body')[0].innerHTML);")
-                                    state = null
+                                    autoEnterFrag_webView.loadUrl("https://www.nike.com/kr/ko_kr/mypage")
 
-                                    success()
+                                    state = WebState.WEB_SUCCESS
                                 } else { // 사이즈가 없거나 응모가 끝났을 때
                                     state = WebState.WEB_FAIL
                                     autoEnterFrag_webView.loadUrl("")
@@ -221,6 +221,27 @@ class AutoEnterFragment : Fragment() {
                         state = WebState.WEB_FAIL
 
                         autoEnterFrag_webView.loadUrl("")
+                    }
+                }
+                WebState.WEB_SUCCESS -> {
+                    if(url == "https://www.nike.com/kr/ko_kr/mypage") { // My page에서 DrawList로 감
+                        autoEnterFrag_webView.loadUrl("https://www.nike.com/kr/ko_kr/account/theDrawList")
+                    } else { // DrawList
+                        autoEnterFrag_webView.loadUrl("javascript:window.Android.getHtml(document.getElementsByTagName('body')[0].innerHTML);")
+
+                        CoroutineScope(Dispatchers.IO).launch {
+                            if(javaScriptInterface.isSuccess(shoesUrl)) { // 응모 성공 시
+                                withContext(Dispatchers.Main) {
+                                    state = null
+                                    success()
+                                }
+                            } else { // 응모 실패 시
+                                withContext(Dispatchers.Main) {
+                                    errorMessage = WebState.ERROR_OTHER
+                                    state = WebState.WEB_FAIL
+                                }
+                            }
+                        }
                     }
                 }
                 WebState.WEB_FAIL -> { // 오류 처리

@@ -11,6 +11,6 @@ object WebState {
     const val ERROR_LOGIN = "아이디 및 비밀번호가 잘못되었습니다."
     const val ERROR_SIZE = "선택하신 사이즈가 존재하지 않습니다."
     const val ERROR_END_DRAW = "이미 응모가 종료되었습니다."
-    const val ERROR_OTHER = "자동응모 과정중 오류가 발생하였습니다."
+    const val ERROR_OTHER = "자동응모 과정 중 오류가 발생하였습니다."
     const val NOT_ERROR = "NOT_ERROR"
 }
