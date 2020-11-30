@@ -1,6 +1,5 @@
 package com.nikealarm.nikedrawalarm.other
 
-import android.util.Log
 import android.webkit.JavascriptInterface
 import org.jsoup.Jsoup
 
@@ -10,7 +9,6 @@ class JavaScriptInterface() {
 
     @JavascriptInterface
     fun getHtml(_html: String) {
-        Log.i("Check", _html)
         html = _html
     }
 

@@ -29,11 +29,12 @@ import javax.inject.Named
 
 @AndroidEntryPoint
 class AutoEnterFragment : Fragment() {
+    private lateinit var mViewModel: MyViewModel
+
     @Inject
     @Named(Contents.PREFERENCE_NAME_AUTO_ENTER)
     lateinit var autoEnterPref: SharedPreferences
     private val javaScriptInterface = JavaScriptInterface()
-    private lateinit var mViewModel: MyViewModel
     private lateinit var textJob: Job
 
     private var state: String? = WebState.WEB_LOGIN
@@ -67,7 +68,7 @@ class AutoEnterFragment : Fragment() {
 
     override fun onDestroy() {
         super.onDestroy()
-        if(textJob.isActive) {
+        if (textJob.isActive) {
             textJob.cancel()
         }
     }
@@ -103,12 +104,12 @@ class AutoEnterFragment : Fragment() {
             val stateText = autoEnterFrag_stateText.text.toString()
             var count = 0
 
-            while(state != null && state != WebState.WEB_FAIL) {
+            while (state != null && state != WebState.WEB_FAIL) {
                 delay(500)
-                Log.i("Check", "응모 중")
                 withContext(Dispatchers.Main) {
-                    if(count < 3) {
-                        autoEnterFrag_stateText.text = autoEnterFrag_stateText.text.toString().plus(".")
+                    if (count < 3) {
+                        autoEnterFrag_stateText.text =
+                            autoEnterFrag_stateText.text.toString().plus(".")
                         count++
                     } else {
                         autoEnterFrag_stateText.text = stateText
@@ -224,13 +225,13 @@ class AutoEnterFragment : Fragment() {
                     }
                 }
                 WebState.WEB_SUCCESS -> {
-                    if(url == "https://www.nike.com/kr/ko_kr/mypage") { // My page에서 DrawList로 감
+                    if (url == "https://www.nike.com/kr/ko_kr/mypage") { // My page에서 DrawList로 감
                         autoEnterFrag_webView.loadUrl("https://www.nike.com/kr/ko_kr/account/theDrawList")
                     } else { // DrawList
                         autoEnterFrag_webView.loadUrl("javascript:window.Android.getHtml(document.getElementsByTagName('body')[0].innerHTML);")
 
                         CoroutineScope(Dispatchers.IO).launch {
-                            if(javaScriptInterface.isSuccess(shoesUrl)) { // 응모 성공 시
+                            if (javaScriptInterface.isSuccess(shoesUrl)) { // 응모 성공 시
                                 withContext(Dispatchers.Main) {
                                     state = null
                                     success()
@@ -239,6 +240,8 @@ class AutoEnterFragment : Fragment() {
                                 withContext(Dispatchers.Main) {
                                     errorMessage = WebState.ERROR_OTHER
                                     state = WebState.WEB_FAIL
+
+                                    autoEnterFrag_webView.loadUrl("")
                                 }
                             }
                         }

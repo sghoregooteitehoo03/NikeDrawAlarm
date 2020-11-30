@@ -44,7 +44,8 @@
     <fragment
         android:id="@+id/settingFragment"
         android:name="com.nikealarm.nikedrawalarm.ui.fragment.SettingFragment"
-        android:label="SettingFragment">
+        android:label="SettingFragment"
+        tools:layout="@layout/fragment_setting">
         <action
             android:id="@+id/action_settingFragment_to_editInfoDialog"
             app:destination="@id/editInfoDialog" />
@@ -52,7 +53,8 @@
     <fragment
         android:id="@+id/imageListFragment"
         android:name="com.nikealarm.nikedrawalarm.ui.fragment.ImageListFragment"
-        android:label="ImageListFragment">
+        android:label="ImageListFragment"
+        tools:layout="@layout/fragment_image_list">
         <argument
             android:name="shoesUrl"
             android:defaultValue="https://www.nike.com/kr/launch/?type=feed"
@@ -64,7 +66,8 @@
     <fragment
         android:id="@+id/loadingFragment"
         android:name="com.nikealarm.nikedrawalarm.ui.fragment.LoadingFragment"
-        android:label="LoadingFragment">
+        android:label="LoadingFragment"
+        tools:layout="@layout/fragment_loading">
         <action
             android:id="@+id/action_loadingFragment_to_drawListFragment"
             app:destination="@id/drawListFragment"
@@ -74,7 +77,8 @@
     <fragment
         android:id="@+id/upcomingListFragment"
         android:name="com.nikealarm.nikedrawalarm.ui.fragment.UpcomingListFragment"
-        android:label="UpcomingListFragment" />
+        android:label="UpcomingListFragment"
+        tools:layout="@layout/fragment_upcoming_list"/>
     <fragment
         android:id="@+id/autoEnterFragment"
         android:name="com.nikealarm.nikedrawalarm.ui.fragment.AutoEnterFragment"
@@ -90,17 +94,21 @@
     <dialog
         android:id="@+id/editInfoDialog"
         android:name="com.nikealarm.nikedrawalarm.ui.dialog.EditInfoDialog"
-        android:label="EditInfoDialog" />
+        android:label="EditInfoDialog"
+        tools:layout="@layout/dialog_editinfo" />
     <dialog
         android:id="@+id/reEditDialog"
         android:name="com.nikealarm.nikedrawalarm.ui.dialog.ReEditDialog"
-        android:label="ReEditDialog" />
+        android:label="ReEditDialog"
+        tools:layout="@layout/dialog_editinfo" />
     <dialog
         android:id="@+id/terminationDialog"
         android:name="com.nikealarm.nikedrawalarm.ui.dialog.TerminationDialog"
-        android:label="TerminationDialog" />
+        android:label="TerminationDialog"
+        tools:layout="@layout/dialog_notification" />
     <dialog
         android:id="@+id/updateDialog"
         android:name="com.nikealarm.nikedrawalarm.ui.dialog.UpdateDialog"
-        android:label="UpdateDialog" />
+        android:label="UpdateDialog"
+        tools:layout="@layout/dialog_notification" />
 </navigation>

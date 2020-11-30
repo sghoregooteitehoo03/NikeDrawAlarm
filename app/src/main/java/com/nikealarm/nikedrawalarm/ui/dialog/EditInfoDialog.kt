@@ -55,7 +55,7 @@ class EditInfoDialog : DialogFragment() {
 
     override fun onDismiss(dialog: DialogInterface) {
         super.onDismiss(dialog)
-        if (checkIsEmpty()) {
+        if (checkIsEmpty() || checkPreferences()) {
             mViewModel.allowAutoEnter.value = false
         }
     }
@@ -167,5 +167,9 @@ class EditInfoDialog : DialogFragment() {
         return !(editInfoDialogFrag_idEdit.text.toString()
             .isNotEmpty() && editInfoDialogFrag_passEdit.text.toString()
             .isNotEmpty() && editInfoDialogFrag_spinner.selectedItemPosition != 0)
+    }
+
+    private fun checkPreferences(): Boolean {
+        return autoEnterPreference.getString(Contents.AUTO_ENTER_ID, "")!!.isEmpty()
     }
 }
