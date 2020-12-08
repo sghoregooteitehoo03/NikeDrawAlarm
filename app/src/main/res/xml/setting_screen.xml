@@ -14,7 +14,6 @@
 
     <PreferenceCategory
         app:iconSpaceReserved="false"
-        app:isPreferenceVisible="false"
         app:title="응모">
 
         <SwitchPreferenceCompat
