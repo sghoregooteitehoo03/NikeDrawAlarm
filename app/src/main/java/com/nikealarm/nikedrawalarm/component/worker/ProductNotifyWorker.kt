@@ -132,14 +132,15 @@ class ProductNotifyWorker @WorkerInject constructor(
     // 데이터를 지움
     private fun deleteShoesData(data: SpecialShoesDataModel) {
         with(timePreferences.edit()) {
-            remove("${data.ShoesTitle}-${data.ShoesSubTitle}")
+            remove(data.ShoesUrl)
+            commit()
+        }
+
+        with(allowAlarmPreferences.edit()) {
+            remove(data.ShoesUrl)
             commit()
         }
 
         mDao.deleteSpecialData(data.ShoesUrl!!)
-        with(allowAlarmPreferences.edit()) {
-            remove("${data.ShoesTitle}-${data.ShoesSubTitle}")
-            commit()
-        }
     }
 }

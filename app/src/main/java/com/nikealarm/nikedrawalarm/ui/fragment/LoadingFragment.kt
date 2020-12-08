@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
@@ -32,6 +33,7 @@ class LoadingFragment : Fragment() {
     ): View? {
 
         startWork()
+        activity?.onBackPressedDispatcher?.addCallback(backPressedCallback)
         return inflater.inflate(R.layout.fragment_loading, container, false)
     }
 
@@ -48,6 +50,9 @@ class LoadingFragment : Fragment() {
             }
         }
         progressBar = view.findViewById(R.id.loadingFrag_progressBar)
+        loadingFrag_exitButton.setOnClickListener {
+            terminationApp()
+        }
 
         // 옵저버 설정
         WorkManager.getInstance(requireContext())
@@ -56,6 +61,7 @@ class LoadingFragment : Fragment() {
                 when (it[0].state) {
                     WorkInfo.State.SUCCEEDED -> { // 로딩 성공 시
                         isStarted = true
+                        findNavController().navigateUp()
                         findNavController().navigate(R.id.action_loadingFragment_to_drawListFragment)
                     }
                     WorkInfo.State.FAILED -> { // 로딩 실패 시
@@ -81,6 +87,13 @@ class LoadingFragment : Fragment() {
         }
     }
 
+    private val backPressedCallback = object : OnBackPressedCallback(true) {
+
+        override fun handleOnBackPressed() {
+            terminationApp()
+        }
+    }
+
     private fun startWork() {
         if (!isStarted) {
             val parsingWork: OneTimeWorkRequest = OneTimeWorkRequestBuilder<ParsingWorker>()
@@ -93,6 +106,10 @@ class LoadingFragment : Fragment() {
                 parsingWork
             )
         }
+    }
+
+    private fun terminationApp() {
+        findNavController().navigate(R.id.terminationDialog)
     }
 
     // 애니메이션 설정

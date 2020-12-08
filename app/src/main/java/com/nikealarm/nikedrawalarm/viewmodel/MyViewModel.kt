@@ -13,27 +13,13 @@ class MyViewModel @ViewModelInject constructor(
     @Assisted private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
     // 전체 목록
-    private val shoesCategory = MutableLiveData<String>(ShoesDataModel.CATEGORY_RELEASED)
+    val shoesCategory = MutableLiveData<String>(ShoesDataModel.CATEGORY_RELEASED)
 
-    fun setShoesCategory(category: String) {
-        shoesCategory.value = category
-    }
-
-    fun getShoesCategory(): MutableLiveData<String> {
-        return shoesCategory
-    }
-
-    private val shoesList: LiveData<PagedList<ShoesDataModel>> = Transformations.switchMap(
+    val shoesList: LiveData<PagedList<ShoesDataModel>> = Transformations.switchMap(
         shoesCategory, Function {
             repository.getShoesData(it)
         }
     )
-
-    fun getShoesData(): LiveData<PagedList<ShoesDataModel>> {
-        return shoesList
-    }
-
-    val allowAutoEnter = MutableLiveData<Boolean>()
 
     // Special 목록
     val upcomingCategory = MutableLiveData<String>()
@@ -47,4 +33,8 @@ class MyViewModel @ViewModelInject constructor(
             }
         }
     )
+
+    // 기타
+    val allowAutoEnter = MutableLiveData<Boolean>()
+    val retryEnter = MutableLiveData<Boolean>(false)
 }

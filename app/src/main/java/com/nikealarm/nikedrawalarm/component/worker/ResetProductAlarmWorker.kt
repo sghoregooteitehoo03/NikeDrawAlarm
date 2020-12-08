@@ -34,7 +34,7 @@ class ResetProductAlarmWorker @WorkerInject constructor(
     private fun resetProductAlarm() {
         for (position in mDao.getAllSpecialShoesData().indices) {
             val shoesData = mDao.getAllSpecialShoesData()[position]
-            val preferenceKey = "${shoesData.ShoesTitle}-${shoesData.ShoesSubTitle}"
+            val preferenceKey = shoesData.ShoesUrl
             val timeTrigger = timePreferences.getLong(preferenceKey, 0)
 
             if (timeTrigger != 0L) {
@@ -54,7 +54,7 @@ class ResetProductAlarmWorker @WorkerInject constructor(
 
                 val alarmPendingIntent = PendingIntent.getBroadcast(
                     applicationContext,
-                    position,
+                    shoesData.ShoesId!!,
                     reIntent,
                     PendingIntent.FLAG_UPDATE_CURRENT
                 )
@@ -78,12 +78,12 @@ class ResetProductAlarmWorker @WorkerInject constructor(
 
     private fun deleteDrawShoesData(data: SpecialShoesDataModel) {
         with(timePreferences.edit()) {
-            remove("${data.ShoesTitle}-${data.ShoesSubTitle}")
+            remove(data.ShoesUrl)
             commit()
         }
 
         with(allowAlarmPreferences.edit()) {
-            remove("${data.ShoesTitle}-${data.ShoesSubTitle}")
+            remove(data.ShoesUrl)
             commit()
         }
 

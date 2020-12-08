@@ -24,7 +24,7 @@ import javax.inject.Inject
 import javax.inject.Named
 
 @AndroidEntryPoint
-class EditInfoDialog : DialogFragment() {
+class ReEditDialog : DialogFragment() {
     @Inject
     @Named(Contents.PREFERENCE_NAME_AUTO_ENTER)
     lateinit var autoEnterPreference: SharedPreferences
@@ -51,13 +51,6 @@ class EditInfoDialog : DialogFragment() {
 
         // 뷰 설정
         initView()
-    }
-
-    override fun onDismiss(dialog: DialogInterface) {
-        super.onDismiss(dialog)
-        if (checkIsEmpty() || checkPreferences()) {
-            mViewModel.allowAutoEnter.value = false
-        }
     }
 
     private fun initView() {
@@ -113,8 +106,12 @@ class EditInfoDialog : DialogFragment() {
             }
         }
 
-        editInfoDialogFrag_checkButton.setOnClickListener {
-            setData()
+        with(editInfoDialogFrag_checkButton) {
+            text = "재시도"
+
+            setOnClickListener {
+                setData()
+            }
         }
         editInfoDialogFrag_cancelButton.setOnClickListener {
             dismiss()
@@ -137,8 +134,6 @@ class EditInfoDialog : DialogFragment() {
                 commit()
             }
 
-            Toast.makeText(requireContext(), "정보가 저장되었습니다.", Toast.LENGTH_SHORT).show()
-
             editInfoDialogFrag_idEdit.clearFocus()
             editInfoDialogFrag_passEdit.clearFocus()
             imm.hideSoftInputFromWindow(editInfoDialogFrag_idEdit.windowToken, 0)
@@ -160,6 +155,9 @@ class EditInfoDialog : DialogFragment() {
                 Toast.makeText(requireContext(), "사이즈를 선택해주세요.", Toast.LENGTH_SHORT).show()
             }
         }
+
+        mViewModel.retryEnter.value = true
+        dismiss()
     }
 
     // 데이터 유효성 검사
@@ -167,9 +165,5 @@ class EditInfoDialog : DialogFragment() {
         return !(editInfoDialogFrag_idEdit.text.toString()
             .isNotEmpty() && editInfoDialogFrag_passEdit.text.toString()
             .isNotEmpty() && editInfoDialogFrag_spinner.selectedItemPosition != 0)
-    }
-
-    private fun checkPreferences(): Boolean {
-        return autoEnterPreference.getString(Contents.AUTO_ENTER_ID, "")!!.isEmpty()
     }
 }

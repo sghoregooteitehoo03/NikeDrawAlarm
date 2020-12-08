@@ -47,6 +47,15 @@ object AppModule {
 
     @Singleton
     @Provides
+    @Named(Contents.PREFERENCE_NAME_UPDATE)
+    fun provideUpdatePreferences(@ApplicationContext context: Context) =
+        context.getSharedPreferences(
+            Contents.PREFERENCE_NAME_UPDATE,
+            Context.MODE_PRIVATE
+        )
+
+    @Singleton
+    @Provides
     fun provideDatabase(@ApplicationContext context: Context) =
         Room.databaseBuilder(
             context,

@@ -23,8 +23,11 @@ import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.database.ShoesDataModel
 import com.nikealarm.nikedrawalarm.database.SpecialShoesDataModel
 
-class SpecialShoesListAdapter(private val context: Context, private val allowAlarmPreferences: SharedPreferences) :
-    PagedListAdapter<SpecialShoesDataModel, SpecialShoesListAdapter.SpecialShoesListViewHolder>(
+class UpcomingListAdapter(
+    private val context: Context,
+    private val allowAlarmPreferences: SharedPreferences
+) :
+    PagedListAdapter<SpecialShoesDataModel, UpcomingListAdapter.SpecialShoesListViewHolder>(
         diffCallback
     ) {
 
@@ -45,9 +48,12 @@ class SpecialShoesListAdapter(private val context: Context, private val allowAla
             itemView.findViewById<TextView>(R.id.upcomingList_shoesSubTitle_text)
         val whenStartEventText =
             itemView.findViewById<TextView>(R.id.upcomingList_whenStartEvent_text)
-        val shoesImageView = itemView.findViewById<ImageView>(R.id.upcomingList_shoesImage_imageView)
-        val alarmImageButton = itemView.findViewById<ImageButton>(R.id.upcomingList_alarm_imageButton)
-        val moreInfoButton = itemView.findViewById<ImageButton>(R.id.upcomingList_moreInfo_imageButton)
+        val shoesImageView =
+            itemView.findViewById<ImageView>(R.id.upcomingList_shoesImage_imageView)
+        val alarmImageButton =
+            itemView.findViewById<ImageButton>(R.id.upcomingList_alarm_imageButton)
+        val moreInfoButton =
+            itemView.findViewById<ImageButton>(R.id.upcomingList_moreInfo_imageButton)
 
         val mainLayout = itemView.findViewById<ConstraintLayout>(R.id.upcomingList_mainLayout)
         val subLayout = itemView.findViewById<FrameLayout>(R.id.upcomingList_subLayout)
@@ -56,7 +62,7 @@ class SpecialShoesListAdapter(private val context: Context, private val allowAla
         fun bindView(data: SpecialShoesDataModel?) {
             monthText.text = data?.SpecialMonth
             dayText.text = data?.SpecialDay
-            categoryText.text = when(data?.ShoesCategory) {
+            categoryText.text = when (data?.ShoesCategory) {
                 ShoesDataModel.CATEGORY_DRAW -> "DRAW"
                 ShoesDataModel.CATEGORY_COMING_SOON -> "COMING"
                 else -> "DRAW"
@@ -66,8 +72,8 @@ class SpecialShoesListAdapter(private val context: Context, private val allowAla
             whenStartEventText.text = data?.SpecialWhenEvent
             Glide.with(itemView.context).load(data?.ShoesImageUrl).into(shoesImageView)
 
-            if(data?.isOpened!!) { // 레이아웃 확장
-                if(subLayout.visibility == View.GONE) {
+            if (data?.isOpened!!) { // 레이아웃 확장
+                if (subLayout.visibility == View.GONE) {
                     expand()
                 }
             } else {
@@ -75,23 +81,25 @@ class SpecialShoesListAdapter(private val context: Context, private val allowAla
             }
 
             mainLayout.setOnClickListener {
-                currentList?.get(adapterPosition)?.isOpened = !currentList?.get(adapterPosition)!!.isOpened
+                currentList?.get(adapterPosition)?.isOpened =
+                    !currentList?.get(adapterPosition)!!.isOpened
                 Log.i("CheckList", "${data.isOpened}")
 
-                if(previousPosition != -1 && previousPosition != adapterPosition) { // 다른 리스트를 눌렀을 때
-                    currentList?.get(previousPosition)?.isOpened = !currentList?.get(previousPosition)!!.isOpened
+                if (previousPosition != -1 && previousPosition != adapterPosition) { // 다른 리스트를 눌렀을 때
+                    currentList?.get(previousPosition)?.isOpened =
+                        !currentList?.get(previousPosition)!!.isOpened
                     notifyItemChanged(previousPosition)
                 }
 
                 notifyItemChanged(adapterPosition)
-                previousPosition = if(previousPosition == adapterPosition) { // 같은 리스트를 눌렀을 때
+                previousPosition = if (previousPosition == adapterPosition) { // 같은 리스트를 눌렀을 때
                     -1
                 } else { // 다른 리스트를 눌렀을 때
                     adapterPosition
                 }
             }
 
-            if (isChecked("${data.ShoesTitle}-${data.ShoesSubTitle}")) {
+            if (isChecked(data.ShoesUrl)) {
                 alarmImageButton.setImageResource(R.drawable.ic_baseline_notifications_active)
 
                 alarmImageButton.setOnClickListener {
@@ -135,7 +143,7 @@ class SpecialShoesListAdapter(private val context: Context, private val allowAla
                     override fun applyTransformation(interpolatedTime: Float, t: Transformation?) {
                         super.applyTransformation(interpolatedTime, t)
 
-                        layoutParams.height = if(interpolatedTime.toInt() == 1) {
+                        layoutParams.height = if (interpolatedTime.toInt() == 1) {
                             ViewGroup.LayoutParams.WRAP_CONTENT
                         } else {
                             (actualHeight * interpolatedTime).toInt()
@@ -144,7 +152,8 @@ class SpecialShoesListAdapter(private val context: Context, private val allowAla
                     }
                 }
 
-                animation.duration = (actualHeight / context.resources.displayMetrics.density).toLong()
+                animation.duration =
+                    (actualHeight / context.resources.displayMetrics.density).toLong()
                 startAnimation(animation)
             }
         }
@@ -163,16 +172,18 @@ class SpecialShoesListAdapter(private val context: Context, private val allowAla
                     override fun applyTransformation(interpolatedTime: Float, t: Transformation?) {
                         super.applyTransformation(interpolatedTime, t)
 
-                        if(interpolatedTime.toInt() == 1) {
+                        if (interpolatedTime.toInt() == 1) {
                             visibility = View.GONE
                         } else {
-                            layoutParams.height = actualHeight - (actualHeight * interpolatedTime).toInt()
+                            layoutParams.height =
+                                actualHeight - (actualHeight * interpolatedTime).toInt()
                             requestLayout()
                         }
                     }
                 }
 
-                animation.duration = (actualHeight / context.resources.displayMetrics.density).toLong()
+                animation.duration =
+                    (actualHeight / context.resources.displayMetrics.density).toLong()
                 startAnimation(animation)
             }
         }
@@ -184,7 +195,8 @@ class SpecialShoesListAdapter(private val context: Context, private val allowAla
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SpecialShoesListViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.upcoming_listitem, parent, false)
+        val view =
+            LayoutInflater.from(parent.context).inflate(R.layout.upcoming_listitem, parent, false)
         return SpecialShoesListViewHolder(view)
     }
 
@@ -205,12 +217,10 @@ class SpecialShoesListAdapter(private val context: Context, private val allowAla
     }
 
     fun changeCategory() {
-        if(previousPosition != -1) {
+        if (previousPosition != -1) {
             currentList?.get(previousPosition)?.isOpened = false
             previousPosition = -1
         }
-
-        notifyDataSetChanged()
     }
 
     companion object {

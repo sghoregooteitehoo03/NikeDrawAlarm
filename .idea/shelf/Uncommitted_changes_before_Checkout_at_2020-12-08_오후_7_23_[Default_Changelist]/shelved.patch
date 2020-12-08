@@ -1,0 +1,140 @@
+Index: app/src/main/java/com/nikealarm/nikedrawalarm/ui/dialog/EditInfoDialog.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.nikealarm.nikedrawalarm.ui.dialog\r\n\r\nimport android.content.Context\r\nimport android.content.DialogInterface\r\nimport android.content.SharedPreferences\r\nimport android.graphics.Color\r\nimport android.graphics.drawable.ColorDrawable\r\nimport android.os.Bundle\r\nimport android.view.LayoutInflater\r\nimport android.view.View\r\nimport android.view.ViewGroup\r\nimport android.view.inputmethod.InputMethodManager\r\nimport android.widget.Toast\r\nimport androidx.fragment.app.DialogFragment\r\nimport androidx.lifecycle.ViewModelProvider\r\nimport com.nikealarm.nikedrawalarm.R\r\nimport com.nikealarm.nikedrawalarm.other.Contents\r\nimport com.nikealarm.nikedrawalarm.viewmodel.MyViewModel\r\nimport dagger.hilt.android.AndroidEntryPoint\r\nimport kotlinx.android.synthetic.main.dialog_editinfo.*\r\nimport javax.inject.Inject\r\nimport javax.inject.Named\r\n\r\n@AndroidEntryPoint\r\nclass EditInfoDialog : DialogFragment() {\r\n    @Inject\r\n    @Named(Contents.PREFERENCE_NAME_AUTO_ENTER)\r\n    lateinit var autoEnterPreference: SharedPreferences\r\n\r\n    private lateinit var mViewModel: MyViewModel\r\n    private lateinit var imm: InputMethodManager\r\n\r\n    override fun onCreateView(\r\n        inflater: LayoutInflater,\r\n        container: ViewGroup?,\r\n        savedInstanceState: Bundle?\r\n    ): View? {\r\n        dialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))\r\n        return inflater.inflate(R.layout.dialog_editinfo, container, false)\r\n    }\r\n\r\n    // 시작\r\n    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {\r\n        super.onViewCreated(view, savedInstanceState)\r\n\r\n        // 인스턴스 설정\r\n        mViewModel = ViewModelProvider(requireActivity())[MyViewModel::class.java]\r\n        imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager\r\n\r\n        // 뷰 설정\r\n        initView()\r\n    }\r\n\r\n    override fun onDismiss(dialog: DialogInterface) {\r\n        super.onDismiss(dialog)\r\n        if(checkIsEmpty()) {\r\n            mViewModel.allowAutoEnter.value = false\r\n        }\r\n    }\r\n\r\n    private fun initView() {\r\n        val id = autoEnterPreference.getString(Contents.AUTO_ENTER_ID, \"\")!!\r\n        val password = autoEnterPreference.getString(Contents.AUTO_ENTER_PASSWORD, \"\")!!\r\n\r\n        editInfoDialogFrag_idEdit.setText(id)\r\n        editInfoDialogFrag_passEdit.setText(password)\r\n\r\n        editInfoDialogFrag_checkButton.setOnClickListener {\r\n            if(!checkIsEmpty()) {\r\n                with(autoEnterPreference.edit()) {\r\n                    putString(Contents.AUTO_ENTER_ID, editInfoDialogFrag_idEdit.text.toString())\r\n                    putString(Contents.AUTO_ENTER_PASSWORD, editInfoDialogFrag_passEdit.text.toString())\r\n                    commit()\r\n                }\r\n\r\n                Toast.makeText(requireContext(), \"아이디 비밀번호가 저장되었습니다.\", Toast.LENGTH_SHORT).show()\r\n                imm.hideSoftInputFromWindow(editInfoDialogFrag_idEdit.windowToken, 0)\r\n                imm.hideSoftInputFromWindow(editInfoDialogFrag_passEdit.windowToken, 0)\r\n            } else {\r\n                Toast.makeText(requireContext(), \"아이디 및 비밀번호를 입력해주세요.\", Toast.LENGTH_SHORT).show()\r\n            }\r\n        }\r\n        editInfoDialogFrag_cancelButton.setOnClickListener {\r\n            dismiss()\r\n        }\r\n    }\r\n\r\n    private fun checkIsEmpty(): Boolean {\r\n        // 텍스트가 안 비어있을 때\r\n        return !(editInfoDialogFrag_idEdit.text.toString()\r\n            .isNotEmpty() && editInfoDialogFrag_passEdit.text.toString().isNotEmpty())\r\n    }\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/nikealarm/nikedrawalarm/ui/dialog/EditInfoDialog.kt	(revision 42d2ae237284f29b00ed23e9239f54ba7cb8edbc)
++++ app/src/main/java/com/nikealarm/nikedrawalarm/ui/dialog/EditInfoDialog.kt	(date 1607422879423)
+@@ -9,6 +9,7 @@
+ import android.view.LayoutInflater
+ import android.view.View
+ import android.view.ViewGroup
++import android.view.inputmethod.EditorInfo
+ import android.view.inputmethod.InputMethodManager
+ import android.widget.Toast
+ import androidx.fragment.app.DialogFragment
+@@ -53,7 +54,7 @@
+ 
+     override fun onDismiss(dialog: DialogInterface) {
+         super.onDismiss(dialog)
+-        if(checkIsEmpty()) {
++        if (checkIsEmpty()) {
+             mViewModel.allowAutoEnter.value = false
+         }
+     }
+@@ -63,25 +64,57 @@
+         val password = autoEnterPreference.getString(Contents.AUTO_ENTER_PASSWORD, "")!!
+ 
+         editInfoDialogFrag_idEdit.setText(id)
+-        editInfoDialogFrag_passEdit.setText(password)
++        with(editInfoDialogFrag_passEdit) {
++            setText(password)
++            setOnEditorActionListener { v, actionId, event ->
++                when(actionId) {
++                    EditorInfo.IME_ACTION_DONE -> {
++                        setData()
++                    }
++                }
++                true
++            }
++        }
+ 
+         editInfoDialogFrag_checkButton.setOnClickListener {
+-            if(!checkIsEmpty()) {
+-                with(autoEnterPreference.edit()) {
+-                    putString(Contents.AUTO_ENTER_ID, editInfoDialogFrag_idEdit.text.toString())
+-                    putString(Contents.AUTO_ENTER_PASSWORD, editInfoDialogFrag_passEdit.text.toString())
+-                    commit()
+-                }
++            setData()
++        }
++        editInfoDialogFrag_cancelButton.setOnClickListener {
++            dismiss()
++        }
++    }
++
++    private fun setData() {
++        if (!checkIsEmpty()) {
++            with(autoEnterPreference.edit()) {
++                putString(Contents.AUTO_ENTER_ID, editInfoDialogFrag_idEdit.text.toString())
++                putString(
++                    Contents.AUTO_ENTER_PASSWORD,
++                    editInfoDialogFrag_passEdit.text.toString()
++                )
++                commit()
++            }
+ 
+-                Toast.makeText(requireContext(), "아이디 비밀번호가 저장되었습니다.", Toast.LENGTH_SHORT).show()
+-                imm.hideSoftInputFromWindow(editInfoDialogFrag_idEdit.windowToken, 0)
+-                imm.hideSoftInputFromWindow(editInfoDialogFrag_passEdit.windowToken, 0)
+-            } else {
+-                Toast.makeText(requireContext(), "아이디 및 비밀번호를 입력해주세요.", Toast.LENGTH_SHORT).show()
++            Toast.makeText(requireContext(), "아이디 비밀번호가 저장되었습니다.", Toast.LENGTH_SHORT).show()
++
++            editInfoDialogFrag_idEdit.clearFocus()
++            editInfoDialogFrag_passEdit.clearFocus()
++            imm.hideSoftInputFromWindow(editInfoDialogFrag_idEdit.windowToken, 0)
++            imm.hideSoftInputFromWindow(editInfoDialogFrag_passEdit.windowToken, 0)
++        } else {
++            if (editInfoDialogFrag_idEdit.text.toString().isEmpty()) { // id가 비어있을 때
++                Toast.makeText(requireContext(), "아이디를 입력해주세요.", Toast.LENGTH_SHORT).show()
++
++                editInfoDialogFrag_idLayout.requestFocus()
++                imm.showSoftInput(editInfoDialogFrag_idEdit, 0)
++            } else if (editInfoDialogFrag_passEdit.text.toString()
++                    .isEmpty()
++            ) { // password가 비어있을 때
++                Toast.makeText(requireContext(), "비밀번호를 입력해주세요.", Toast.LENGTH_SHORT).show()
++
++                editInfoDialogFrag_passLayout.requestFocus()
++                imm.showSoftInput(editInfoDialogFrag_passEdit, 0)
+             }
+-        }
+-        editInfoDialogFrag_cancelButton.setOnClickListener {
+-            dismiss()
+         }
+     }
+ 
+Index: app/src/main/res/layout/dialog_editinfo.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\r\n    xmlns:app=\"http://schemas.android.com/apk/res-auto\"\r\n    xmlns:tools=\"http://schemas.android.com/tools\"\r\n    android:layout_width=\"match_parent\"\r\n    android:layout_height=\"match_parent\"\r\n    android:background=\"@drawable/dialog_shape\"\r\n    android:orientation=\"vertical\">\r\n\r\n    <androidx.constraintlayout.widget.ConstraintLayout\r\n        android:layout_width=\"wrap_content\"\r\n        android:layout_height=\"wrap_content\">\r\n\r\n        <TextView\r\n            android:id=\"@+id/editInfoDialogFrag_titleText\"\r\n            android:layout_width=\"wrap_content\"\r\n            android:layout_height=\"wrap_content\"\r\n            android:layout_marginTop=\"10dp\"\r\n            android:text=\"정보 입력\"\r\n            android:textColor=\"#000000\"\r\n            android:textSize=\"28sp\"\r\n            android:textStyle=\"bold\"\r\n            app:layout_constraintEnd_toEndOf=\"parent\"\r\n            app:layout_constraintStart_toStartOf=\"parent\"\r\n            app:layout_constraintTop_toTopOf=\"parent\" />\r\n\r\n        <View\r\n            android:id=\"@+id/editInfoDialogFrag_view\"\r\n            android:layout_width=\"match_parent\"\r\n            android:layout_height=\"1dp\"\r\n            android:layout_marginTop=\"10dp\"\r\n            android:background=\"#eeeeee\"\r\n            app:layout_constraintEnd_toEndOf=\"parent\"\r\n            app:layout_constraintStart_toStartOf=\"parent\"\r\n            app:layout_constraintTop_toBottomOf=\"@+id/editInfoDialogFrag_titleText\" />\r\n\r\n        <com.google.android.material.textfield.TextInputLayout\r\n            android:id=\"@+id/editInfoDialogFrag_idLayout\"\r\n            android:layout_width=\"200dp\"\r\n            android:layout_height=\"wrap_content\"\r\n            android:layout_marginTop=\"10dp\"\r\n            app:layout_constraintEnd_toEndOf=\"parent\"\r\n            app:layout_constraintStart_toStartOf=\"parent\"\r\n            app:layout_constraintTop_toBottomOf=\"@id/editInfoDialogFrag_view\">\r\n\r\n            <EditText\r\n                android:id=\"@+id/editInfoDialogFrag_idEdit\"\r\n                android:layout_width=\"match_parent\"\r\n                android:layout_height=\"wrap_content\"\r\n                android:hint=\"나이키 아이디 입력\" />\r\n        </com.google.android.material.textfield.TextInputLayout>\r\n\r\n        <com.google.android.material.textfield.TextInputLayout\r\n            android:id=\"@+id/textInputLayout\"\r\n            android:layout_width=\"200dp\"\r\n            android:layout_height=\"wrap_content\"\r\n            android:layout_marginBottom=\"10dp\"\r\n            app:layout_constraintEnd_toEndOf=\"parent\"\r\n            app:layout_constraintStart_toStartOf=\"parent\"\r\n            app:layout_constraintTop_toBottomOf=\"@id/editInfoDialogFrag_idLayout\">\r\n\r\n            <EditText\r\n                android:id=\"@+id/editInfoDialogFrag_passEdit\"\r\n                android:layout_width=\"match_parent\"\r\n                android:layout_height=\"wrap_content\"\r\n                android:inputType=\"textPassword\"\r\n                android:hint=\"나이키 비밀번호 입력\" />\r\n        </com.google.android.material.textfield.TextInputLayout>\r\n\r\n        <TextView\r\n            android:id=\"@+id/editInfoDialogFrag_explainText\"\r\n            android:layout_width=\"wrap_content\"\r\n            android:layout_height=\"wrap_content\"\r\n            android:layout_marginStart=\"8dp\"\r\n            android:layout_marginTop=\"8dp\"\r\n            android:layout_marginBottom=\"8dp\"\r\n            android:text=\"* 절대 개인정보 수집을 위한 활동에\\n  사용하지 않습니다.\"\r\n            android:textStyle=\"bold\"\r\n            app:layout_constraintBottom_toTopOf=\"@+id/editInfoDialogFrag_cancelButton\"\r\n            app:layout_constraintLeft_toLeftOf=\"parent\"\r\n            app:layout_constraintTop_toBottomOf=\"@+id/textInputLayout\" />\r\n\r\n        <Button\r\n            android:id=\"@+id/editInfoDialogFrag_cancelButton\"\r\n            android:layout_width=\"150dp\"\r\n            android:layout_height=\"60dp\"\r\n            android:layout_marginBottom=\"18dp\"\r\n            android:background=\"@drawable/dialog_cancel_button_shape\"\r\n            android:text=\"취소\"\r\n            android:textSize=\"20sp\"\r\n            app:layout_constraintBottom_toBottomOf=\"parent\"\r\n            app:layout_constraintEnd_toStartOf=\"@+id/editInfoDialogFrag_checkButton\"\r\n            app:layout_constraintHorizontal_bias=\"0.5\"\r\n            app:layout_constraintStart_toStartOf=\"parent\" />\r\n\r\n        <Button\r\n            android:id=\"@+id/editInfoDialogFrag_checkButton\"\r\n            android:layout_width=\"150dp\"\r\n            android:layout_height=\"60dp\"\r\n            android:layout_marginBottom=\"18dp\"\r\n            android:background=\"@drawable/dialog_check_button_shape\"\r\n            android:text=\"확인\"\r\n            android:textColor=\"#ffffff\"\r\n            android:textSize=\"20sp\"\r\n            app:layout_constraintBottom_toBottomOf=\"parent\"\r\n            app:layout_constraintEnd_toEndOf=\"parent\"\r\n            app:layout_constraintHorizontal_bias=\"0.5\"\r\n            app:layout_constraintStart_toEndOf=\"@+id/editInfoDialogFrag_cancelButton\" />\r\n    </androidx.constraintlayout.widget.ConstraintLayout>\r\n</LinearLayout>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/layout/dialog_editinfo.xml	(revision 42d2ae237284f29b00ed23e9239f54ba7cb8edbc)
++++ app/src/main/res/layout/dialog_editinfo.xml	(date 1607422879425)
+@@ -47,11 +47,12 @@
+                 android:id="@+id/editInfoDialogFrag_idEdit"
+                 android:layout_width="match_parent"
+                 android:layout_height="wrap_content"
++                android:inputType="text"
+                 android:hint="나이키 아이디 입력" />
+         </com.google.android.material.textfield.TextInputLayout>
+ 
+         <com.google.android.material.textfield.TextInputLayout
+-            android:id="@+id/textInputLayout"
++            android:id="@+id/editInfoDialogFrag_passLayout"
+             android:layout_width="200dp"
+             android:layout_height="wrap_content"
+             android:layout_marginBottom="10dp"
+@@ -59,7 +60,7 @@
+             app:layout_constraintStart_toStartOf="parent"
+             app:layout_constraintTop_toBottomOf="@id/editInfoDialogFrag_idLayout">
+ 
+-            <EditText
++            <com.maksim88.passwordedittext.PasswordEditText
+                 android:id="@+id/editInfoDialogFrag_passEdit"
+                 android:layout_width="match_parent"
+                 android:layout_height="wrap_content"
+@@ -78,7 +79,7 @@
+             android:textStyle="bold"
+             app:layout_constraintBottom_toTopOf="@+id/editInfoDialogFrag_cancelButton"
+             app:layout_constraintLeft_toLeftOf="parent"
+-            app:layout_constraintTop_toBottomOf="@+id/textInputLayout" />
++            app:layout_constraintTop_toBottomOf="@+id/editInfoDialogFrag_passLayout" />
+ 
+         <Button
+             android:id="@+id/editInfoDialogFrag_cancelButton"

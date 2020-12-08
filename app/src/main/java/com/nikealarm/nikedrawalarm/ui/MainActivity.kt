@@ -3,18 +3,17 @@ package com.nikealarm.nikedrawalarm.ui
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import androidx.navigation.fragment.findNavController
 import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.other.Contents
+import com.nikealarm.nikedrawalarm.other.CustomTabsBuilder
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_main.*
 
 /*
-* 자동응모 기능
-* 새벽에 드로우 알림 안울리게 하기
 * UPCOMING 정보 시 분 초 표시 (서버 필요)
 * 진행중인 상품 알려주기
 * UI 수정 및 최적화
@@ -42,7 +41,12 @@ class MainActivity : AppCompatActivity() {
             Contents.INTENT_ACTION_GOTO_WEBSITE -> {
                 setIntent(intent)
                 cancelNotification()
-                nav_host_fragment.findNavController().navigate(R.id.action_global_mainFragment)
+
+                val url = intent.getStringExtra(Contents.DRAW_URL)
+                    ?: "https://www.nike.com/kr/launch/"
+                val builder = CustomTabsBuilder().getBuilder()
+                builder.build()
+                    .launchUrl(this, Uri.parse(url))
             }
             Contents.INTENT_ACTION_GOTO_DRAWLIST -> {
                 setIntent(intent)

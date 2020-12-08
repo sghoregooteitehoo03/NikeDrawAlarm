@@ -1,5 +1,7 @@
 package com.nikealarm.nikedrawalarm.ui.fragment
 
+import android.content.SharedPreferences
+import android.net.Uri
 import android.os.Bundle
 import android.view.*
 import android.widget.ImageView
@@ -7,30 +9,42 @@ import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.widget.Toolbar
+import androidx.core.content.res.ResourcesCompat
+import androidx.core.graphics.drawable.toBitmap
 import androidx.core.view.GravityCompat
 import androidx.core.view.doOnPreDraw
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.navigation.NavigationView
+import com.nikealarm.nikedrawalarm.BuildConfig
 import com.nikealarm.nikedrawalarm.adapter.ShoesListAdapter
 import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.database.ShoesDataModel
+import com.nikealarm.nikedrawalarm.other.Contents
+import com.nikealarm.nikedrawalarm.other.CustomTabsBuilder
 import com.nikealarm.nikedrawalarm.ui.MainActivity
 import com.nikealarm.nikedrawalarm.viewmodel.MyViewModel
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_shoes_list.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import javax.inject.Inject
+import javax.inject.Named
 
+@AndroidEntryPoint
 class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
     NavigationView.OnNavigationItemSelectedListener, ShoesListAdapter.ImageClickListener {
+    @Inject
+    @Named(Contents.PREFERENCE_NAME_UPDATE)
+    lateinit var updatePref: SharedPreferences
+
     private lateinit var drawer: DrawerLayout
     private lateinit var backToast: Toast
 
@@ -45,7 +59,6 @@ class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
         // Inflate the layout for this fragment
 
         activity?.onBackPressedDispatcher?.addCallback(backPressedCallback)
-
         return inflater.inflate(R.layout.fragment_shoes_list, container, false)
     }
 
@@ -62,23 +75,21 @@ class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
         mViewModel = ViewModelProvider(requireActivity())[MyViewModel::class.java]
 
         val mAdapter = ShoesListAdapter(
-            requireContext(),
-            requireActivity().supportFragmentManager
+            requireContext()
         ).apply {
             setOnItemClickListener(this@ShoesListFragment)
             setOnImageClickListener(this@ShoesListFragment)
         }
 
         // 옵저버 설정
-        mViewModel.getShoesCategory().observe(viewLifecycleOwner, Observer {
+        mViewModel.shoesCategory.observe(viewLifecycleOwner, {
             mToolbar.title = it
 
             if (drawListFrag_scrollUp_Button.isEnabled) {
                 disappearButton()
             }
-//            disappearButton()
         })
-        mViewModel.getShoesData().observe(viewLifecycleOwner, Observer {
+        mViewModel.shoesList.observe(viewLifecycleOwner, {
             mAdapter.submitList(it)
             if (it.size == 0) {
                 appearText()
@@ -134,12 +145,19 @@ class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
         listView.doOnPreDraw {
             startPostponedEnterTransition()
         }
+
+        showUpdate()
     }
 
     override fun onClickItem(newUrl: String?) {
-        val directions =
-            ShoesListFragmentDirections.actionDrawListFragmentToMainWebFragment(newUrl!!)
-        findNavController().navigate(directions)
+        val builder = CustomTabsBuilder().getBuilder()
+        with(builder) {
+            ResourcesCompat.getDrawable(resources, R.drawable.ic_back, null)?.toBitmap()?.let { bitmap ->
+                setCloseButtonIcon(bitmap)
+            }
+
+            build().launchUrl(requireContext(), Uri.parse(newUrl!!))
+        }
     }
 
     override fun onClickImage(newUrl: String, shoesImageUrl: String, imageView: ImageView) {
@@ -202,7 +220,7 @@ class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
     }
 
     private fun setToolbarTitle(shoesCategory: String) {
-        mViewModel.setShoesCategory(shoesCategory)
+        mViewModel.shoesCategory.value = shoesCategory
     }
 
     private val backPressedCallback = object : OnBackPressedCallback(true) {
@@ -227,6 +245,19 @@ class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
                         show()
                     }
                 }
+            }
+        }
+    }
+
+    private fun showUpdate() {
+        val isFirst = updatePref.getBoolean(BuildConfig.VERSION_CODE.toString(), true)
+
+        if(isFirst) {
+            findNavController().navigate(R.id.action_drawListFragment_to_updateDialog) // 다이얼로그 보여줌
+            with(updatePref.edit()) { // 한번만 보여주게 함
+                clear()
+                putBoolean(BuildConfig.VERSION_CODE.toString(), false)
+                commit()
             }
         }
     }

@@ -238,7 +238,7 @@ class ParsingWorker @WorkerInject constructor(
 
     private fun checkCategory(category: String): Boolean {
         return when (category) {
-            "THE DRAW 진행예정", "THE DRAW 응모하기", "COMING SOON" -> {
+            "THE DRAW 진행예정", "COMING SOON" -> {
                 false
             }
             else -> {

@@ -7,7 +7,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.fragment.app.FragmentManager
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
@@ -16,8 +15,7 @@ import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.database.ShoesDataModel
 
 class ShoesListAdapter(
-    private val mContext: Context,
-    private val fragmentManager: FragmentManager
+    private val mContext: Context
 ) :
     PagedListAdapter<ShoesDataModel, ShoesListAdapter.DrawListViewHolder>(
         diffCallback
