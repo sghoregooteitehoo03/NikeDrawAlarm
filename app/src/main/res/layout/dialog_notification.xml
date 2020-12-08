@@ -34,7 +34,7 @@
             android:layout_marginBottom="20dp"
             android:textSize="20sp"
             android:textStyle="bold"
-            app:layout_constraintBottom_toTopOf="@+id/notifyDialogFrag_cancelButton"
+            app:layout_constraintBottom_toTopOf="@id/notifyDialogFrag_button_layout"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/notifyDialogFrag_view"
@@ -51,6 +51,7 @@
             app:layout_constraintTop_toBottomOf="@+id/notifyDialogFrag_titleText" />
 
         <LinearLayout
+            android:id="@+id/notifyDialogFrag_button_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="18dp"
