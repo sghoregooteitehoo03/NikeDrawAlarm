@@ -44,6 +44,9 @@ class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
     @Inject
     @Named(Contents.PREFERENCE_NAME_UPDATE)
     lateinit var updatePref: SharedPreferences
+    @Inject
+    @Named(Contents.PREFERENCE_NAME_AUTO_ENTER)
+    lateinit var autoEnterPref: SharedPreferences
 
     private lateinit var drawer: DrawerLayout
     private lateinit var backToast: Toast
@@ -249,10 +252,15 @@ class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
         }
     }
 
-    private fun showUpdate() {
+    private fun showUpdate() { // 업데이트 내용 보여줌
         val isFirst = updatePref.getBoolean(BuildConfig.VERSION_CODE.toString(), true)
 
         if(isFirst) {
+            with(autoEnterPref.edit()) {
+                clear()
+                commit()
+            }
+
             findNavController().navigate(R.id.action_drawListFragment_to_updateDialog) // 다이얼로그 보여줌
             with(updatePref.edit()) { // 한번만 보여주게 함
                 clear()

@@ -29,7 +29,7 @@ class ProductNotifyWorker @WorkerInject constructor(
     @Assisted workerParams: WorkerParameters,
     @Named(Contents.PREFERENCE_NAME_TIME) val timePreferences: SharedPreferences,
     @Named(Contents.PREFERENCE_NAME_ALLOW_ALARM) val allowAlarmPreferences: SharedPreferences,
-    @Named(Contents.PREFERENCE_NAME_AUTO_ENTER) val autoEnterPreferences: SharedPreferences,
+    @Named(Contents.PREFERENCE_NAME_AUTO_ENTER_V2) val autoEnterPreferences: SharedPreferences,
     val mDao: Dao
 ) : Worker(
     appContext,

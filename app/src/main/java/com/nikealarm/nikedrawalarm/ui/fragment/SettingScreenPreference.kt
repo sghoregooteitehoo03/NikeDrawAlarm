@@ -34,7 +34,7 @@ class SettingScreenPreference : PreferenceFragmentCompat() {
     lateinit var timePreferences: SharedPreferences
 
     @Inject
-    @Named(Contents.PREFERENCE_NAME_AUTO_ENTER)
+    @Named(Contents.PREFERENCE_NAME_AUTO_ENTER_V2)
     lateinit var autoEnterPreference: SharedPreferences
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {

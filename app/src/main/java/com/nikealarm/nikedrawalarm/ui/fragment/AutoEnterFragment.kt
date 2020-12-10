@@ -32,7 +32,7 @@ class AutoEnterFragment : Fragment() {
     private lateinit var mViewModel: MyViewModel
 
     @Inject
-    @Named(Contents.PREFERENCE_NAME_AUTO_ENTER)
+    @Named(Contents.PREFERENCE_NAME_AUTO_ENTER_V2)
     lateinit var autoEnterPref: SharedPreferences
     private val javaScriptInterface = JavaScriptInterface()
     private lateinit var textJob: Job

@@ -13,8 +13,8 @@ android {
         applicationId "com.nikealarm.nikedrawalarm"
         minSdkVersion 21
         targetSdkVersion 30
-        versionCode 13
-        versionName "2.2.0"
+        versionCode 14
+        versionName "2.2.1"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -111,4 +111,7 @@ dependencies {
 
     // Custom Tabs
     implementation "androidx.browser:browser:1.3.0"
+
+    // Encryption
+    implementation "androidx.security:security-crypto:1.1.0-alpha03"
 }

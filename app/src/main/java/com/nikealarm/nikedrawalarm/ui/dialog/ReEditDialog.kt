@@ -26,7 +26,7 @@ import javax.inject.Named
 @AndroidEntryPoint
 class ReEditDialog : DialogFragment() {
     @Inject
-    @Named(Contents.PREFERENCE_NAME_AUTO_ENTER)
+    @Named(Contents.PREFERENCE_NAME_AUTO_ENTER_V2)
     lateinit var autoEnterPreference: SharedPreferences
 
     private lateinit var mViewModel: MyViewModel

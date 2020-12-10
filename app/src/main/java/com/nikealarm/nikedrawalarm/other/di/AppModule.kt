@@ -1,7 +1,10 @@
 package com.nikealarm.nikedrawalarm.other.di
 
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.room.Room
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
 import com.nikealarm.nikedrawalarm.database.Dao
 import com.nikealarm.nikedrawalarm.database.MyDataBase
 import com.nikealarm.nikedrawalarm.other.Contents
@@ -44,6 +47,23 @@ object AppModule {
             Contents.PREFERENCE_NAME_AUTO_ENTER,
             Context.MODE_PRIVATE
         )
+
+    @Singleton
+    @Provides
+    @Named(Contents.PREFERENCE_NAME_AUTO_ENTER_V2)
+    fun provideAutoEnterPreferencesV2(@ApplicationContext context: Context): SharedPreferences {
+        val mainKey = MasterKey.Builder(context)
+            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+            .build()
+
+        return EncryptedSharedPreferences.create(
+            context,
+            Contents.PREFERENCE_NAME_AUTO_ENTER,
+            mainKey,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
+    }
 
     @Singleton
     @Provides
