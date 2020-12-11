@@ -37,7 +37,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun ifNeedToMoveFragment(intent: Intent?) {
-        when(intent?.action) {
+        when (intent?.action) {
             Contents.INTENT_ACTION_GOTO_WEBSITE -> {
                 setIntent(intent)
                 cancelNotification()
@@ -63,9 +63,10 @@ class MainActivity : AppCompatActivity() {
 
     private fun cancelNotification() {
         val closeChannelId = intent.getIntExtra(Contents.CHANNEL_ID, -1)
-        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val notificationManager =
+            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-        if(closeChannelId != -1) {
+        if (closeChannelId != -1) {
             notificationManager.cancel(closeChannelId)
         } else {
             notificationManager.cancelAll()
