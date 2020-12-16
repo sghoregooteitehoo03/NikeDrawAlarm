@@ -123,7 +123,7 @@ class FindDrawWorker @WorkerInject constructor(
         val doc = Jsoup.connect(url) // nike UPCOMING창을 읽어옴
             .userAgent("19.0.1.84.52")
             .get()
-        val elementsData = doc.select("ls.launch-list-item")
+        val elementsData = doc.select("li.launch-list-item")
         var channelId = 0
 
         for (elementData in elementsData) {

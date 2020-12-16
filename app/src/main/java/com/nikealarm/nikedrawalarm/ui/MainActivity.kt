@@ -14,6 +14,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_main.*
 
 /*
+* adb shell dumpsys alarm (알림 체크)
 * UPCOMING 정보 시 분 초 표시 (서버 필요)
 * 진행중인 상품 알려주기
 * UI 수정 및 최적화

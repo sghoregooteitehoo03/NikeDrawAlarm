@@ -17,6 +17,7 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -171,21 +172,27 @@ class UpcomingListFragment : Fragment(), UpcomingListAdapter.AlarmListener {
                 specialShoesData.SpecialWhenEvent!!
             )
         )
-        AlarmDialog.getAlarmDialog("알림 설정", "이 상품의 알림을 설정하시겠습니까?")
-            .show(requireActivity().supportFragmentManager, AlarmDialog.ALARM_DIALOG_TAG)
 
-        AlarmDialog.setOnCheckClickListener(object : AlarmDialog.CheckClickListener {
-            override fun onCheckClickListener(dialog: Dialog) {
-                setAlarm(timeTrigger, specialShoesData)
-                setPreference(
-                    specialShoesData.ShoesUrl,
-                    timeTrigger
-                )
+        if (timeTrigger != 0L) {
+            AlarmDialog.getAlarmDialog("알림 설정", "이 상품의 알림을 설정하시겠습니까?")
+                .show(requireActivity().supportFragmentManager, AlarmDialog.ALARM_DIALOG_TAG)
 
-                mAdapter.notifyItemChanged(pos)
-                dialog.dismiss()
-            }
-        })
+            AlarmDialog.setOnCheckClickListener(object : AlarmDialog.CheckClickListener {
+                override fun onCheckClickListener(dialog: Dialog) {
+                    setAlarm(timeTrigger, specialShoesData)
+                    setPreference(
+                        specialShoesData.ShoesUrl,
+                        timeTrigger
+                    )
+
+                    mAdapter.notifyItemChanged(pos)
+                    dialog.dismiss()
+                }
+            })
+        } else {
+            Toast.makeText(requireContext(), "알람 설정 중 문제가 발생하였습니다.", Toast.LENGTH_SHORT)
+                .show()
+        }
     }
 
     // 알람 취소 알림창
@@ -278,29 +285,36 @@ class UpcomingListFragment : Fragment(), UpcomingListAdapter.AlarmListener {
     }
 
     private fun getTimeInMillis(eventDay: EventDay): Long {
-        val month = if (eventDay.eventMonth[1].toString() != "월") {
-            "${eventDay.eventMonth[0]}${eventDay.eventMonth[1]}".toIntOrNull() // 10월, 11월, 12월 처리
-        } else {
-            eventDay.eventMonth[0].toString().toIntOrNull()
-        }
-        val day = eventDay.eventDay.toIntOrNull()
-
         val time = eventDay.eventTime.substring(2, 8).trim().split(":")
-        val hour = time[0].toIntOrNull()
-        val minute = time[1].toIntOrNull()
 
-        val mCalendar = Calendar.getInstance().apply {
-            if (month != null && day != null && hour != null && minute != null) {
-                set(Calendar.MONTH, month - 1)
-                set(Calendar.DAY_OF_MONTH, day)
-                set(Calendar.HOUR_OF_DAY, hour)
-                set(Calendar.MINUTE, minute)
-                set(Calendar.SECOND, 0)
-                set(Calendar.MILLISECOND, 0)
+        if (time.size > 1) {
+            val month = if (eventDay.eventMonth[1].toString() != "월") {
+                "${eventDay.eventMonth[0]}${eventDay.eventMonth[1]}".toIntOrNull() // 10월, 11월, 12월 처리
+            } else {
+                eventDay.eventMonth[0].toString().toIntOrNull()
             }
+            val day = eventDay.eventDay.toIntOrNull()
+
+            val hour = time[0].toIntOrNull()
+            val minute = time[1].toIntOrNull()
+
+            val mCalendar = Calendar.getInstance().apply {
+                if (month != null && day != null && hour != null && minute != null) {
+                    set(Calendar.MONTH, month - 1)
+                    set(Calendar.DAY_OF_MONTH, day)
+                    set(Calendar.HOUR_OF_DAY, hour)
+                    set(Calendar.MINUTE, minute)
+                    set(Calendar.SECOND, 0)
+                    set(Calendar.MILLISECOND, 0)
+                } else {
+                    return 0
+                }
+            }
+
+            return mCalendar.timeInMillis
         }
 
-        return mCalendar.timeInMillis
+        return 0
     }
 
     // 데이터베이스에 저장

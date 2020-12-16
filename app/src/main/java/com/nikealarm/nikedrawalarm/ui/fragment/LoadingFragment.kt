@@ -23,6 +23,7 @@ class LoadingFragment : Fragment() {
     private lateinit var progressBar: ProgressBar
 
     companion object {
+        var isOpened = false
         private var isStarted = false
     }
 
@@ -109,6 +110,7 @@ class LoadingFragment : Fragment() {
     }
 
     private fun terminationApp() {
+        isOpened = true
         findNavController().navigate(R.id.terminationDialog)
     }
 
