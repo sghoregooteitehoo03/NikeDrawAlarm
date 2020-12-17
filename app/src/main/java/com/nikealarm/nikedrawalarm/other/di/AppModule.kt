@@ -41,15 +41,6 @@ object AppModule {
 
     @Singleton
     @Provides
-    @Named(Contents.PREFERENCE_NAME_AUTO_ENTER)
-    fun provideAutoEnterPreferences(@ApplicationContext context: Context) =
-        context.getSharedPreferences(
-            Contents.PREFERENCE_NAME_AUTO_ENTER,
-            Context.MODE_PRIVATE
-        )
-
-    @Singleton
-    @Provides
     @Named(Contents.PREFERENCE_NAME_AUTO_ENTER_V2)
     fun provideAutoEnterPreferencesV2(@ApplicationContext context: Context): SharedPreferences {
         val mainKey = MasterKey.Builder(context)

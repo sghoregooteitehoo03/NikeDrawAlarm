@@ -1,5 +1,6 @@
 package com.nikealarm.nikedrawalarm.ui.fragment
 
+import android.content.Context
 import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
@@ -44,9 +45,6 @@ class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
     @Inject
     @Named(Contents.PREFERENCE_NAME_UPDATE)
     lateinit var updatePref: SharedPreferences
-    @Inject
-    @Named(Contents.PREFERENCE_NAME_AUTO_ENTER)
-    lateinit var autoEnterPref: SharedPreferences
 
     private lateinit var drawer: DrawerLayout
     private lateinit var backToast: Toast
@@ -256,7 +254,11 @@ class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
         val isFirst = updatePref.getBoolean(BuildConfig.VERSION_CODE.toString(), true)
 
         if(isFirst) {
-            with(autoEnterPref.edit()) {
+            with(requireContext().getSharedPreferences(Contents.PREFERENCE_NAME_AUTO_ENTER, Context.MODE_PRIVATE).edit()) {
+                clear()
+                commit()
+            }
+            with(requireContext().getSharedPreferences(Contents.PREFERENCE_NAME_AUTO_ENTER_V2, Context.MODE_PRIVATE).edit()) {
                 clear()
                 commit()
             }

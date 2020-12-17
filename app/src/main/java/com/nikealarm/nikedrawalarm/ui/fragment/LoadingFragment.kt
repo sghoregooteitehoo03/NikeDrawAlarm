@@ -62,7 +62,10 @@ class LoadingFragment : Fragment() {
                 when (it[0].state) {
                     WorkInfo.State.SUCCEEDED -> { // 로딩 성공 시
                         isStarted = true
-                        findNavController().navigateUp()
+
+                        if (isOpened) {
+                            findNavController().navigateUp()
+                        }
                         findNavController().navigate(R.id.action_loadingFragment_to_drawListFragment)
                     }
                     WorkInfo.State.FAILED -> { // 로딩 실패 시
@@ -74,7 +77,8 @@ class LoadingFragment : Fragment() {
 
                         loadingFrag_percent_textView.text = "$value%"
                     }
-                    else -> {}
+                    else -> {
+                    }
                 }
             })
     }
@@ -82,7 +86,7 @@ class LoadingFragment : Fragment() {
     override fun onDestroy() {
         super.onDestroy()
 
-        if(!isStarted) { // 로딩중에 앱을 나갔을 경우
+        if (!isStarted) { // 로딩중에 앱을 나갔을 경우
             WorkManager.getInstance(requireContext())
                 .cancelUniqueWork(Contents.WORKER_PARSING_DATA)
         }
