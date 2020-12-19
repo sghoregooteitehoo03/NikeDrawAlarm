@@ -15,10 +15,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.hilt.Assisted
 import androidx.hilt.work.WorkerInject
-import androidx.work.ForegroundInfo
-import androidx.work.ListenableWorker
-import androidx.work.WorkerParameters
-import androidx.work.workDataOf
+import androidx.work.*
 import com.google.common.util.concurrent.ListenableFuture
 import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.database.Dao
@@ -28,10 +25,7 @@ import com.nikealarm.nikedrawalarm.other.JavaScriptInterface
 import com.nikealarm.nikedrawalarm.other.WebState
 import com.nikealarm.nikedrawalarm.ui.MainActivity
 import com.squareup.picasso.Picasso
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import javax.inject.Named
 import kotlin.random.Random
 
@@ -48,6 +42,7 @@ class AutoEnterWorker @WorkerInject constructor(
     private lateinit var webView: WebView
 
     private var state: String? = WebState.WEB_LOGIN
+    private var isError = false
     private lateinit var shoesData: SpecialShoesDataModel
 
     override fun startWork(): ListenableFuture<Result> {
@@ -63,9 +58,13 @@ class AutoEnterWorker @WorkerInject constructor(
                         inputData.getString(Contents.WORKER_AUTO_ENTER_INPUT_KEY)
                     )
                 )
-            shoesData = mDao.getAllSpecialShoesData()[index]
 
-            setForegroundAsync(createForeground(index))
+            if (index != -1) {
+                shoesData = mDao.getAllSpecialShoesData()[index]
+                setForegroundAsync(createForeground(index))
+            } else {
+                isError = true
+            }
         }
 
         CoroutineScope(Dispatchers.Main).launch {
@@ -99,103 +98,110 @@ class AutoEnterWorker @WorkerInject constructor(
                 override fun onPageFinished(view: WebView?, url: String?) {
                     super.onPageFinished(view, url)
 
-                    if (url == "https://www.nike.com/kr/launch/login?error=true") { // 로그인 실패 시
-                        state = WebState.WEB_FAIL
-                        errorMessage = WebState.ERROR_LOGIN
-                    }
-
-                    when (state) {
-                        WebState.WEB_LOGIN -> { // 웹 로그인
-                            val nikeId = autoEnterPref.getString(
-                                Contents.AUTO_ENTER_ID,
-                                ""
-                            )!!
-                            val password = autoEnterPref.getString(
-                                Contents.AUTO_ENTER_PASSWORD,
-                                ""
-                            )!!
-
-                            if (nikeId.isNotEmpty() && password.isNotEmpty()) { // 로그인
-                                webView
-                                    .loadUrl("javascript:(function(){$('i.brz-icon-checkbox').click(), document.getElementById('j_username').value = '${nikeId}', document.getElementById('j_password').value = '${password}', $('button.button.large.width-max').click()})()")
-                                state = WebState.WEB_AFTER_LOGIN
-                            } else { // 오류 처리
-                                errorMessage = WebState.ERROR_OTHER
-                                state = WebState.WEB_FAIL
-
-                                webView.loadUrl("")
-                            }
+                    if (!isStopped && !isError) { // 취소되지 않았을 때
+                        if (url == "https://www.nike.com/kr/launch/login?error=true") { // 로그인 실패 시
+                            state = WebState.WEB_FAIL
+                            errorMessage = WebState.ERROR_LOGIN
                         }
-                        WebState.WEB_AFTER_LOGIN -> { // 웹 로그인 후
-                            shoesUrl = inputData.getString(Contents.WORKER_AUTO_ENTER_INPUT_KEY)
 
-                            shoesUrl?.let {
-                                webView.loadUrl(it)
-                                state = WebState.WEB_SELECT_SIZE
-                            } ?: let { // 오류처리
-                                errorMessage = WebState.ERROR_OTHER
-                                state = WebState.WEB_FAIL
+                        when (state) {
+                            WebState.WEB_LOGIN -> { // 웹 로그인
+                                val nikeId = autoEnterPref.getString(
+                                    Contents.AUTO_ENTER_ID,
+                                    ""
+                                )!!
+                                val password = autoEnterPref.getString(
+                                    Contents.AUTO_ENTER_PASSWORD,
+                                    ""
+                                )!!
 
-                                webView.loadUrl("")
-                            }
-                        }
-                        WebState.WEB_SELECT_SIZE -> { // 신발 사이즈 선택
-                            val size = autoEnterPref.getString(Contents.AUTO_ENTER_SIZE, "")!!
+                                if (nikeId.isNotEmpty() && password.isNotEmpty()) { // 로그인
+                                    webView
+                                        .loadUrl("javascript:(function(){$('i.brz-icon-checkbox').click(), document.getElementById('j_username').value = '${nikeId}', document.getElementById('j_password').value = '${password}', $('button.button.large.width-max').click()})()")
+                                    state = WebState.WEB_AFTER_LOGIN
+                                } else { // 오류 처리
+                                    errorMessage = WebState.ERROR_OTHER
+                                    state = WebState.WEB_FAIL
 
-                            if (size.isNotEmpty()) {
-                                javaScriptInterface.setSize(size)
-                                webView.loadUrl("javascript:window.Android.getHtml(document.getElementsByTagName('body')[0].innerHTML);")
-
-                                CoroutineScope(Dispatchers.Default).launch {
-                                    errorMessage = javaScriptInterface.checkData()
-
-                                    withContext(Dispatchers.Main) {
-                                        if (errorMessage == WebState.NOT_ERROR) { // 사이즈가 존재하고 응모가 있을 때
-                                            webView
-                                                .loadUrl("javascript:(function(){$('#selectSize option[data-value=${size}]').prop('selected', 'selected').change(), $('i.brz-icon-checkbox').click(), $('a#btn-buy.btn-link.xlarge.btn-order.width-max').click()})()")
-                                            webView.loadUrl("https://www.nike.com/kr/ko_kr/mypage")
-
-                                            state = WebState.WEB_SUCCESS
-                                        } else { // 사이즈가 없거나 응모가 끝났을 때
-                                            state = WebState.WEB_FAIL
-                                            webView.loadUrl("")
-                                        }
-                                    }
+                                    webView.loadUrl("")
                                 }
-                            } else { // 오류 처리
-                                errorMessage = WebState.ERROR_OTHER
-                                state = WebState.WEB_FAIL
-
-                                webView.loadUrl("")
                             }
-                        }
-                        WebState.WEB_SUCCESS -> { // 응모 확인
-                            if (url == "https://www.nike.com/kr/ko_kr/mypage") { // My page에서 DrawList로 감
-                                webView.loadUrl("https://www.nike.com/kr/ko_kr/account/theDrawList")
-                            } else { // DrawList
-                                webView.loadUrl("javascript:window.Android.getHtml(document.getElementsByTagName('body')[0].innerHTML);")
+                            WebState.WEB_AFTER_LOGIN -> { // 웹 로그인 후
+                                shoesUrl = inputData.getString(Contents.WORKER_AUTO_ENTER_INPUT_KEY)
 
-                                CoroutineScope(Dispatchers.Default).launch {
-                                    if (javaScriptInterface.isSuccess(shoesUrl)) { // 응모 성공 시
-                                        state = null
+                                shoesUrl?.let {
+                                    webView.loadUrl(it)
+                                    state = WebState.WEB_SELECT_SIZE
+                                } ?: let { // 오류처리
+                                    errorMessage = WebState.ERROR_OTHER
+                                    state = WebState.WEB_FAIL
 
-                                        completer.set(Result.success())
-                                        createNotification(true)
-                                    } else { // 응모 실패 시
+                                    webView.loadUrl("")
+                                }
+                            }
+                            WebState.WEB_SELECT_SIZE -> { // 신발 사이즈 선택
+                                val size = autoEnterPref.getString(Contents.AUTO_ENTER_SIZE, "")!!
+
+                                if (size.isNotEmpty()) {
+                                    javaScriptInterface.setSize(size)
+                                    webView.loadUrl("javascript:window.Android.getHtml(document.getElementsByTagName('body')[0].innerHTML);")
+
+                                    CoroutineScope(Dispatchers.Default).launch {
+                                        errorMessage = javaScriptInterface.checkData()
+
                                         withContext(Dispatchers.Main) {
-                                            errorMessage = WebState.ERROR_OTHER
-                                            state = WebState.WEB_FAIL
+                                            if (errorMessage == WebState.NOT_ERROR) { // 사이즈가 존재하고 응모가 있을 때
+                                                webView
+                                                    .loadUrl("javascript:(function(){$('#selectSize option[data-value=${size}]').prop('selected', 'selected').change(), $('i.brz-icon-checkbox').click(), $('a#btn-buy.btn-link.xlarge.btn-order.width-max').click()})()")
+                                                webView.loadUrl("https://www.nike.com/kr/ko_kr/mypage")
 
-                                            webView.loadUrl("")
+                                                state = WebState.WEB_SUCCESS
+                                            } else { // 사이즈가 없거나 응모가 끝났을 때
+                                                state = WebState.WEB_FAIL
+                                                webView.loadUrl("")
+                                            }
+                                        }
+                                    }
+                                } else { // 오류 처리
+                                    errorMessage = WebState.ERROR_OTHER
+                                    state = WebState.WEB_FAIL
+
+                                    webView.loadUrl("")
+                                }
+                            }
+                            WebState.WEB_SUCCESS -> { // 응모 확인
+                                if (url == "https://www.nike.com/kr/ko_kr/mypage") { // My page에서 DrawList로 감
+                                    webView.loadUrl("https://www.nike.com/kr/ko_kr/account/theDrawList")
+                                } else { // DrawList
+                                    webView.loadUrl("javascript:window.Android.getHtml(document.getElementsByTagName('body')[0].innerHTML);")
+
+                                    CoroutineScope(Dispatchers.Default).launch {
+                                        if (javaScriptInterface.isSuccess(shoesUrl)) { // 응모 성공 시
+                                            state = null
+
+                                            completer.set(Result.success())
+                                            createNotification(true)
+                                        } else { // 응모 실패 시
+                                            withContext(Dispatchers.Main) {
+                                                errorMessage = WebState.ERROR_OTHER
+                                                state = WebState.WEB_FAIL
+
+                                                webView.loadUrl("")
+                                            }
                                         }
                                     }
                                 }
                             }
+                            WebState.WEB_FAIL -> { // 오류 처리
+                                completer.set(Result.success(workDataOf(Contents.WORKER_AUTO_ENTER_OUTPUT_KEY to errorMessage)))
+                                createNotification(false, errorMessage)
+                            }
                         }
-                        WebState.WEB_FAIL -> { // 오류 처리
-                            completer.set(Result.success(workDataOf(Contents.WORKER_AUTO_ENTER_OUTPUT_KEY to errorMessage)))
-                            createNotification(false, errorMessage)
-                        }
+                    } else if (isError) {
+                        createNotification(false, WebState.ERROR_OTHER)
+                        completer.set(Result.success())
+                    } else {
+                        completer.set(Result.success())
                     }
                 }
             }
@@ -212,13 +218,18 @@ class AutoEnterWorker @WorkerInject constructor(
         val shoesBitmap = Picasso.get()
             .load(shoesData.ShoesImageUrl)
             .get()
-        val notification = NotificationCompat.Builder(applicationContext, Contents.CHANNEL_ID_AUTO_ENTER)
-            .setContentTitle("${shoesData.ShoesTitle} - ${shoesData.ShoesSubTitle}")
-            .setContentText("자동응모 진행 중...")
-            .setSmallIcon(R.mipmap.ic_launcher)
-            .setLargeIcon(shoesBitmap)
-            .setOngoing(true)
-            .build()
+        val cancelIntent = WorkManager.getInstance(applicationContext)
+            .createCancelPendingIntent(id)
+
+        val notification =
+            NotificationCompat.Builder(applicationContext, Contents.CHANNEL_ID_AUTO_ENTER)
+                .setContentTitle("${shoesData.ShoesTitle} - ${shoesData.ShoesSubTitle}")
+                .setContentText("자동응모 진행 중...")
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setLargeIcon(shoesBitmap)
+                .setOngoing(true)
+                .addAction(0, "취소하기", cancelIntent)
+                .build()
 
         return ForegroundInfo(
             Random(System.currentTimeMillis()).nextInt(200) + index,
@@ -229,57 +240,73 @@ class AutoEnterWorker @WorkerInject constructor(
     // 알림 생성
     private fun createNotification(isSuccess: Boolean, errorMsg: String = "") {
         CoroutineScope(Dispatchers.Default).launch {
-            val shoesBitmap = Picasso.get()
-                .load(shoesData.ShoesImageUrl)
-                .get()
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                createChannel() // 채널 생성
+            }
             val vibrate = LongArray(4).apply {
                 set(0, 0)
                 set(1, 100)
                 set(2, 200)
                 set(3, 300)
             }
-            val channelId = (5000..5000 + shoesData.ShoesId!!).random()
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                createChannel()
-            }
-
-            val notification = if (isSuccess) { // 응모 완료 시
-                NotificationCompat.Builder(applicationContext, Contents.CHANNEL_ID_AUTO_ENTER)
-                    .setContentTitle("응모 완료! ( ${shoesData.ShoesTitle} )")
-                    .setContentText("자동응모가 완료되었습니다.")
-                    .setVibrate(vibrate)
-                    .setSmallIcon(R.mipmap.ic_launcher)
-                    .setLargeIcon(shoesBitmap)
-                    .build()
-            } else { // 응모 실패 시
-                val goWebsiteIntent = PendingIntent.getActivity(
-                    applicationContext,
-                    channelId,
-                    Intent(applicationContext, MainActivity::class.java).also {
-                        it.action = Contents.INTENT_ACTION_GOTO_WEBSITE
-                        it.putExtra(Contents.DRAW_URL, shoesData.ShoesUrl)
-                        it.putExtra(Contents.CHANNEL_ID, channelId)
-                    },
-                    PendingIntent.FLAG_ONE_SHOT
-                )
-                NotificationCompat.Builder(applicationContext, Contents.CHANNEL_ID_AUTO_ENTER)
-                    .setContentTitle("응모 실패 ( ${shoesData.ShoesTitle} )")
+            if (isError) { // 오류 발생 시
+                val notification = NotificationCompat.Builder(applicationContext, Contents.CHANNEL_ID_AUTO_ENTER)
+                    .setContentTitle("오류")
                     .setContentText(errorMsg)
                     .setVibrate(vibrate)
                     .setSmallIcon(R.mipmap.ic_launcher)
-                    .setLargeIcon(shoesBitmap)
-                    .addAction(0, "직접 응모하기", goWebsiteIntent)
                     .build()
-            }
 
-            with(NotificationManagerCompat.from(applicationContext)) { // 알림 생성
-                notify(
-                    channelId,
-                    notification
-                )
+                with(NotificationManagerCompat.from(applicationContext)) { // 알림 생성
+                    notify(
+                        System.currentTimeMillis().toInt(),
+                        notification
+                    )
+                }
+            } else { // 오류가 아닐 시
+                val shoesBitmap = Picasso.get()
+                    .load(shoesData.ShoesImageUrl)
+                    .get()
+                val channelId = (5000..5000 + shoesData.ShoesId!!).random()
+
+                val notification = if (isSuccess) { // 응모 완료 시
+                    NotificationCompat.Builder(applicationContext, Contents.CHANNEL_ID_AUTO_ENTER)
+                        .setContentTitle("응모 완료! ( ${shoesData.ShoesTitle} )")
+                        .setContentText("자동응모가 완료되었습니다.")
+                        .setVibrate(vibrate)
+                        .setSmallIcon(R.mipmap.ic_launcher)
+                        .setLargeIcon(shoesBitmap)
+                        .build()
+                } else { // 응모 실패 시
+                    val goWebsiteIntent = PendingIntent.getActivity(
+                        applicationContext,
+                        channelId,
+                        Intent(applicationContext, MainActivity::class.java).also {
+                            it.action = Contents.INTENT_ACTION_GOTO_WEBSITE
+                            it.putExtra(Contents.DRAW_URL, shoesData.ShoesUrl)
+                            it.putExtra(Contents.CHANNEL_ID, channelId)
+                        },
+                        PendingIntent.FLAG_ONE_SHOT
+                    )
+                    NotificationCompat.Builder(applicationContext, Contents.CHANNEL_ID_AUTO_ENTER)
+                        .setContentTitle("응모 실패 ( ${shoesData.ShoesTitle} )")
+                        .setContentText(errorMsg)
+                        .setVibrate(vibrate)
+                        .setSmallIcon(R.mipmap.ic_launcher)
+                        .setLargeIcon(shoesBitmap)
+                        .addAction(0, "직접 응모하기", goWebsiteIntent)
+                        .build()
+                }
+
+                with(NotificationManagerCompat.from(applicationContext)) { // 알림 생성
+                    notify(
+                        channelId,
+                        notification
+                    )
+                }
+                deleteShoes(shoesData.ShoesUrl) // 신발 삭제
             }
-            deleteShoes(shoesData.ShoesUrl) // 신발 삭제
         }
     }
 

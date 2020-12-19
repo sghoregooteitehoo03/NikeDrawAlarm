@@ -54,11 +54,6 @@ class MainActivity : AppCompatActivity() {
                 cancelNotification()
                 nav_host_fragment.findNavController().navigate(R.id.action_global_drawListFragment)
             }
-            Contents.INTENT_ACTION_GOTO_AUTO_ENTER -> {
-                setIntent(intent)
-                cancelNotification()
-                nav_host_fragment.findNavController().navigate(R.id.action_global_autoEnterFragment)
-            }
         }
     }
 
