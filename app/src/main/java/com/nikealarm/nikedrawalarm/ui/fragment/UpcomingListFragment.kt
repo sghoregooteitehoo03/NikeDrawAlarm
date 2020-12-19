@@ -216,6 +216,10 @@ class UpcomingListFragment : Fragment(), UpcomingListAdapter.AlarmListener {
         val alarmIntent = Intent(requireContext(), MyAlarmReceiver::class.java).apply {
             action = Contents.INTENT_ACTION_PRODUCT_ALARM
             putExtra(Contents.INTENT_KEY_POSITION, specialShoesData.ShoesUrl)
+
+            if(specialShoesData.ShoesCategory == ShoesDataModel.CATEGORY_DRAW) {
+                putExtra(Contents.INTENT_KEY_IS_DRAW, true)
+            }
         }
         val alarmPendingIntent = PendingIntent.getBroadcast(
             requireContext(),
@@ -246,6 +250,10 @@ class UpcomingListFragment : Fragment(), UpcomingListAdapter.AlarmListener {
         val alarmIntent = Intent(requireContext(), MyAlarmReceiver::class.java).apply {
             action = Contents.INTENT_ACTION_PRODUCT_ALARM
             putExtra(Contents.INTENT_KEY_POSITION, specialShoesData.ShoesUrl)
+
+            if(specialShoesData.ShoesCategory == ShoesDataModel.CATEGORY_DRAW) {
+                putExtra(Contents.INTENT_KEY_IS_DRAW, true)
+            }
         }
 
         // 이미 설정된 알람이 있는지 확인

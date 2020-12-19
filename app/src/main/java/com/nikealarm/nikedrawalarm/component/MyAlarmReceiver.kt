@@ -8,14 +8,16 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Build
 import android.util.Log
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
-import androidx.work.workDataOf
+import androidx.work.*
+import com.nikealarm.nikedrawalarm.component.worker.AutoEnterWorker
 import com.nikealarm.nikedrawalarm.component.worker.FindDrawWorker
 import com.nikealarm.nikedrawalarm.component.worker.ProductNotifyWorker
 import com.nikealarm.nikedrawalarm.component.worker.ResetProductAlarmWorker
 import com.nikealarm.nikedrawalarm.other.Contents
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.util.*
 import javax.inject.Inject
 import javax.inject.Named
@@ -25,6 +27,10 @@ class MyAlarmReceiver : BroadcastReceiver() {
     @Inject
     @Named(Contents.PREFERENCE_NAME_TIME)
     lateinit var timePreferences: SharedPreferences
+
+    @Inject
+    @Named(Contents.PREFERENCE_NAME_AUTO_ENTER_V2)
+    lateinit var autoEnterPerf: SharedPreferences
 
     override fun onReceive(context: Context, intent: Intent) {
         // This method is called when the BroadcastReceiver is receiving an Intent broadcast.
@@ -37,7 +43,7 @@ class MyAlarmReceiver : BroadcastReceiver() {
             if (intent.action == Contents.INTENT_ACTION_SYNC_ALARM) {
                 reSetAlarm(context)
 
-                if(isNotDawn()) { // 새벽이 아닐 때만 동작
+                if (isNotDawn()) { // 새벽이 아닐 때만 동작
                     val parsingWorkRequest = OneTimeWorkRequestBuilder<FindDrawWorker>()
                         .build()
                     WorkManager.getInstance(context).enqueue(parsingWorkRequest)
@@ -47,14 +53,34 @@ class MyAlarmReceiver : BroadcastReceiver() {
             else if (intent.action == Contents.INTENT_ACTION_PRODUCT_ALARM) {
                 // 상품의 대한 알림을 울림
                 val dataPosition = intent.getStringExtra(Contents.INTENT_KEY_POSITION)
+                val isDraw = intent.getBooleanExtra(Contents.INTENT_KEY_IS_DRAW, false)
+                val isAllow = autoEnterPerf.getBoolean(Contents.AUTO_ENTER_ALLOW, false)
                 Log.i("Check3", "동작")
 
-                dataPosition?.let {
+                dataPosition?.let { shoesUrl ->
                     Log.i("Check4", "동작 $dataPosition")
-                    val productNotifyWorkRequest = OneTimeWorkRequestBuilder<ProductNotifyWorker>()
-                        .setInputData(workDataOf(Contents.WORKER_INPUT_DATA_KEY to dataPosition))
-                        .build()
-                    WorkManager.getInstance(context).enqueue(productNotifyWorkRequest)
+
+                    if (isDraw && isAllow) { // Draw 상품이고 자동응모를 허용할 때
+                        val workRequest: OneTimeWorkRequest =
+                            OneTimeWorkRequestBuilder<AutoEnterWorker>()
+                                .addTag(Contents.WORKER_AUTO_ENTER)
+                                .setInputData(workDataOf(Contents.WORKER_AUTO_ENTER_INPUT_KEY to shoesUrl))
+                                .build()
+
+                        WorkManager.getInstance(context)
+                            .enqueueUniqueWork(
+                                Contents.WORKER_AUTO_ENTER,
+                                ExistingWorkPolicy.APPEND_OR_REPLACE,
+                                workRequest
+                            )
+                    } else { // Draw 상품이 아니거나 자동응모 허용하지 않을 때
+                        val workRequest = OneTimeWorkRequestBuilder<ProductNotifyWorker>()
+                            .setInputData(workDataOf(Contents.WORKER_INPUT_DATA_KEY to shoesUrl))
+                            .build()
+
+                        WorkManager.getInstance(context)
+                            .enqueue(workRequest)
+                    }
                 }
             }
         }
@@ -77,7 +103,7 @@ class MyAlarmReceiver : BroadcastReceiver() {
 
         if (timeTrigger != 0.toLong()) {
             Log.i("Check", "재설정")
-            while(timeTrigger < System.currentTimeMillis()) {
+            while (timeTrigger < System.currentTimeMillis()) {
                 timeTrigger += 10800000
             }
 

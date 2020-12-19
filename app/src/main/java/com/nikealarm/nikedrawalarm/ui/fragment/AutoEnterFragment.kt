@@ -76,8 +76,11 @@ class AutoEnterFragment : Fragment() {
                     WorkInfo.State.FAILED -> { // 응모 실패 했을 시
                         if(isWorkStarted) {
                             val errorMsg =
-                                it[0].outputData.getString(Contents.WORKER_AUTO_ENTER_OUTPUT_KEY)!!
-                            fail(errorMsg)
+                                it[0].outputData.getString(Contents.WORKER_AUTO_ENTER_OUTPUT_KEY)
+
+                            if(errorMsg != null) {
+                                fail(errorMsg)
+                            }
                         }
                     }
                 }
@@ -102,8 +105,6 @@ class AutoEnterFragment : Fragment() {
         val url = activity?.intent?.getStringExtra(Contents.DRAW_URL)
 
         if (url != null) {
-            isWorkStarted = true
-
             val autoEnterWork = OneTimeWorkRequestBuilder<AutoEnterWorker>()
                 .addTag(Contents.WORKER_AUTO_ENTER)
                 .setInputData(workDataOf(Contents.WORKER_AUTO_ENTER_INPUT_KEY to url))
@@ -115,6 +116,8 @@ class AutoEnterFragment : Fragment() {
                     ExistingWorkPolicy.KEEP,
                     autoEnterWork
                 )
+
+            isWorkStarted = true
         } else {
             fail(WebState.ERROR_OTHER)
         }

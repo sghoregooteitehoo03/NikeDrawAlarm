@@ -8,6 +8,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.hilt.Assisted
@@ -29,7 +30,6 @@ class ProductNotifyWorker @WorkerInject constructor(
     @Assisted workerParams: WorkerParameters,
     @Named(Contents.PREFERENCE_NAME_TIME) val timePreferences: SharedPreferences,
     @Named(Contents.PREFERENCE_NAME_ALLOW_ALARM) val allowAlarmPreferences: SharedPreferences,
-    @Named(Contents.PREFERENCE_NAME_AUTO_ENTER_V2) val autoEnterPreferences: SharedPreferences,
     val mDao: Dao
 ) : Worker(
     appContext,
@@ -38,14 +38,15 @@ class ProductNotifyWorker @WorkerInject constructor(
 
     override fun doWork(): Result {
         val shoesUrl = inputData.getString(Contents.WORKER_INPUT_DATA_KEY)
-        val index = mDao.getAllSpecialShoesData().indexOf(SpecialShoesDataModel(0, "", "", null, null, shoesUrl))
+        val index = mDao.getAllSpecialShoesData()
+            .indexOf(SpecialShoesDataModel(0, "", "", null, null, shoesUrl))
 
         Log.i("Check5", "position: $index")
         if (index != -1) {
             val drawData = mDao.getAllSpecialShoesData()[index]
             val random = Random(System.currentTimeMillis())
 
-            createNotification(drawData, applicationContext, random.nextInt(100) + index)
+            createNotification(drawData, random.nextInt(100) + index)
 
             // 알림 후 해당 상품을 db에서 지움
             deleteShoesData(drawData)
@@ -56,7 +57,6 @@ class ProductNotifyWorker @WorkerInject constructor(
 
     private fun createNotification(
         shoesData: SpecialShoesDataModel,
-        context: Context,
         channelId: Int
     ) {
         val vibrate = LongArray(4).apply {
@@ -67,27 +67,17 @@ class ProductNotifyWorker @WorkerInject constructor(
         }
 
         val goEventPendingIntent = PendingIntent.getActivity(
-            context,
+            applicationContext,
             channelId,
-            Intent(context, MainActivity::class.java).also {
+            Intent(applicationContext, MainActivity::class.java).also {
                 it.action = Contents.INTENT_ACTION_GOTO_WEBSITE
                 it.putExtra(Contents.DRAW_URL, shoesData.ShoesUrl)
                 it.putExtra(Contents.CHANNEL_ID, channelId)
             },
             PendingIntent.FLAG_ONE_SHOT
         )
-        val autoEnterPendingIntent = PendingIntent.getActivity(
-            context,
-            channelId,
-            Intent(context, MainActivity::class.java).also {
-                it.action = Contents.INTENT_ACTION_GOTO_AUTO_ENTER
-                it.putExtra(Contents.DRAW_URL, shoesData.ShoesUrl)
-                it.putExtra(Contents.CHANNEL_ID, channelId)
-            },
-            PendingIntent.FLAG_ONE_SHOT
-        )
         val bitmap = Picasso.get().load(shoesData.ShoesImageUrl).get()
-        val notificationBuilder = NotificationCompat.Builder(context, "Default")
+        val notificationBuilder = NotificationCompat.Builder(applicationContext, Contents.CHANNEL_ID_SHOES)
             .setSmallIcon(R.mipmap.ic_launcher)
             .setContentTitle("${shoesData.ShoesSubTitle} - ${shoesData.ShoesTitle}")
             .setVibrate(vibrate)
@@ -101,32 +91,27 @@ class ProductNotifyWorker @WorkerInject constructor(
             .setContentText("해당 상품이 출시되었습니다.")
             .addAction(0, "바로가기", goEventPendingIntent)
 
-        // DRAW 상품 자동응모 허용할 시 자동응모 버튼 추가
-        if (shoesData.ShoesCategory == ShoesDataModel.CATEGORY_DRAW
-            && autoEnterPreferences.getBoolean(
-                Contents.AUTO_ENTER_ALLOW,
-                false
-            )
-        ) {
-            notificationBuilder.addAction(0, "자동응모 하기", autoEnterPendingIntent)
-        }
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                "Default",
-                shoesData.ShoesTitle,
-                NotificationManager.IMPORTANCE_DEFAULT
-            )
-            val notificationManager =
-                context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-
-            notificationManager.createNotificationChannel(channel)
+            createChannel()
         }
 
 
-        with(NotificationManagerCompat.from(context)) {
+        with(NotificationManagerCompat.from(applicationContext)) {
             notify(channelId, notificationBuilder.build())
         }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun createChannel() {
+        val channel = NotificationChannel(
+            Contents.CHANNEL_ID_SHOES,
+            "상품 알림",
+            NotificationManager.IMPORTANCE_DEFAULT
+        )
+        val notificationManager =
+            applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        notificationManager.createNotificationChannel(channel)
     }
 
     // 데이터를 지움

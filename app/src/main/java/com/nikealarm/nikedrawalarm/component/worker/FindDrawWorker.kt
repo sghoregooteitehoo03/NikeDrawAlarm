@@ -6,6 +6,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.hilt.Assisted
@@ -19,6 +20,7 @@ import com.nikealarm.nikedrawalarm.ui.MainActivity
 import com.squareup.picasso.Picasso
 import org.jsoup.Jsoup
 
+/* 알림 울리는지 확인해보기 */
 class FindDrawWorker @WorkerInject constructor(
     @Assisted context: Context,
     @Assisted workerParams: WorkerParameters,
@@ -199,7 +201,7 @@ class FindDrawWorker @WorkerInject constructor(
             PendingIntent.getActivity(mContext, 100, setAlarmIntent, PendingIntent.FLAG_ONE_SHOT)
 
         val bitmap = Picasso.get().load(data.ShoesImageUrl).get()
-        val notificationBuilder = NotificationCompat.Builder(mContext, "Default")
+        val notificationBuilder = NotificationCompat.Builder(mContext, Contents.CHANNEL_ID_FIND)
             .setSmallIcon(R.mipmap.ic_launcher)
             .setContentTitle("${data.ShoesSubTitle} - ${data.ShoesTitle}")
             .setVibrate(vibrate)
@@ -216,20 +218,25 @@ class FindDrawWorker @WorkerInject constructor(
             .addAction(0, "알림 설정하기", setAlarmPendingIntent)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                "Default",
-                data.ShoesTitle,
-                NotificationManager.IMPORTANCE_DEFAULT
-            )
-            val notificationManager =
-                mContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-
-            notificationManager.createNotificationChannel(channel)
+            createChannel()
         }
 
         with(NotificationManagerCompat.from(mContext)) {
             notify(channelId, notificationBuilder.build())
         }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun createChannel() {
+        val channel = NotificationChannel(
+            Contents.CHANNEL_ID_FIND,
+            "드로우 알림",
+            NotificationManager.IMPORTANCE_DEFAULT
+        )
+        val notificationManager =
+            mContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        notificationManager.createNotificationChannel(channel)
     }
 
     // 데이터베이스 접근
