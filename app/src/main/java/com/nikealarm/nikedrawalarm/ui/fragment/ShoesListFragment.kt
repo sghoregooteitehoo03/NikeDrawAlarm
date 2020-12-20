@@ -258,10 +258,6 @@ class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
                 clear()
                 commit()
             }
-            with(requireContext().getSharedPreferences(Contents.PREFERENCE_NAME_AUTO_ENTER_V2, Context.MODE_PRIVATE).edit()) {
-                clear()
-                commit()
-            }
 
             findNavController().navigate(R.id.action_drawListFragment_to_updateDialog) // 다이얼로그 보여줌
             with(updatePref.edit()) { // 한번만 보여주게 함

@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.marginLeft
 import androidx.fragment.app.DialogFragment
 import com.nikealarm.nikedrawalarm.R
 import kotlinx.android.synthetic.main.dialog_notification.*
@@ -30,8 +31,12 @@ class UpdateDialog : DialogFragment() {
 
     private fun initView() {
         notifyDialogFrag_titleText.text = "업데이트"
-        notifyDialogFrag_messageText.text =
-            "- 보안 업데이트\n (자동응모 정보 초기화 됨)\n"
+        with(notifyDialogFrag_messageText) {
+            text =
+                "- 업데이트 후 알림 지워지는 버그 수정\n\n- 자동응모 방식 변경\n( UPCOMING에서 DRAW 상품을 알림 설정해놓으시면 응모 당일 날 자동으로 응모가 진행됩니다. )"
+            textSize = 18f
+            setPadding(12, 0, 12, 0)
+        }
         notifyDialogFrag_cancelButton.visibility = View.GONE
         notifyDialogFrag_checkButton.setOnClickListener {
             dismiss()
