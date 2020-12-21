@@ -31,7 +31,7 @@ class UpdateDialog : DialogFragment() {
     private fun initView() {
         notifyDialogFrag_titleText.text = "업데이트"
         notifyDialogFrag_messageText.text =
-            "- 보안 업데이트\n (자동응모 정보 초기화 됨)\n"
+            "- 업데이트 이후 알림 지워지는 버그 수정\n- 코드 안정화"
         notifyDialogFrag_cancelButton.visibility = View.GONE
         notifyDialogFrag_checkButton.setOnClickListener {
             dismiss()

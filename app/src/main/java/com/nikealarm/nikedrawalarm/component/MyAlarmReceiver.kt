@@ -28,8 +28,8 @@ class MyAlarmReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         // This method is called when the BroadcastReceiver is receiving an Intent broadcast.
-        // 재부팅 시 알람 재설정
-        if (intent.action == "android.intent.action.BOOT_COMPLETED") {
+        // 재부팅 및 앱 업데이트 후 알람 재설정
+        if (intent.action == "android.intent.action.BOOT_COMPLETED" || intent.action == "android.intent.action.MY_PACKAGE_REPLACED") {
             reSetAlarm(context)
             reSetProductAlarm(context)
         } else {
