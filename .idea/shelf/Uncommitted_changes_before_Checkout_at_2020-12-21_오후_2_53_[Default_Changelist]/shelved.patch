@@ -1,0 +1,65 @@
+Index: app/src/main/res/layout/dialog_editinfo.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\r\n    xmlns:app=\"http://schemas.android.com/apk/res-auto\"\r\n    xmlns:tools=\"http://schemas.android.com/tools\"\r\n    android:layout_width=\"match_parent\"\r\n    android:layout_height=\"match_parent\"\r\n    android:background=\"@drawable/dialog_shape\"\r\n    android:orientation=\"vertical\">\r\n\r\n    <androidx.constraintlayout.widget.ConstraintLayout\r\n        android:layout_width=\"wrap_content\"\r\n        android:layout_height=\"wrap_content\">\r\n\r\n        <TextView\r\n            android:id=\"@+id/editInfoDialogFrag_titleText\"\r\n            android:layout_width=\"wrap_content\"\r\n            android:layout_height=\"wrap_content\"\r\n            android:layout_marginTop=\"10dp\"\r\n            android:text=\"정보 입력\"\r\n            android:textColor=\"#000000\"\r\n            android:textSize=\"28sp\"\r\n            android:textStyle=\"bold\"\r\n            app:layout_constraintEnd_toEndOf=\"parent\"\r\n            app:layout_constraintStart_toStartOf=\"parent\"\r\n            app:layout_constraintTop_toTopOf=\"parent\" />\r\n\r\n        <View\r\n            android:id=\"@+id/editInfoDialogFrag_view\"\r\n            android:layout_width=\"match_parent\"\r\n            android:layout_height=\"1dp\"\r\n            android:layout_marginTop=\"10dp\"\r\n            android:background=\"#eeeeee\"\r\n            app:layout_constraintEnd_toEndOf=\"parent\"\r\n            app:layout_constraintStart_toStartOf=\"parent\"\r\n            app:layout_constraintTop_toBottomOf=\"@+id/editInfoDialogFrag_titleText\" />\r\n\r\n        <com.google.android.material.textfield.TextInputLayout\r\n            android:id=\"@+id/editInfoDialogFrag_idLayout\"\r\n            android:layout_width=\"200dp\"\r\n            android:layout_height=\"wrap_content\"\r\n            android:layout_marginTop=\"10dp\"\r\n            app:layout_constraintEnd_toEndOf=\"parent\"\r\n            app:layout_constraintStart_toStartOf=\"parent\"\r\n            app:layout_constraintTop_toBottomOf=\"@id/editInfoDialogFrag_view\">\r\n\r\n            <EditText\r\n                android:id=\"@+id/editInfoDialogFrag_idEdit\"\r\n                android:layout_width=\"match_parent\"\r\n                android:layout_height=\"wrap_content\"\r\n                android:hint=\"나이키 아이디 입력\"\r\n                android:inputType=\"text\" />\r\n        </com.google.android.material.textfield.TextInputLayout>\r\n\r\n        <com.google.android.material.textfield.TextInputLayout\r\n            android:id=\"@+id/editInfoDialogFrag_passLayout\"\r\n            android:layout_width=\"200dp\"\r\n            android:layout_height=\"wrap_content\"\r\n            android:layout_marginBottom=\"10dp\"\r\n            app:layout_constraintEnd_toEndOf=\"parent\"\r\n            app:layout_constraintStart_toStartOf=\"parent\"\r\n            app:layout_constraintTop_toBottomOf=\"@id/editInfoDialogFrag_idLayout\">\r\n\r\n            <com.maksim88.passwordedittext.PasswordEditText\r\n                android:id=\"@+id/editInfoDialogFrag_passEdit\"\r\n                android:layout_width=\"match_parent\"\r\n                android:layout_height=\"wrap_content\"\r\n                android:hint=\"나이키 비밀번호 입력\"\r\n                android:inputType=\"textPassword\" />\r\n        </com.google.android.material.textfield.TextInputLayout>\r\n\r\n        <androidx.appcompat.widget.AppCompatSpinner\r\n            android:id=\"@+id/editInfoDialogFrag_spinner\"\r\n            android:layout_width=\"180dp\"\r\n            android:layout_height=\"wrap_content\"\r\n            android:layout_marginTop=\"8dp\"\r\n            app:layout_constraintEnd_toEndOf=\"parent\"\r\n            app:layout_constraintStart_toStartOf=\"parent\"\r\n            app:layout_constraintTop_toBottomOf=\"@+id/editInfoDialogFrag_passLayout\" />\r\n\r\n        <TextView\r\n            android:id=\"@+id/editInfoDialogFrag_explainText\"\r\n            android:layout_width=\"wrap_content\"\r\n            android:layout_height=\"wrap_content\"\r\n            android:layout_marginStart=\"8dp\"\r\n            android:layout_marginTop=\"8dp\"\r\n            android:layout_marginBottom=\"8dp\"\r\n            android:text=\"* 절대 개인정보 수집을 위한 활동에\\n  사용하지 않습니다.\"\r\n            android:textStyle=\"bold\"\r\n            app:layout_constraintBottom_toTopOf=\"@+id/editInfoDialogFrag_cancelButton\"\r\n            app:layout_constraintLeft_toLeftOf=\"parent\"\r\n            app:layout_constraintTop_toBottomOf=\"@+id/editInfoDialogFrag_spinner\" />\r\n\r\n        <Button\r\n            android:id=\"@+id/editInfoDialogFrag_cancelButton\"\r\n            android:layout_width=\"150dp\"\r\n            android:layout_height=\"60dp\"\r\n            android:layout_marginBottom=\"18dp\"\r\n            android:background=\"@drawable/dialog_cancel_button_shape\"\r\n            android:text=\"취소\"\r\n            android:textSize=\"20sp\"\r\n            app:layout_constraintBottom_toBottomOf=\"parent\"\r\n            app:layout_constraintEnd_toStartOf=\"@+id/editInfoDialogFrag_checkButton\"\r\n            app:layout_constraintHorizontal_bias=\"0.5\"\r\n            app:layout_constraintStart_toStartOf=\"parent\" />\r\n\r\n        <Button\r\n            android:id=\"@+id/editInfoDialogFrag_checkButton\"\r\n            android:layout_width=\"150dp\"\r\n            android:layout_height=\"60dp\"\r\n            android:layout_marginBottom=\"18dp\"\r\n            android:background=\"@drawable/dialog_check_button_shape\"\r\n            android:text=\"확인\"\r\n            android:textColor=\"#ffffff\"\r\n            android:textSize=\"20sp\"\r\n            app:layout_constraintBottom_toBottomOf=\"parent\"\r\n            app:layout_constraintEnd_toEndOf=\"parent\"\r\n            app:layout_constraintHorizontal_bias=\"0.5\"\r\n            app:layout_constraintStart_toEndOf=\"@+id/editInfoDialogFrag_cancelButton\" />\r\n    </androidx.constraintlayout.widget.ConstraintLayout>\r\n</LinearLayout>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/layout/dialog_editinfo.xml	(revision 3600d1e45d3dbca7499aa68752bcadbf7d98a0b3)
++++ app/src/main/res/layout/dialog_editinfo.xml	(date 1608444940468)
+@@ -83,13 +83,22 @@
+             android:layout_height="wrap_content"
+             android:layout_marginStart="8dp"
+             android:layout_marginTop="8dp"
+-            android:layout_marginBottom="8dp"
+             android:text="* 절대 개인정보 수집을 위한 활동에\n  사용하지 않습니다."
+             android:textStyle="bold"
+-            app:layout_constraintBottom_toTopOf="@+id/editInfoDialogFrag_cancelButton"
+             app:layout_constraintLeft_toLeftOf="parent"
+             app:layout_constraintTop_toBottomOf="@+id/editInfoDialogFrag_spinner" />
+ 
++        <TextView
++            android:id="@+id/editInfoDialogFrag_explainText2"
++            android:layout_width="wrap_content"
++            android:layout_height="wrap_content"
++            android:layout_marginStart="8dp"
++            android:layout_marginTop="6dp"
++            android:text="* 의류 상품은 지원하지 않습니다."
++            android:textStyle="bold"
++            app:layout_constraintStart_toStartOf="parent"
++            app:layout_constraintTop_toBottomOf="@id/editInfoDialogFrag_explainText" />
++
+         <Button
+             android:id="@+id/editInfoDialogFrag_cancelButton"
+             android:layout_width="150dp"
+@@ -98,10 +107,12 @@
+             android:background="@drawable/dialog_cancel_button_shape"
+             android:text="취소"
+             android:textSize="20sp"
++            android:layout_marginTop="8dp"
+             app:layout_constraintBottom_toBottomOf="parent"
+             app:layout_constraintEnd_toStartOf="@+id/editInfoDialogFrag_checkButton"
+             app:layout_constraintHorizontal_bias="0.5"
+-            app:layout_constraintStart_toStartOf="parent" />
++            app:layout_constraintStart_toStartOf="parent"
++            app:layout_constraintTop_toBottomOf="@id/editInfoDialogFrag_explainText2" />
+ 
+         <Button
+             android:id="@+id/editInfoDialogFrag_checkButton"
+@@ -112,9 +123,11 @@
+             android:text="확인"
+             android:textColor="#ffffff"
+             android:textSize="20sp"
++            android:layout_marginTop="8dp"
+             app:layout_constraintBottom_toBottomOf="parent"
+             app:layout_constraintEnd_toEndOf="parent"
+             app:layout_constraintHorizontal_bias="0.5"
+-            app:layout_constraintStart_toEndOf="@+id/editInfoDialogFrag_cancelButton" />
++            app:layout_constraintStart_toEndOf="@+id/editInfoDialogFrag_cancelButton"
++            app:layout_constraintTop_toBottomOf="@id/editInfoDialogFrag_explainText2" />
+     </androidx.constraintlayout.widget.ConstraintLayout>
+ </LinearLayout>
+\ No newline at end of file
+diff --git .idea/shelf/Uncommitted_changes_before_Checkout_at_2020-12-08__8_13__Default_Changelist_.xml .idea/shelf/Uncommitted_changes_before_Checkout_at_2020-12-08__8_13__Default_Changelist_.xml
+diff --git .idea/shelf/Uncommitted_changes_before_Checkout_at_2020-12-08__7_23__Default_Changelist_1.xml .idea/shelf/Uncommitted_changes_before_Checkout_at_2020-12-08__7_23__Default_Changelist_1.xml
+diff --git .idea/shelf/Uncommitted_changes_before_Checkout_at_2020-12-08__7_19__Default_Changelist_1.xml .idea/shelf/Uncommitted_changes_before_Checkout_at_2020-12-08__7_19__Default_Changelist_1.xml

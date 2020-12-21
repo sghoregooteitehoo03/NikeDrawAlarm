@@ -33,7 +33,7 @@ class UpdateDialog : DialogFragment() {
         notifyDialogFrag_titleText.text = "업데이트"
         with(notifyDialogFrag_messageText) {
             text =
-                "- 업데이트 후 알림 지워지는 버그 수정\n\n- 자동응모 방식 변경\n( UPCOMING에서 DRAW 상품을 알림 설정해놓으시면 응모 당일 날 자동으로 응모가 진행됩니다. )"
+                "- 자동응모 방식 변경\n( UPCOMING에서 DRAW 상품을 알림 설정해놓으시면 응모 당일 날 자동으로 응모가 진행됩니다. )"
             textSize = 18f
             setPadding(12, 0, 12, 0)
         }

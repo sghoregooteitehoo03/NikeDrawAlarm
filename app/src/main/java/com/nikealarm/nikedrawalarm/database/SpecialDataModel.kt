@@ -12,6 +12,8 @@ data class SpecialDataModel(
     val id: Int?,
     @ColumnInfo(name = "SpecialUrl")
     val specialUrl: String,
+    @ColumnInfo(name = "SpecialYear")
+    val specialYear: String? = null,
     @ColumnInfo(name = "SpecialMonth")
     val specialMonth: String? = null,
     @ColumnInfo(name = "SpecialDay")

@@ -139,6 +139,9 @@ class FindDrawWorker @WorkerInject constructor(
                 continue
             }
 
+            val date = elementData.attr("data-active-date")
+                .split(" ")[0]
+            val year = date.split("-")[0]
             val month = elementData.select("div.img-sect")
                 .select("div.date")
                 .select("span.month")
@@ -151,11 +154,12 @@ class FindDrawWorker @WorkerInject constructor(
                 .select("div.text-box")
                 .select("p.txt-subject")
                 .text()
-            val order = "${month.split("월")[0]}${day}".toInt()
+            val order = "$year${month.split("월")[0]}${day}".toInt()
 
             val specialShoesData = SpecialDataModel(
                 null,
                 specialUrl,
+                year,
                 month,
                 day,
                 whenStartEvent,

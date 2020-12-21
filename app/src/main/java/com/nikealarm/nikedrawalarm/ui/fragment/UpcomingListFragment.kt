@@ -167,6 +167,7 @@ class UpcomingListFragment : Fragment(), UpcomingListAdapter.AlarmListener {
     private fun setNotification(specialShoesData: SpecialShoesDataModel, pos: Int) {
         val timeTrigger = getTimeInMillis(
             EventDay(
+                specialShoesData.SpecialYear!!,
                 specialShoesData.SpecialMonth!!,
                 specialShoesData.SpecialDay!!,
                 specialShoesData.SpecialWhenEvent!!
@@ -296,6 +297,7 @@ class UpcomingListFragment : Fragment(), UpcomingListAdapter.AlarmListener {
         val time = eventDay.eventTime.substring(2, 8).trim().split(":")
 
         if (time.size > 1) {
+            val year = eventDay.eventYear.toIntOrNull()
             val month = if (eventDay.eventMonth[1].toString() != "월") {
                 "${eventDay.eventMonth[0]}${eventDay.eventMonth[1]}".toIntOrNull() // 10월, 11월, 12월 처리
             } else {
@@ -307,7 +309,8 @@ class UpcomingListFragment : Fragment(), UpcomingListAdapter.AlarmListener {
             val minute = time[1].toIntOrNull()
 
             val mCalendar = Calendar.getInstance().apply {
-                if (month != null && day != null && hour != null && minute != null) {
+                if (year != null && month != null && day != null && hour != null && minute != null) {
+                    set(Calendar.YEAR, year)
                     set(Calendar.MONTH, month - 1)
                     set(Calendar.DAY_OF_MONTH, day)
                     set(Calendar.HOUR_OF_DAY, hour)

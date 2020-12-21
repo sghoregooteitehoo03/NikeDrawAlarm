@@ -10,6 +10,7 @@ data class SpecialShoesDataModel(
     val ShoesImageUrl: String? = null,
     val ShoesUrl: String? = null,
     val ShoesCategory: String? = null,
+    val SpecialYear: String? = null,
     val SpecialMonth: String? = null,
     val SpecialDay: String? = null,
     val SpecialWhenEvent: String? = null,
