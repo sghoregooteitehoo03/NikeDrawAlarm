@@ -42,7 +42,7 @@ import javax.inject.Inject
 import javax.inject.Named
 
 @AndroidEntryPoint
-class UpcomingListFragment : Fragment(), UpcomingListAdapter.AlarmListener {
+class UpcomingListFragment : Fragment(R.layout.fragment_upcoming_list), UpcomingListAdapter.ClickListener {
     private val mViewModel by activityViewModels<MyViewModel>()
     private lateinit var mAdapter: UpcomingListAdapter
     private var fragmentBinding: FragmentUpcomingListBinding? = null
@@ -55,13 +55,9 @@ class UpcomingListFragment : Fragment(), UpcomingListAdapter.AlarmListener {
     @Named(Contents.PREFERENCE_NAME_ALLOW_ALARM)
     lateinit var allowAlarmPreferences: SharedPreferences
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
-        return inflater.inflate(R.layout.fragment_upcoming_list, container, false)
     }
 
     // 시작
@@ -99,6 +95,25 @@ class UpcomingListFragment : Fragment(), UpcomingListAdapter.AlarmListener {
             removeNotification(specialShoesData!!, pos)
         } else { // 알림이 설정 되어있지 않을 때6
             setNotification(specialShoesData!!, pos)
+        }
+    }
+
+    override fun onItemClickListener(position: Int) {
+        mAdapter.currentList?.get(position)?.isOpened =
+            !mAdapter.currentList?.get(position)!!.isOpened
+        Log.i("CheckList", "${mAdapter.currentList?.get(position)?.isOpened}")
+
+        if (mAdapter.previousPosition != -1 && mAdapter.previousPosition != position) { // 다른 리스트를 눌렀을 때
+            mAdapter.currentList?.get(mAdapter.previousPosition)?.isOpened =
+                !mAdapter.currentList?.get(mAdapter.previousPosition)!!.isOpened
+            mAdapter.notifyItemChanged(mAdapter.previousPosition)
+        }
+
+        mAdapter.notifyItemChanged(position)
+        mAdapter.previousPosition = if (mAdapter.previousPosition == position) { // 같은 리스트를 눌렀을 때
+            -1
+        } else { // 다른 리스트를 눌렀을 때
+            position
         }
     }
 

@@ -12,13 +12,14 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.nikealarm.nikedrawalarm.R
+import com.nikealarm.nikedrawalarm.adapter.holder.ShoesItemViewHolder
 import com.nikealarm.nikedrawalarm.database.ShoesDataModel
 import com.nikealarm.nikedrawalarm.databinding.ItemShoesListBinding
 
 class ShoesListAdapter(
     private val mContext: Context
 ) :
-    PagedListAdapter<ShoesDataModel, ShoesListAdapter.DrawListViewHolder>(
+    PagedListAdapter<ShoesDataModel, ShoesItemViewHolder>(
         diffCallback
     ) {
 
@@ -33,45 +34,14 @@ class ShoesListAdapter(
         itemListener = listener
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DrawListViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ShoesItemViewHolder {
         val view =
             ItemShoesListBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return DrawListViewHolder(view)
+        return ShoesItemViewHolder(view)
     }
 
-    override fun onBindViewHolder(holder: DrawListViewHolder, position: Int) {
-        holder.bindView(getItem(position))
-    }
-
-    inner class DrawListViewHolder(private val binding: ItemShoesListBinding) :
-        RecyclerView.ViewHolder(binding.root) {
-
-        fun bindView(data: ShoesDataModel?) {
-            with(binding.shoesImage) {
-                Glide.with(mContext).load(data?.shoesImageUrl).into(this)
-                transitionName = data?.shoesUrl
-
-                setOnClickListener {
-                    itemListener.onClickImage(
-                        data?.shoesUrl!!,
-                        data.shoesImageUrl!!,
-                        this
-                    )
-                }
-            }
-            binding.shoesSubtitleText.text = data?.shoesSubTitle
-            binding.shoesTitleText.text = data?.shoesTitle
-            binding.shoesHowToEventText.text = data?.shoesPrice
-            if (data?.shoesPrice == ShoesDataModel.SHOES_SOLD_OUT) {
-                binding.shoesHowToEventText.setTextColor(Color.RED)
-            } else {
-                binding.shoesHowToEventText.setTextColor(Color.BLACK)
-            }
-
-            binding.learnMoreText.setOnClickListener {
-                itemListener.onClickItem(data?.shoesUrl)
-            }
-        }
+    override fun onBindViewHolder(holder: ShoesItemViewHolder, position: Int) {
+        holder.bindView(getItem(position), itemListener)
     }
 
     companion object {

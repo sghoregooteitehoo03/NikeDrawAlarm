@@ -7,30 +7,23 @@ import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.nikealarm.nikedrawalarm.R
+import com.nikealarm.nikedrawalarm.adapter.holder.ImageItemViewHolder
 import com.nikealarm.nikedrawalarm.databinding.ItemImageListBinding
 
 class ImageListPagerAdapter(private val imageList: Array<String>) :
-    RecyclerView.Adapter<ImageListPagerAdapter.ImageListViewHolder>() {
+    RecyclerView.Adapter<ImageItemViewHolder>() {
 
-    inner class ImageListViewHolder(private val binding: ItemImageListBinding) :
-        RecyclerView.ViewHolder(binding.root) {
-
-        fun bindView(imageUrl: String) {
-            Glide.with(itemView).load(imageUrl).into(binding.shoesImage)
-        }
-    }
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ImageListViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ImageItemViewHolder {
         val view =
             ItemImageListBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return ImageListViewHolder(view)
+        return ImageItemViewHolder(view)
     }
 
     override fun getItemCount(): Int {
         return imageList.size
     }
 
-    override fun onBindViewHolder(holder: ImageListViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: ImageItemViewHolder, position: Int) {
         holder.bindView(imageList[position])
     }
 }

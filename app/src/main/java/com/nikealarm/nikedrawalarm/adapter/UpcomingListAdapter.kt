@@ -20,6 +20,7 @@ import com.bumptech.glide.Glide
 import com.chauthai.swipereveallayout.SwipeRevealLayout
 import com.chauthai.swipereveallayout.ViewBinderHelper
 import com.nikealarm.nikedrawalarm.R
+import com.nikealarm.nikedrawalarm.adapter.holder.UpcomingItemViewHolder
 import com.nikealarm.nikedrawalarm.database.ShoesDataModel
 import com.nikealarm.nikedrawalarm.database.SpecialShoesDataModel
 import com.nikealarm.nikedrawalarm.databinding.ItemUpcomingListBinding
@@ -28,176 +29,39 @@ class UpcomingListAdapter(
     private val context: Context,
     private val allowAlarmPreferences: SharedPreferences
 ) :
-    PagedListAdapter<SpecialShoesDataModel, UpcomingListAdapter.SpecialShoesListViewHolder>(
+    PagedListAdapter<SpecialShoesDataModel, UpcomingItemViewHolder>(
         diffCallback
     ) {
 
-    interface AlarmListener {
+    interface ClickListener {
         fun onAlarmListener(specialShoesData: SpecialShoesDataModel?, pos: Int, isChecked: Boolean)
+        fun onItemClickListener(position: Int)
     }
 
-    private var previousPosition = -1 // 이전에 선택한 리스트뷰에 위치
+    var previousPosition = -1 // 이전에 선택한 리스트뷰에 위치
     private val viewBinderHelper = ViewBinderHelper()
-    private lateinit var alarmListener: AlarmListener
+    private lateinit var clickListener: ClickListener
 
-    inner class SpecialShoesListViewHolder(private val binding: ItemUpcomingListBinding) : RecyclerView.ViewHolder(binding.root) {
-        val swipeLayout = binding.swipeLayout
-
-        fun bindView(data: SpecialShoesDataModel?) {
-            binding.monthText.text = data?.SpecialMonth
-            binding.dayText.text = data?.SpecialDay
-            binding.categoryText.text = when (data?.ShoesCategory) {
-                ShoesDataModel.CATEGORY_DRAW -> "DRAW"
-                ShoesDataModel.CATEGORY_COMING_SOON -> "COMING"
-                else -> "DRAW"
-            }
-            binding.shoesTitleText.text = data?.ShoesTitle
-            binding.shoesSubtitleText.text = data?.ShoesSubTitle
-            binding.whenStartEventText.text = data?.SpecialWhenEvent
-            Glide.with(itemView.context).load(data?.ShoesImageUrl).into(binding.shoesImage)
-
-            if (data?.isOpened!!) { // 레이아웃 확장
-                if (binding.subLayout.visibility == View.GONE) {
-                    expand()
-                }
-            } else {
-                collapse()
-            }
-
-            binding.mainLayout.setOnClickListener {
-                currentList?.get(adapterPosition)?.isOpened =
-                    !currentList?.get(adapterPosition)!!.isOpened
-                Log.i("CheckList", "${data.isOpened}")
-
-                if (previousPosition != -1 && previousPosition != adapterPosition) { // 다른 리스트를 눌렀을 때
-                    currentList?.get(previousPosition)?.isOpened =
-                        !currentList?.get(previousPosition)!!.isOpened
-                    notifyItemChanged(previousPosition)
-                }
-
-                notifyItemChanged(adapterPosition)
-                previousPosition = if (previousPosition == adapterPosition) { // 같은 리스트를 눌렀을 때
-                    -1
-                } else { // 다른 리스트를 눌렀을 때
-                    adapterPosition
-                }
-            }
-
-            if (isChecked(data.ShoesUrl)) {
-                binding.alarmBtn.setImageResource(R.drawable.ic_baseline_notifications_active)
-
-                binding.alarmBtn.setOnClickListener {
-                    alarmListener.onAlarmListener(data, adapterPosition, true)
-                }
-            } else {
-                binding.alarmBtn.setImageResource(R.drawable.ic_baseline_notifications_none)
-
-                binding.alarmBtn.setOnClickListener {
-                    alarmListener.onAlarmListener(data, adapterPosition, false)
-                }
-            }
-        }
-
-        // 레이아웃 확장
-        private fun expand() {
-            expandAnimation()
-        }
-
-        // 레이아웃 축소
-        private fun collapse() {
-            collapseAnimation()
-        }
-
-        // 애니메이션 설정 시작
-        private fun expandAnimation() {
-            with(binding.moreInfoBtn) {
-                animate().setDuration(200)
-                    .rotation(-180f)
-                    .withLayer()
-            }
-
-            with(binding.subLayout) {
-                measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED)
-                val actualHeight = measuredHeight
-
-                layoutParams.height = 0
-                visibility = View.VISIBLE
-
-                val animation = object : Animation() {
-                    override fun applyTransformation(interpolatedTime: Float, t: Transformation?) {
-                        super.applyTransformation(interpolatedTime, t)
-
-                        layoutParams.height = if (interpolatedTime.toInt() == 1) {
-                            ViewGroup.LayoutParams.WRAP_CONTENT
-                        } else {
-                            (actualHeight * interpolatedTime).toInt()
-                        }
-                        requestLayout()
-                    }
-                }
-
-                animation.duration =
-                    (actualHeight / context.resources.displayMetrics.density).toLong()
-                startAnimation(animation)
-            }
-        }
-
-        private fun collapseAnimation() {
-            with(binding.moreInfoBtn) {
-                animate().setDuration(200)
-                    .rotation(0f)
-                    .withLayer()
-            }
-
-            with(binding.subLayout) {
-                val actualHeight = measuredHeight
-
-                val animation = object : Animation() {
-                    override fun applyTransformation(interpolatedTime: Float, t: Transformation?) {
-                        super.applyTransformation(interpolatedTime, t)
-
-                        if (interpolatedTime.toInt() == 1) {
-                            visibility = View.GONE
-                        } else {
-                            layoutParams.height =
-                                actualHeight - (actualHeight * interpolatedTime).toInt()
-                            requestLayout()
-                        }
-                    }
-                }
-
-                animation.duration =
-                    (actualHeight / context.resources.displayMetrics.density).toLong()
-                startAnimation(animation)
-            }
-        }
-        // 애니메이션 설정 끝
-
-        private fun isChecked(preferenceKey: String?): Boolean {
-            return allowAlarmPreferences.getBoolean(preferenceKey, false)
-        }
-    }
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SpecialShoesListViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): UpcomingItemViewHolder {
         val view =
             ItemUpcomingListBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return SpecialShoesListViewHolder(view)
+        return UpcomingItemViewHolder(view)
     }
 
-    override fun onBindViewHolder(holder: SpecialShoesListViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: UpcomingItemViewHolder, position: Int) {
         with(viewBinderHelper) {
             setOpenOnlyOne(true)
             bind(holder.swipeLayout, getItemId(position).toString())
         }
-        holder.bindView(getItem(position))
+        holder.bindView(getItem(position), clickListener, allowAlarmPreferences)
     }
 
     override fun getItemId(position: Int): Long {
         return currentList?.get(position)?.ShoesId?.toLong()!!
     }
 
-    fun setOnAlarmListener(_alarmListener: AlarmListener) {
-        alarmListener = _alarmListener
+    fun setOnAlarmListener(_clickListener: ClickListener) {
+        clickListener = _clickListener
     }
 
     fun changeCategory() {
