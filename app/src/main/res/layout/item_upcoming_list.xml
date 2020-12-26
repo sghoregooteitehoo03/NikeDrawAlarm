@@ -10,13 +10,11 @@
     android:layout_marginBottom="5dp">
 
     <LinearLayout
-        android:id="@+id/upcomingList_parentLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
         <FrameLayout
-            android:id="@+id/upcomingList_frameLayout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -24,7 +22,7 @@
             app:layout_constraintTop_toTopOf="parent">
 
             <ImageButton
-                android:id="@+id/upcomingList_moreInfo_imageButton"
+                android:id="@+id/more_info_btn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center|end"
@@ -33,7 +31,7 @@
                 android:src="@drawable/ic_arrow_down" />
 
             <com.chauthai.swipereveallayout.SwipeRevealLayout
-                android:id="@+id/upcomingList_swipeLayout"
+                android:id="@+id/swipe_layout"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 app:dragEdge="left"
@@ -44,7 +42,7 @@
                     android:layout_height="match_parent">
 
                     <ImageButton
-                        android:id="@+id/upcomingList_alarm_imageButton"
+                        android:id="@+id/alarm_btn"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
@@ -53,13 +51,13 @@
                 </FrameLayout>
 
                 <androidx.constraintlayout.widget.ConstraintLayout
-                    android:id="@+id/upcomingList_mainLayout"
+                    android:id="@+id/main_layout"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:background="?attr/selectableItemBackground">
 
                     <LinearLayout
-                        android:id="@+id/upcomingList_monthLayout"
+                        android:id="@+id/month_layout"
                         android:layout_width="94dp"
                         android:layout_height="94dp"
                         android:background="@color/colorPrimary"
@@ -69,7 +67,7 @@
                         app:layout_constraintTop_toTopOf="parent">
 
                         <TextView
-                            android:id="@+id/upcomingList_categoryText"
+                            android:id="@+id/category_text"
                             android:layout_width="match_parent"
                             android:layout_height="0dp"
                             android:layout_weight="1"
@@ -79,7 +77,7 @@
                             tools:text="COMING" />
 
                         <TextView
-                            android:id="@+id/upcomingList_monthText"
+                            android:id="@+id/month_text"
                             android:layout_width="match_parent"
                             android:layout_height="0dp"
                             android:layout_weight="2"
@@ -90,7 +88,7 @@
                             tools:text="9월" />
 
                         <TextView
-                            android:id="@+id/upcomingList_dayText"
+                            android:id="@+id/day_text"
                             android:layout_width="match_parent"
                             android:layout_height="0dp"
                             android:layout_weight="2"
@@ -102,25 +100,25 @@
                     </LinearLayout>
 
                     <LinearLayout
-                        android:id="@+id/upcomingList_informLayout"
+                        android:id="@+id/inform_layout"
                         android:layout_width="220dp"
                         android:layout_height="match_parent"
                         android:layout_marginStart="18dp"
                         android:gravity="center_vertical"
                         android:orientation="vertical"
                         app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintStart_toEndOf="@+id/upcomingList_monthLayout"
+                        app:layout_constraintStart_toEndOf="@id/month_layout"
                         app:layout_constraintTop_toTopOf="parent">
 
                         <TextView
-                            android:id="@+id/upcomingList_shoesTitle_text"
+                            android:id="@+id/shoes_title_text"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:textStyle="bold"
                             tools:text="덩크로우" />
 
                         <TextView
-                            android:id="@+id/upcomingList_shoesSubTitle_text"
+                            android:id="@+id/shoes_subtitle_text"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:ellipsize="end"
@@ -130,7 +128,7 @@
                             tools:text="COMMUNITY GARDEN" />
 
                         <TextView
-                            android:id="@+id/upcomingList_whenStartEvent_text"
+                            android:id="@+id/when_start_event_text"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="20dp"
@@ -143,14 +141,14 @@
         </FrameLayout>
 
         <FrameLayout
-            android:id="@+id/upcomingList_subLayout"
+            android:id="@+id/sub_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:visibility="gone"
             tools:visibility="visible">
 
             <ImageView
-                android:id="@+id/upcomingList_shoesImage_imageView"
+                android:id="@+id/shoes_image"
                 android:layout_width="match_parent"
                 android:layout_height="300dp"
                 android:scaleType="centerCrop"

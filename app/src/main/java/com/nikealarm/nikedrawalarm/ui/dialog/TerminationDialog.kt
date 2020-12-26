@@ -9,8 +9,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import com.nikealarm.nikedrawalarm.R
+import com.nikealarm.nikedrawalarm.databinding.DialogNotificationBinding
 import com.nikealarm.nikedrawalarm.ui.fragment.LoadingFragment
-import kotlinx.android.synthetic.main.dialog_notification.*
 
 class TerminationDialog : DialogFragment() {
 
@@ -28,7 +28,7 @@ class TerminationDialog : DialogFragment() {
         super.onViewCreated(view, savedInstanceState)
 
         // 뷰 설정
-        initView()
+        initView(view)
     }
 
     override fun onDismiss(dialog: DialogInterface) {
@@ -36,14 +36,16 @@ class TerminationDialog : DialogFragment() {
         super.onDismiss(dialog)
     }
 
-    private fun initView() {
-        notifyDialogFrag_titleText.text = "종료" // 타이틀
-        notifyDialogFrag_messageText.text = "정말 앱을 종료하시겠습니까?" // 내용
+    private fun initView(view: View) {
+        val binding = DialogNotificationBinding.bind(view)
 
-        notifyDialogFrag_checkButton.setOnClickListener {  // 확인
+        binding.titleText.text = "종료" // 타이틀
+        binding.messageText.text = "정말 앱을 종료하시겠습니까?" // 내용
+
+        binding.checkBtn.setOnClickListener {  // 확인
             activity?.finish()
         }
-        notifyDialogFrag_cancelButton.setOnClickListener { // 취소
+        binding.cancelBtn.setOnClickListener { // 취소
             dismiss()
         }
     }

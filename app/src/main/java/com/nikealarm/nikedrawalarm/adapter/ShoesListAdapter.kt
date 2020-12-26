@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.database.ShoesDataModel
+import com.nikealarm.nikedrawalarm.databinding.ItemShoesListBinding
 
 class ShoesListAdapter(
     private val mContext: Context
@@ -22,13 +23,9 @@ class ShoesListAdapter(
     ) {
 
     private lateinit var itemListener: ItemClickListener
-    private lateinit var imageListener: ImageClickListener
 
     interface ItemClickListener {
         fun onClickItem(newUrl: String?)
-    }
-
-    interface ImageClickListener {
         fun onClickImage(newUrl: String, shoesImageUrl: String, imageView: ImageView)
     }
 
@@ -36,13 +33,9 @@ class ShoesListAdapter(
         itemListener = listener
     }
 
-    fun setOnImageClickListener(listener: ImageClickListener) {
-        imageListener = listener
-    }
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DrawListViewHolder {
         val view =
-            LayoutInflater.from(parent.context).inflate(R.layout.shoes_listitem, parent, false)
+            ItemShoesListBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return DrawListViewHolder(view)
     }
 
@@ -50,36 +43,32 @@ class ShoesListAdapter(
         holder.bindView(getItem(position))
     }
 
-    inner class DrawListViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val shoesImage = itemView.findViewById<ImageView>(R.id.drawList_imgItem)
-        val shoesSubTitleText = itemView.findViewById<TextView>(R.id.drawList_shoesSubTitle_text)
-        val shoesTitleText = itemView.findViewById<TextView>(R.id.drawList_shoesTitle_text)
-        val howToEventText = itemView.findViewById<TextView>(R.id.drawList_howToEvent_text)
-        val learnMoreText = itemView.findViewById<TextView>(R.id.drawList_learnMore_text)
+    inner class DrawListViewHolder(private val binding: ItemShoesListBinding) :
+        RecyclerView.ViewHolder(binding.root) {
 
         fun bindView(data: ShoesDataModel?) {
-            with(shoesImage) {
+            with(binding.shoesImage) {
                 Glide.with(mContext).load(data?.shoesImageUrl).into(this)
                 transitionName = data?.shoesUrl
 
                 setOnClickListener {
-                    imageListener.onClickImage(
+                    itemListener.onClickImage(
                         data?.shoesUrl!!,
                         data.shoesImageUrl!!,
-                        shoesImage
+                        this
                     )
                 }
             }
-            shoesSubTitleText.text = data?.shoesSubTitle
-            shoesTitleText.text = data?.shoesTitle
-            howToEventText.text = data?.shoesPrice
-            if(data?.shoesPrice == ShoesDataModel.SHOES_SOLD_OUT) {
-                howToEventText.setTextColor(Color.RED)
+            binding.shoesSubtitleText.text = data?.shoesSubTitle
+            binding.shoesTitleText.text = data?.shoesTitle
+            binding.shoesHowToEventText.text = data?.shoesPrice
+            if (data?.shoesPrice == ShoesDataModel.SHOES_SOLD_OUT) {
+                binding.shoesHowToEventText.setTextColor(Color.RED)
             } else {
-                howToEventText.setTextColor(Color.BLACK)
+                binding.shoesHowToEventText.setTextColor(Color.BLACK)
             }
 
-            learnMoreText.setOnClickListener {
+            binding.learnMoreText.setOnClickListener {
                 itemListener.onClickItem(data?.shoesUrl)
             }
         }

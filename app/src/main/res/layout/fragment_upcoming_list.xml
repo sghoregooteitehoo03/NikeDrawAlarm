@@ -6,7 +6,7 @@
     android:layout_height="match_parent">
 
     <androidx.appcompat.widget.Toolbar
-        android:id="@+id/upcomingFrag_toolbar"
+        android:id="@+id/main_toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:background="@color/colorPrimary"
@@ -19,7 +19,7 @@
         app:title="UPCOMING">
 
         <Spinner
-            android:id="@+id/upcomingFrag_spinner"
+            android:id="@+id/filter_spinner"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="end"
@@ -28,7 +28,7 @@
     </androidx.appcompat.widget.Toolbar>
 
     <TextView
-        android:id="@+id/upcomingFrag_noitemText"
+        android:id="@+id/no_item_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:alpha="0"
@@ -39,16 +39,16 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/upcomingFrag_toolbar" />
+        app:layout_constraintTop_toBottomOf="@id/main_toolbar" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/upcomingFrag_list"
+        android:id="@+id/upcoming_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginTop="?attr/actionBarSize"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/upcomingFrag_toolbar"
-        tools:listitem="@layout/upcoming_listitem" />
+        app:layout_constraintTop_toBottomOf="@id/main_toolbar"
+        tools:listitem="@layout/item_upcoming_list" />
 </androidx.constraintlayout.widget.ConstraintLayout>

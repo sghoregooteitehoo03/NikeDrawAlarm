@@ -6,12 +6,12 @@ import android.content.Intent
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import androidx.navigation.fragment.findNavController
+import android.view.View
+import androidx.navigation.findNavController
 import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.other.Contents
 import com.nikealarm.nikedrawalarm.other.CustomTabsBuilder
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.activity_main.*
 
 /*
 * adb shell dumpsys alarm (알림 체크)
@@ -52,7 +52,7 @@ class MainActivity : AppCompatActivity() {
             Contents.INTENT_ACTION_GOTO_DRAWLIST -> {
                 setIntent(intent)
                 cancelNotification()
-                nav_host_fragment.findNavController().navigate(R.id.action_global_drawListFragment)
+                findViewById<View>(R.id.nav_host_fragment).findNavController().navigate(R.id.action_global_drawListFragment)
             }
         }
     }

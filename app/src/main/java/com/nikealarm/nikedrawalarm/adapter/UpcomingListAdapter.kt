@@ -22,6 +22,7 @@ import com.chauthai.swipereveallayout.ViewBinderHelper
 import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.database.ShoesDataModel
 import com.nikealarm.nikedrawalarm.database.SpecialShoesDataModel
+import com.nikealarm.nikedrawalarm.databinding.ItemUpcomingListBinding
 
 class UpcomingListAdapter(
     private val context: Context,
@@ -39,48 +40,31 @@ class UpcomingListAdapter(
     private val viewBinderHelper = ViewBinderHelper()
     private lateinit var alarmListener: AlarmListener
 
-    inner class SpecialShoesListViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val monthText = itemView.findViewById<TextView>(R.id.upcomingList_monthText)
-        val dayText = itemView.findViewById<TextView>(R.id.upcomingList_dayText)
-        val categoryText = itemView.findViewById<TextView>(R.id.upcomingList_categoryText)
-        val shoesTitleText = itemView.findViewById<TextView>(R.id.upcomingList_shoesTitle_text)
-        val shoesSubTitleText =
-            itemView.findViewById<TextView>(R.id.upcomingList_shoesSubTitle_text)
-        val whenStartEventText =
-            itemView.findViewById<TextView>(R.id.upcomingList_whenStartEvent_text)
-        val shoesImageView =
-            itemView.findViewById<ImageView>(R.id.upcomingList_shoesImage_imageView)
-        val alarmImageButton =
-            itemView.findViewById<ImageButton>(R.id.upcomingList_alarm_imageButton)
-        val moreInfoButton =
-            itemView.findViewById<ImageButton>(R.id.upcomingList_moreInfo_imageButton)
-
-        val mainLayout = itemView.findViewById<ConstraintLayout>(R.id.upcomingList_mainLayout)
-        val subLayout = itemView.findViewById<FrameLayout>(R.id.upcomingList_subLayout)
-        val swipeLayout = itemView.findViewById<SwipeRevealLayout>(R.id.upcomingList_swipeLayout)
+    inner class SpecialShoesListViewHolder(private val binding: ItemUpcomingListBinding) : RecyclerView.ViewHolder(binding.root) {
+        val swipeLayout = binding.swipeLayout
 
         fun bindView(data: SpecialShoesDataModel?) {
-            monthText.text = data?.SpecialMonth
-            dayText.text = data?.SpecialDay
-            categoryText.text = when (data?.ShoesCategory) {
+            binding.monthText.text = data?.SpecialMonth
+            binding.dayText.text = data?.SpecialDay
+            binding.categoryText.text = when (data?.ShoesCategory) {
                 ShoesDataModel.CATEGORY_DRAW -> "DRAW"
                 ShoesDataModel.CATEGORY_COMING_SOON -> "COMING"
                 else -> "DRAW"
             }
-            shoesTitleText.text = data?.ShoesTitle
-            shoesSubTitleText.text = data?.ShoesSubTitle
-            whenStartEventText.text = data?.SpecialWhenEvent
-            Glide.with(itemView.context).load(data?.ShoesImageUrl).into(shoesImageView)
+            binding.shoesTitleText.text = data?.ShoesTitle
+            binding.shoesSubtitleText.text = data?.ShoesSubTitle
+            binding.whenStartEventText.text = data?.SpecialWhenEvent
+            Glide.with(itemView.context).load(data?.ShoesImageUrl).into(binding.shoesImage)
 
             if (data?.isOpened!!) { // 레이아웃 확장
-                if (subLayout.visibility == View.GONE) {
+                if (binding.subLayout.visibility == View.GONE) {
                     expand()
                 }
             } else {
                 collapse()
             }
 
-            mainLayout.setOnClickListener {
+            binding.mainLayout.setOnClickListener {
                 currentList?.get(adapterPosition)?.isOpened =
                     !currentList?.get(adapterPosition)!!.isOpened
                 Log.i("CheckList", "${data.isOpened}")
@@ -100,15 +84,15 @@ class UpcomingListAdapter(
             }
 
             if (isChecked(data.ShoesUrl)) {
-                alarmImageButton.setImageResource(R.drawable.ic_baseline_notifications_active)
+                binding.alarmBtn.setImageResource(R.drawable.ic_baseline_notifications_active)
 
-                alarmImageButton.setOnClickListener {
+                binding.alarmBtn.setOnClickListener {
                     alarmListener.onAlarmListener(data, adapterPosition, true)
                 }
             } else {
-                alarmImageButton.setImageResource(R.drawable.ic_baseline_notifications_none)
+                binding.alarmBtn.setImageResource(R.drawable.ic_baseline_notifications_none)
 
-                alarmImageButton.setOnClickListener {
+                binding.alarmBtn.setOnClickListener {
                     alarmListener.onAlarmListener(data, adapterPosition, false)
                 }
             }
@@ -126,13 +110,13 @@ class UpcomingListAdapter(
 
         // 애니메이션 설정 시작
         private fun expandAnimation() {
-            with(moreInfoButton) {
+            with(binding.moreInfoBtn) {
                 animate().setDuration(200)
                     .rotation(-180f)
                     .withLayer()
             }
 
-            with(subLayout) {
+            with(binding.subLayout) {
                 measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED)
                 val actualHeight = measuredHeight
 
@@ -159,13 +143,13 @@ class UpcomingListAdapter(
         }
 
         private fun collapseAnimation() {
-            with(moreInfoButton) {
+            with(binding.moreInfoBtn) {
                 animate().setDuration(200)
                     .rotation(0f)
                     .withLayer()
             }
 
-            with(subLayout) {
+            with(binding.subLayout) {
                 val actualHeight = measuredHeight
 
                 val animation = object : Animation() {
@@ -196,7 +180,7 @@ class UpcomingListAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SpecialShoesListViewHolder {
         val view =
-            LayoutInflater.from(parent.context).inflate(R.layout.upcoming_listitem, parent, false)
+            ItemUpcomingListBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return SpecialShoesListViewHolder(view)
     }
 

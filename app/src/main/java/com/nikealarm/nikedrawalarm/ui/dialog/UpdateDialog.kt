@@ -9,7 +9,7 @@ import android.view.ViewGroup
 import androidx.core.view.marginLeft
 import androidx.fragment.app.DialogFragment
 import com.nikealarm.nikedrawalarm.R
-import kotlinx.android.synthetic.main.dialog_notification.*
+import com.nikealarm.nikedrawalarm.databinding.DialogNotificationBinding
 
 class UpdateDialog : DialogFragment() {
 
@@ -26,19 +26,21 @@ class UpdateDialog : DialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        initView()
+        initView(view)
     }
 
-    private fun initView() {
-        notifyDialogFrag_titleText.text = "업데이트"
-        with(notifyDialogFrag_messageText) {
+    private fun initView(view: View) {
+        val binding = DialogNotificationBinding.bind(view)
+
+        binding.titleText.text = "업데이트"
+        with(binding.messageText) {
             text =
                 "- 자동응모 방식 변경\n( UPCOMING에서 DRAW 상품을 알림 설정해놓으시면 응모 당일 날 자동으로 응모가 진행됩니다. )"
             textSize = 18f
             setPadding(12, 0, 12, 0)
         }
-        notifyDialogFrag_cancelButton.visibility = View.GONE
-        notifyDialogFrag_checkButton.setOnClickListener {
+        binding.cancelBtn.visibility = View.GONE
+        binding.checkBtn.setOnClickListener {
             dismiss()
         }
     }

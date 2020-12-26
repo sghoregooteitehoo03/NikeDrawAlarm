@@ -9,7 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import com.nikealarm.nikedrawalarm.R
-import kotlinx.android.synthetic.main.dialog_notification.*
+import com.nikealarm.nikedrawalarm.databinding.DialogNotificationBinding
 
 class AlarmDialog : DialogFragment() {
 
@@ -51,13 +51,19 @@ class AlarmDialog : DialogFragment() {
         super.onViewCreated(view, savedInstanceState)
 
         // 뷰 설정
-        notifyDialogFrag_titleText.text = title
-        notifyDialogFrag_messageText.text = message
+        initView(view)
+    }
 
-        notifyDialogFrag_cancelButton.setOnClickListener {
+    private fun initView(view: View) {
+        val binding = DialogNotificationBinding.bind(view)
+
+        binding.titleText.text = title
+        binding.messageText.text = message
+
+        binding.cancelBtn.setOnClickListener {
             dialog?.dismiss()
         }
-        notifyDialogFrag_checkButton.setOnClickListener {
+        binding.checkBtn.setOnClickListener {
             mListener.onCheckClickListener(requireDialog())
         }
     }

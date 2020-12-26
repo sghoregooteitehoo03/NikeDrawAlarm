@@ -19,6 +19,7 @@ import android.widget.ArrayAdapter
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
@@ -30,20 +31,21 @@ import com.nikealarm.nikedrawalarm.component.MyAlarmReceiver
 import com.nikealarm.nikedrawalarm.database.EventDay
 import com.nikealarm.nikedrawalarm.database.ShoesDataModel
 import com.nikealarm.nikedrawalarm.database.SpecialShoesDataModel
+import com.nikealarm.nikedrawalarm.databinding.FragmentUpcomingListBinding
 import com.nikealarm.nikedrawalarm.other.Contents
 import com.nikealarm.nikedrawalarm.ui.MainActivity
 import com.nikealarm.nikedrawalarm.ui.dialog.AlarmDialog
 import com.nikealarm.nikedrawalarm.viewmodel.MyViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_upcoming_list.*
 import java.util.*
 import javax.inject.Inject
 import javax.inject.Named
 
 @AndroidEntryPoint
 class UpcomingListFragment : Fragment(), UpcomingListAdapter.AlarmListener {
-    private lateinit var mViewModel: MyViewModel
+    private val mViewModel by activityViewModels<MyViewModel>()
     private lateinit var mAdapter: UpcomingListAdapter
+    private var fragmentBinding: FragmentUpcomingListBinding? = null
 
     @Inject
     @Named(Contents.PREFERENCE_NAME_TIME)
@@ -67,39 +69,60 @@ class UpcomingListFragment : Fragment(), UpcomingListAdapter.AlarmListener {
         super.onViewCreated(view, savedInstanceState)
 
         // 인스턴스 설정
-        mViewModel = ViewModelProvider(this)[MyViewModel::class.java]
         mAdapter = UpcomingListAdapter(requireContext(), allowAlarmPreferences).apply {
             setHasStableIds(true)
             setOnAlarmListener(this@UpcomingListFragment)
         }
-        val spinnerAdapter = ArrayAdapter<String>(
-            requireContext(),
-            android.R.layout.simple_spinner_dropdown_item,
-            listOf("DEFAULT", "DRAW", "COMING")
-        )
 
         // 옵저버 설정
-        mViewModel.specialShoesList.observe(viewLifecycleOwner, Observer {
-            with(mAdapter) {
-                submitList(it)
-                notifyDataSetChanged()
-            }
-
-            if (it.size == 0) {
-                appearText()
-            } else {
-                if (upcomingFrag_noitemText.isEnabled) {
-                    disappearText()
-                }
-            }
-        })
-
+        setObserver()
         // 뷰 설정
-        with(upcomingFrag_toolbar) {  // 툴바
+        initView(view)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            android.R.id.home -> {
+                findNavController().navigateUp()
+                true
+            }
+            else -> false
+        }
+    }
+
+    override fun onAlarmListener(
+        specialShoesData: SpecialShoesDataModel?,
+        pos: Int,
+        isChecked: Boolean
+    ) {
+        if (isChecked) { // 알림이 설정 되어있을 때
+            removeNotification(specialShoesData!!, pos)
+        } else { // 알림이 설정 되어있지 않을 때6
+            setNotification(specialShoesData!!, pos)
+        }
+    }
+
+    override fun onDestroy() {
+        fragmentBinding = null
+        mViewModel.upcomingCategory.value = "DEFAULT"
+        super.onDestroy()
+    }
+
+    private fun initView(view: View) { // 뷰 설정
+        val binding = FragmentUpcomingListBinding.bind(view)
+        fragmentBinding = binding
+
+        with(binding.mainToolbar) {  // 툴바
             (requireActivity() as MainActivity).setSupportActionBar(this)
             (requireActivity() as MainActivity).supportActionBar?.setDisplayHomeAsUpEnabled(true)
         }
-        with(upcomingFrag_spinner) { // 스피너
+        with(binding.filterSpinner) { // 스피너
+            val spinnerAdapter = ArrayAdapter<String>(
+                requireContext(),
+                android.R.layout.simple_spinner_dropdown_item,
+                listOf("DEFAULT", "DRAW", "COMING")
+            )
+
             adapter = spinnerAdapter
             onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
                 override fun onItemSelected(
@@ -127,7 +150,7 @@ class UpcomingListFragment : Fragment(), UpcomingListAdapter.AlarmListener {
                 }
             }
         }
-        with(upcomingFrag_list) { // 리사이클
+        with(binding.upcomingList) { // 리사이클
             adapter = mAdapter
             layoutManager = LinearLayoutManager(requireContext())
             setHasFixedSize(true)
@@ -135,31 +158,21 @@ class UpcomingListFragment : Fragment(), UpcomingListAdapter.AlarmListener {
         }
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            android.R.id.home -> {
-                findNavController().navigateUp()
-                true
+    private fun setObserver() {
+        mViewModel.specialShoesList.observe(viewLifecycleOwner, Observer {
+            with(mAdapter) {
+                submitList(it)
+                notifyDataSetChanged()
             }
-            else -> false
-        }
-    }
 
-    override fun onAlarmListener(
-        specialShoesData: SpecialShoesDataModel?,
-        pos: Int,
-        isChecked: Boolean
-    ) {
-        if (isChecked) { // 알림이 설정 되어있을 때
-            removeNotification(specialShoesData!!, pos)
-        } else { // 알림이 설정 되어있지 않을 때6
-            setNotification(specialShoesData!!, pos)
-        }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        mViewModel.upcomingCategory.value = "DEFAULT"
+            if (it.size == 0) {
+                appearText()
+            } else {
+                if (fragmentBinding?.noItemText?.isEnabled!!) {
+                    disappearText()
+                }
+            }
+        })
     }
 
     // 알람 시작
@@ -218,7 +231,7 @@ class UpcomingListFragment : Fragment(), UpcomingListAdapter.AlarmListener {
             action = Contents.INTENT_ACTION_PRODUCT_ALARM
             putExtra(Contents.INTENT_KEY_POSITION, specialShoesData.ShoesUrl)
 
-            if(specialShoesData.ShoesCategory == ShoesDataModel.CATEGORY_DRAW) {
+            if (specialShoesData.ShoesCategory == ShoesDataModel.CATEGORY_DRAW) {
                 putExtra(Contents.INTENT_KEY_IS_DRAW, true)
             }
         }
@@ -252,7 +265,7 @@ class UpcomingListFragment : Fragment(), UpcomingListAdapter.AlarmListener {
             action = Contents.INTENT_ACTION_PRODUCT_ALARM
             putExtra(Contents.INTENT_KEY_POSITION, specialShoesData.ShoesUrl)
 
-            if(specialShoesData.ShoesCategory == ShoesDataModel.CATEGORY_DRAW) {
+            if (specialShoesData.ShoesCategory == ShoesDataModel.CATEGORY_DRAW) {
                 putExtra(Contents.INTENT_KEY_IS_DRAW, true)
             }
         }
@@ -356,7 +369,7 @@ class UpcomingListFragment : Fragment(), UpcomingListAdapter.AlarmListener {
 
     // 애니메이션 설정 시작
     private fun appearText() {
-        with(upcomingFrag_noitemText) {
+        with(fragmentBinding?.noItemText!!) {
             isEnabled = true
 
             animate().setDuration(350)
@@ -366,7 +379,7 @@ class UpcomingListFragment : Fragment(), UpcomingListAdapter.AlarmListener {
     }
 
     private fun disappearText() {
-        with(upcomingFrag_noitemText) {
+        with(fragmentBinding?.noItemText!!) {
             isEnabled = false
 
             animate().setDuration(100)

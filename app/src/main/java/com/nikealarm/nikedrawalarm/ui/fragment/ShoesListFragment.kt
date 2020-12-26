@@ -16,6 +16,7 @@ import androidx.core.view.GravityCompat
 import androidx.core.view.doOnPreDraw
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.navigation.fragment.findNavController
@@ -26,12 +27,12 @@ import com.nikealarm.nikedrawalarm.BuildConfig
 import com.nikealarm.nikedrawalarm.adapter.ShoesListAdapter
 import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.database.ShoesDataModel
+import com.nikealarm.nikedrawalarm.databinding.FragmentShoesListBinding
 import com.nikealarm.nikedrawalarm.other.Contents
 import com.nikealarm.nikedrawalarm.other.CustomTabsBuilder
 import com.nikealarm.nikedrawalarm.ui.MainActivity
 import com.nikealarm.nikedrawalarm.viewmodel.MyViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_shoes_list.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -40,122 +41,52 @@ import javax.inject.Inject
 import javax.inject.Named
 
 @AndroidEntryPoint
-class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
-    NavigationView.OnNavigationItemSelectedListener, ShoesListAdapter.ImageClickListener {
+class ShoesListFragment : Fragment(R.layout.fragment_shoes_list),
+    ShoesListAdapter.ItemClickListener,
+    NavigationView.OnNavigationItemSelectedListener {
     @Inject
     @Named(Contents.PREFERENCE_NAME_UPDATE)
     lateinit var updatePref: SharedPreferences
 
-    private lateinit var drawer: DrawerLayout
     private lateinit var backToast: Toast
+    private var fragmentBinding: FragmentShoesListBinding? = null
+    private lateinit var shoesAdapter: ShoesListAdapter
+    private val mViewModel by activityViewModels<MyViewModel>()
 
-    private lateinit var mViewModel: MyViewModel
     private val FINISH_INTERVAL_TIME = 2000L
     private var backPressedTime = 0L
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
         activity?.onBackPressedDispatcher?.addCallback(backPressedCallback)
-        return inflater.inflate(R.layout.fragment_shoes_list, container, false)
     }
 
     // 시작
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // 툴바 설정
-        val mToolbar = view.findViewById<Toolbar>(R.id.drawListFrag_toolbar).apply {
-            (activity as MainActivity).setSupportActionBar(this)
-        }
-
         // 인스턴스 설정
-        mViewModel = ViewModelProvider(requireActivity())[MyViewModel::class.java]
-
-        val mAdapter = ShoesListAdapter(
+        shoesAdapter = ShoesListAdapter(
             requireContext()
         ).apply {
             setOnItemClickListener(this@ShoesListFragment)
-            setOnImageClickListener(this@ShoesListFragment)
         }
 
+        // 뷰 초기화
+        initView(view)
         // 옵저버 설정
-        mViewModel.shoesCategory.observe(viewLifecycleOwner, {
-            mToolbar.title = it
-
-            if (drawListFrag_scrollUp_Button.isEnabled) {
-                disappearButton()
-            }
-        })
-        mViewModel.shoesList.observe(viewLifecycleOwner, {
-            mAdapter.submitList(it)
-            if (it.size == 0) {
-                appearText()
-            } else {
-                if (drawListFrag_noItem_text.isEnabled) {
-                    disappearText()
-                }
-            }
-        })
-
-        // id 설정
-        val listView = view.findViewById<RecyclerView>(R.id.drawListFrag_listView).apply {
-            setHasFixedSize(true)
-            layoutManager = LinearLayoutManager(context)
-            adapter = mAdapter
-
-            addOnScrollListener(object : RecyclerView.OnScrollListener() {
-                override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
-                    super.onScrollStateChanged(recyclerView, newState)
-
-                    if (recyclerView.computeVerticalScrollOffset() == 0) {
-                        disappearButton()
-                    } else {
-                        appearButton()
-                    }
-                }
-            })
-        }
-        with(drawListFrag_scrollUp_Button) {
-            isEnabled = false
-            setOnClickListener {
-                listView.smoothScrollToPosition(0)
-            }
-        }
-        val navView = view.findViewById<NavigationView>(R.id.drawListFrag_navView).apply {
-            setCheckedItem(R.id.mainMenu_released)
-            setNavigationItemSelectedListener(this@ShoesListFragment)
-        }
-        drawer = view.findViewById(R.id.drawListFrag_drawer)
-
-        // navigation 설정
-        val toggle = ActionBarDrawerToggle(
-            requireActivity(),
-            drawer,
-            mToolbar,
-            R.string.open_drawer,
-            R.string.close_drawer
-        )
-        drawer.addDrawerListener(toggle)
-        toggle.syncState()
-
-        postponeEnterTransition()
-        listView.doOnPreDraw {
-            startPostponedEnterTransition()
-        }
-
+        setObserver()
+        // 업데이트 보여주기
         showUpdate()
     }
 
     override fun onClickItem(newUrl: String?) {
         val builder = CustomTabsBuilder().getBuilder()
         with(builder) {
-            ResourcesCompat.getDrawable(resources, R.drawable.ic_back, null)?.toBitmap()?.let { bitmap ->
-                setCloseButtonIcon(bitmap)
-            }
+            ResourcesCompat.getDrawable(resources, R.drawable.ic_back, null)?.toBitmap()
+                ?.let { bitmap ->
+                    setCloseButtonIcon(bitmap)
+                }
 
             build().launchUrl(requireContext(), Uri.parse(newUrl!!))
         }
@@ -176,7 +107,7 @@ class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
     }
 
     override fun onNavigationItemSelected(menuItem: MenuItem): Boolean {
-        drawer.closeDrawer(GravityCompat.START)
+        fragmentBinding?.drawer?.closeDrawer(GravityCompat.START)
 
         return when (menuItem.itemId) {
             R.id.mainMenu_draw -> {
@@ -216,8 +147,89 @@ class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
     }
 
     override fun onDestroyView() {
-        super.onDestroyView()
+        fragmentBinding = null
         backPressedCallback.isEnabled = false
+        super.onDestroyView()
+    }
+
+    private fun initView(view: View) { // 뷰 설정
+        val binding = FragmentShoesListBinding.bind(view)
+        fragmentBinding = binding
+
+        // 툴바 설정
+        with(binding.mainToolbar) {
+            (activity as MainActivity).setSupportActionBar(this)
+        }
+
+        // 리스트 설정
+        with(binding.shoesList) {
+            setHasFixedSize(true)
+            layoutManager = LinearLayoutManager(context)
+            adapter = shoesAdapter
+
+            addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                    super.onScrollStateChanged(recyclerView, newState)
+
+                    if (recyclerView.computeVerticalScrollOffset() == 0) {
+                        disappearButton()
+                    } else {
+                        appearButton()
+                    }
+                }
+            })
+        }
+        // 스크롤 업 버튼
+        with(binding.scrollUpBtn) {
+            isEnabled = false
+
+            setOnClickListener {
+                binding.shoesList.smoothScrollToPosition(0)
+            }
+        }
+        // Navigation view
+        with(binding.navView) {
+            setCheckedItem(R.id.mainMenu_released)
+            setNavigationItemSelectedListener(this@ShoesListFragment)
+        }
+        // Drawer 설정
+        with(binding.drawer) {
+            val toggle = ActionBarDrawerToggle(
+                requireActivity(),
+                this,
+                binding.mainToolbar,
+                R.string.open_drawer,
+                R.string.close_drawer
+            )
+
+            addDrawerListener(toggle)
+            toggle.syncState()
+        }
+
+        postponeEnterTransition()
+        binding.shoesList.doOnPreDraw {
+            startPostponedEnterTransition()
+        }
+    }
+
+    private fun setObserver() { // 옵저버 설정
+        mViewModel.shoesCategory.observe(viewLifecycleOwner, {
+            fragmentBinding?.mainToolbar?.title = it
+
+            if (fragmentBinding?.scrollUpBtn!!.isEnabled) {
+                disappearButton()
+            }
+        })
+        mViewModel.shoesList.observe(viewLifecycleOwner, {
+            shoesAdapter.submitList(it)
+            if (it.size == 0) {
+                appearText()
+            } else {
+                if (fragmentBinding?.noItemText!!.isEnabled) {
+                    disappearText()
+                }
+            }
+        })
     }
 
     private fun setToolbarTitle(shoesCategory: String) {
@@ -227,8 +239,8 @@ class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
     private val backPressedCallback = object : OnBackPressedCallback(true) {
 
         override fun handleOnBackPressed() {
-            if (drawer.isDrawerOpen(GravityCompat.START)) {
-                drawer.closeDrawer(GravityCompat.START)
+            if (fragmentBinding?.drawer!!.isDrawerOpen(GravityCompat.START)) {
+                fragmentBinding?.drawer?.closeDrawer(GravityCompat.START)
             } else {
                 val tempTime = System.currentTimeMillis()
                 val intervalTime = tempTime - backPressedTime
@@ -253,8 +265,13 @@ class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
     private fun showUpdate() { // 업데이트 내용 보여줌
         val isFirst = updatePref.getBoolean(BuildConfig.VERSION_CODE.toString(), true)
 
-        if(isFirst) {
-            with(requireContext().getSharedPreferences(Contents.PREFERENCE_NAME_AUTO_ENTER, Context.MODE_PRIVATE).edit()) {
+        if (isFirst) {
+            with(
+                requireContext().getSharedPreferences(
+                    Contents.PREFERENCE_NAME_AUTO_ENTER,
+                    Context.MODE_PRIVATE
+                ).edit()
+            ) {
                 clear()
                 commit()
             }
@@ -270,7 +287,7 @@ class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
 
     // 애니메이션 설정
     private fun appearText() {
-        with(drawListFrag_noItem_text) {
+        with(fragmentBinding?.noItemText!!) {
             isEnabled = true
 
             animate().setDuration(350)
@@ -280,7 +297,7 @@ class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
     }
 
     private fun disappearText() {
-        with(drawListFrag_noItem_text) {
+        with(fragmentBinding?.noItemText!!) {
             isEnabled = false
 
             animate().setDuration(100)
@@ -290,7 +307,7 @@ class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
     }
 
     private fun appearButton() {
-        with(drawListFrag_scrollUp_Button) {
+        with(fragmentBinding?.scrollUpBtn!!) {
             isEnabled = true
             animate().setDuration(100)
                 .alpha(1f)
@@ -299,7 +316,7 @@ class ShoesListFragment : Fragment(), ShoesListAdapter.ItemClickListener,
     }
 
     private fun disappearButton() {
-        with(drawListFrag_scrollUp_Button) {
+        with(fragmentBinding?.scrollUpBtn!!) {
             isEnabled = false
             animate().setDuration(100)
                 .alpha(0f)

@@ -9,6 +9,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.preference.Preference
@@ -27,7 +28,7 @@ import javax.inject.Named
 @AndroidEntryPoint
 class SettingScreenPreference : PreferenceFragmentCompat() {
     private lateinit var mAlarmManager: AlarmManager
-    private lateinit var mViewModel: MyViewModel
+    private val mViewModel by activityViewModels<MyViewModel>()
 
     @Inject
     @Named(Contents.PREFERENCE_NAME_TIME)
@@ -42,7 +43,6 @@ class SettingScreenPreference : PreferenceFragmentCompat() {
 
         // 인스턴스 설정
         mAlarmManager = context?.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        mViewModel = ViewModelProvider(requireActivity())[MyViewModel::class.java]
 
         mViewModel.allowAutoEnter.value = autoEnterPreference.getBoolean(Contents.AUTO_ENTER_ALLOW, false)
 
