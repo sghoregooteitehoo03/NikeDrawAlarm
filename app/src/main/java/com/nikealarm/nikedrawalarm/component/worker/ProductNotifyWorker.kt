@@ -20,6 +20,7 @@ import com.nikealarm.nikedrawalarm.database.Dao
 import com.nikealarm.nikedrawalarm.database.ShoesDataModel
 import com.nikealarm.nikedrawalarm.database.SpecialShoesDataModel
 import com.nikealarm.nikedrawalarm.other.Contents
+import com.nikealarm.nikedrawalarm.other.NotificationBuilder
 import com.nikealarm.nikedrawalarm.ui.MainActivity
 import com.squareup.picasso.Picasso
 import javax.inject.Named
@@ -59,13 +60,6 @@ class ProductNotifyWorker @WorkerInject constructor(
         shoesData: SpecialShoesDataModel,
         channelId: Int
     ) {
-        val vibrate = LongArray(4).apply {
-            set(0, 0)
-            set(1, 100)
-            set(2, 200)
-            set(3, 300)
-        }
-
         val goEventPendingIntent = PendingIntent.getActivity(
             applicationContext,
             channelId,
@@ -77,41 +71,18 @@ class ProductNotifyWorker @WorkerInject constructor(
             PendingIntent.FLAG_ONE_SHOT
         )
         val bitmap = Picasso.get().load(shoesData.ShoesImageUrl).get()
-        val notificationBuilder = NotificationCompat.Builder(applicationContext, Contents.CHANNEL_ID_SHOES)
-            .setSmallIcon(R.mipmap.ic_launcher)
-            .setContentTitle("${shoesData.ShoesSubTitle} - ${shoesData.ShoesTitle}")
-            .setVibrate(vibrate)
-            .setLargeIcon(bitmap)
-            .setStyle(NotificationCompat.BigTextStyle())
-            .setStyle(
-                NotificationCompat.BigPictureStyle()
-                    .bigPicture(bitmap)
-                    .bigLargeIcon(null)
+
+        with(NotificationBuilder(applicationContext, Contents.CHANNEL_ID_SHOES, "상품 알림")) {
+            imageNotification(
+                "해당 상품이 출시되었습니다.",
+                "${shoesData.ShoesSubTitle} - ${shoesData.ShoesTitle}",
+                bitmap,
+                true
             )
-            .setContentText("해당 상품이 출시되었습니다.")
-            .addAction(0, "바로가기", goEventPendingIntent)
+            addActions(arrayOf("바로가기"), arrayOf(goEventPendingIntent))
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            createChannel()
+            buildNotify(channelId)
         }
-
-
-        with(NotificationManagerCompat.from(applicationContext)) {
-            notify(channelId, notificationBuilder.build())
-        }
-    }
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    private fun createChannel() {
-        val channel = NotificationChannel(
-            Contents.CHANNEL_ID_SHOES,
-            "상품 알림",
-            NotificationManager.IMPORTANCE_DEFAULT
-        )
-        val notificationManager =
-            applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-
-        notificationManager.createNotificationChannel(channel)
     }
 
     // 데이터를 지움

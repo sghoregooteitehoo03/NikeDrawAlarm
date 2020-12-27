@@ -1,20 +1,17 @@
 package com.nikealarm.nikedrawalarm.component.worker
 
-import android.app.AlarmManager
-import android.app.PendingIntent
 import android.content.Context
-import android.content.Intent
 import android.content.SharedPreferences
-import android.os.Build
+import android.os.Bundle
 import android.util.Log
 import androidx.hilt.Assisted
 import androidx.hilt.work.WorkerInject
 import androidx.work.Worker
 import androidx.work.WorkerParameters
-import com.nikealarm.nikedrawalarm.component.MyAlarmReceiver
 import com.nikealarm.nikedrawalarm.database.Dao
-import com.nikealarm.nikedrawalarm.database.MyDataBase
+import com.nikealarm.nikedrawalarm.database.ShoesDataModel
 import com.nikealarm.nikedrawalarm.database.SpecialShoesDataModel
+import com.nikealarm.nikedrawalarm.other.AlarmBuilder
 import com.nikealarm.nikedrawalarm.other.Contents
 import javax.inject.Named
 
@@ -44,33 +41,16 @@ class ResetProductAlarmWorker @WorkerInject constructor(
                     continue
                 }
 
-                val mAlarmManager =
-                    applicationContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+                with(AlarmBuilder(applicationContext)) {
+                    val bundle = Bundle().apply {
+                        putString(Contents.INTENT_KEY_POSITION, shoesData.ShoesUrl)
 
-                val reIntent = Intent(applicationContext, MyAlarmReceiver::class.java).apply {
-                    action = Contents.INTENT_ACTION_PRODUCT_ALARM
-                    putExtra(Contents.INTENT_KEY_POSITION, shoesData.ShoesUrl)
-                }
-
-                val alarmPendingIntent = PendingIntent.getBroadcast(
-                    applicationContext,
-                    shoesData.ShoesId!!,
-                    reIntent,
-                    PendingIntent.FLAG_UPDATE_CURRENT
-                )
-
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    mAlarmManager.setExactAndAllowWhileIdle(
-                        AlarmManager.RTC_WAKEUP,
-                        timeTrigger,
-                        alarmPendingIntent
-                    )
-                } else {
-                    mAlarmManager.setExact(
-                        AlarmManager.RTC_WAKEUP,
-                        timeTrigger,
-                        alarmPendingIntent
-                    )
+                        if (shoesData.ShoesCategory == ShoesDataModel.CATEGORY_DRAW) {
+                            putBoolean(Contents.INTENT_KEY_IS_DRAW, true)
+                        }
+                    }
+                    setIntent(Contents.INTENT_ACTION_PRODUCT_ALARM, bundle)
+                    setAlarm(timeTrigger, shoesData.ShoesId!!)
                 }
             }
         }

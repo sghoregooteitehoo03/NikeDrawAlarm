@@ -20,6 +20,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
@@ -32,6 +33,7 @@ import com.nikealarm.nikedrawalarm.database.EventDay
 import com.nikealarm.nikedrawalarm.database.ShoesDataModel
 import com.nikealarm.nikedrawalarm.database.SpecialShoesDataModel
 import com.nikealarm.nikedrawalarm.databinding.FragmentUpcomingListBinding
+import com.nikealarm.nikedrawalarm.other.AlarmBuilder
 import com.nikealarm.nikedrawalarm.other.Contents
 import com.nikealarm.nikedrawalarm.ui.MainActivity
 import com.nikealarm.nikedrawalarm.ui.dialog.AlarmDialog
@@ -42,8 +44,9 @@ import javax.inject.Inject
 import javax.inject.Named
 
 @AndroidEntryPoint
-class UpcomingListFragment : Fragment(R.layout.fragment_upcoming_list), UpcomingListAdapter.ClickListener {
-    private val mViewModel by activityViewModels<MyViewModel>()
+class UpcomingListFragment : Fragment(R.layout.fragment_upcoming_list),
+    UpcomingListAdapter.ClickListener {
+    private val mViewModel by viewModels<MyViewModel>()
     private lateinit var mAdapter: UpcomingListAdapter
     private var fragmentBinding: FragmentUpcomingListBinding? = null
 
@@ -119,7 +122,6 @@ class UpcomingListFragment : Fragment(R.layout.fragment_upcoming_list), Upcoming
 
     override fun onDestroy() {
         fragmentBinding = null
-        mViewModel.upcomingCategory.value = "DEFAULT"
         super.onDestroy()
     }
 
@@ -242,82 +244,33 @@ class UpcomingListFragment : Fragment(R.layout.fragment_upcoming_list), Upcoming
 
     // 알람 설정
     private fun setAlarm(timeTrigger: Long, specialShoesData: SpecialShoesDataModel) {
-        val alarmIntent = Intent(requireContext(), MyAlarmReceiver::class.java).apply {
-            action = Contents.INTENT_ACTION_PRODUCT_ALARM
-            putExtra(Contents.INTENT_KEY_POSITION, specialShoesData.ShoesUrl)
+        with(AlarmBuilder(requireContext())) {
+            val bundle = Bundle().apply {
+                putString(Contents.INTENT_KEY_POSITION, specialShoesData.ShoesUrl)
 
-            if (specialShoesData.ShoesCategory == ShoesDataModel.CATEGORY_DRAW) {
-                putExtra(Contents.INTENT_KEY_IS_DRAW, true)
+                if (specialShoesData.ShoesCategory == ShoesDataModel.CATEGORY_DRAW) {
+                    putBoolean(Contents.INTENT_KEY_IS_DRAW, true)
+                }
             }
-        }
-        val alarmPendingIntent = PendingIntent.getBroadcast(
-            requireContext(),
-            specialShoesData.ShoesId!!,
-            alarmIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT
-        )
-        val alarmManager =
-            requireContext().getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            setIntent(Contents.INTENT_ACTION_PRODUCT_ALARM, bundle)
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            alarmManager.setExactAndAllowWhileIdle(
-                AlarmManager.RTC_WAKEUP,
-                timeTrigger,
-                alarmPendingIntent
-            )
-        } else {
-            alarmManager.setExact(
-                AlarmManager.RTC_WAKEUP,
-                timeTrigger,
-                alarmPendingIntent
-            )
+            setAlarm(timeTrigger, specialShoesData.ShoesId!!)
         }
     }
 
     // 알람 삭제
     private fun removeAlarm(specialShoesData: SpecialShoesDataModel) {
-        val alarmIntent = Intent(requireContext(), MyAlarmReceiver::class.java).apply {
-            action = Contents.INTENT_ACTION_PRODUCT_ALARM
-            putExtra(Contents.INTENT_KEY_POSITION, specialShoesData.ShoesUrl)
+        with(AlarmBuilder(requireContext())) {
+            val bundle = Bundle().apply {
+                putString(Contents.INTENT_KEY_POSITION, specialShoesData.ShoesUrl)
 
-            if (specialShoesData.ShoesCategory == ShoesDataModel.CATEGORY_DRAW) {
-                putExtra(Contents.INTENT_KEY_IS_DRAW, true)
+                if (specialShoesData.ShoesCategory == ShoesDataModel.CATEGORY_DRAW) {
+                    putBoolean(Contents.INTENT_KEY_IS_DRAW, true)
+                }
             }
-        }
+            setIntent(Contents.INTENT_ACTION_PRODUCT_ALARM, bundle)
 
-        // 이미 설정된 알람이 있는지 확인
-        if (checkExistAlarm(alarmIntent, specialShoesData.ShoesId!!)) {
-
-            // 설정된 알람이 있으면 삭제함
-            val alarmPendingIntent = PendingIntent.getBroadcast(
-                requireContext(),
-                specialShoesData.ShoesId,
-                alarmIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT
-            )
-
-            val alarmManager =
-                requireContext().getSystemService(Context.ALARM_SERVICE) as AlarmManager
-            alarmManager.cancel(alarmPendingIntent)
-            alarmPendingIntent.cancel()
-
-            Log.i("RemoveAlarm", "동작")
-        }
-    }
-
-    // 알림 확인
-    private fun checkExistAlarm(mIntent: Intent, requestCode: Int): Boolean {
-        val alarmPendingIntent = PendingIntent.getBroadcast(
-            requireContext(),
-            requestCode,
-            mIntent,
-            PendingIntent.FLAG_NO_CREATE
-        )
-
-        return alarmPendingIntent?.let {
-            true
-        } ?: let {
-            false
+            removeAlarm(specialShoesData.ShoesId!!)
         }
     }
 

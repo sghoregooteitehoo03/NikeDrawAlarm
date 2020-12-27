@@ -13,6 +13,7 @@ import com.nikealarm.nikedrawalarm.component.worker.AutoEnterWorker
 import com.nikealarm.nikedrawalarm.component.worker.FindDrawWorker
 import com.nikealarm.nikedrawalarm.component.worker.ProductNotifyWorker
 import com.nikealarm.nikedrawalarm.component.worker.ResetProductAlarmWorker
+import com.nikealarm.nikedrawalarm.other.AlarmBuilder
 import com.nikealarm.nikedrawalarm.other.Contents
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -74,12 +75,24 @@ class MyAlarmReceiver : BroadcastReceiver() {
                                 workRequest
                             )
                     } else { // Draw 상품이 아니거나 자동응모 허용하지 않을 때
-                        val workRequest = OneTimeWorkRequestBuilder<ProductNotifyWorker>()
-                            .setInputData(workDataOf(Contents.WORKER_INPUT_DATA_KEY to shoesUrl))
-                            .build()
+//                        val workRequest = OneTimeWorkRequestBuilder<ProductNotifyWorker>()
+//                            .setInputData(workDataOf(Contents.WORKER_INPUT_DATA_KEY to shoesUrl))
+//                            .build()
+//
+//                        WorkManager.getInstance(context)
+//                            .enqueue(workRequest)
+                        val workRequest: OneTimeWorkRequest =
+                            OneTimeWorkRequestBuilder<AutoEnterWorker>()
+                                .addTag(Contents.WORKER_AUTO_ENTER)
+                                .setInputData(workDataOf(Contents.WORKER_AUTO_ENTER_INPUT_KEY to shoesUrl))
+                                .build()
 
                         WorkManager.getInstance(context)
-                            .enqueue(workRequest)
+                            .enqueueUniqueWork(
+                                Contents.WORKER_AUTO_ENTER,
+                                ExistingWorkPolicy.APPEND_OR_REPLACE,
+                                workRequest
+                            )
                     }
                 }
             }
@@ -107,33 +120,11 @@ class MyAlarmReceiver : BroadcastReceiver() {
                 timeTrigger += 10800000
             }
 
-            val mAlarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-
-            val reIntent = Intent(context, MyAlarmReceiver::class.java).apply {
-                action = Contents.INTENT_ACTION_SYNC_ALARM
+            with(AlarmBuilder(context)) {
+                setIntent(Contents.INTENT_ACTION_SYNC_ALARM)
+                setAlarm(timeTrigger, Contents.SYNC_ALARM_CODE)
             }
-
-            val alarmPendingIntent = PendingIntent.getBroadcast(
-                context,
-                Contents.SYNC_ALARM_CODE,
-                reIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT
-            )
-
             setPreference(timeTrigger)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                mAlarmManager.setExactAndAllowWhileIdle(
-                    AlarmManager.RTC_WAKEUP,
-                    timeTrigger,
-                    alarmPendingIntent
-                )
-            } else {
-                mAlarmManager.setExact(
-                    AlarmManager.RTC_WAKEUP,
-                    timeTrigger,
-                    alarmPendingIntent
-                )
-            }
         }
     }
 

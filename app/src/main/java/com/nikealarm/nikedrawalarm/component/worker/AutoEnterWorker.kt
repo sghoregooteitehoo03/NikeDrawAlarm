@@ -22,6 +22,7 @@ import com.nikealarm.nikedrawalarm.database.Dao
 import com.nikealarm.nikedrawalarm.database.SpecialShoesDataModel
 import com.nikealarm.nikedrawalarm.other.Contents
 import com.nikealarm.nikedrawalarm.other.JavaScriptInterface
+import com.nikealarm.nikedrawalarm.other.NotificationBuilder
 import com.nikealarm.nikedrawalarm.other.WebState
 import com.nikealarm.nikedrawalarm.ui.MainActivity
 import com.squareup.picasso.Picasso
@@ -29,6 +30,7 @@ import kotlinx.coroutines.*
 import javax.inject.Named
 import kotlin.random.Random
 
+/* 테스트 해보기 */
 class AutoEnterWorker @WorkerInject constructor(
     @Assisted context: Context,
     @Assisted workerParams: WorkerParameters,
@@ -223,7 +225,7 @@ class AutoEnterWorker @WorkerInject constructor(
 
         val notification =
             NotificationCompat.Builder(applicationContext, Contents.CHANNEL_ID_AUTO_ENTER)
-                .setContentTitle("${shoesData.ShoesTitle} - ${shoesData.ShoesSubTitle}")
+                .setContentTitle("${shoesData.ShoesSubTitle} - ${shoesData.ShoesTitle}")
                 .setContentText("자동응모 진행 중...")
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setLargeIcon(shoesBitmap)
@@ -240,73 +242,47 @@ class AutoEnterWorker @WorkerInject constructor(
     // 알림 생성
     private fun createNotification(isSuccess: Boolean, errorMsg: String = "") {
         CoroutineScope(Dispatchers.Default).launch {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                createChannel() // 채널 생성
-            }
-            val vibrate = LongArray(4).apply {
-                set(0, 0)
-                set(1, 100)
-                set(2, 200)
-                set(3, 300)
-            }
+            with(NotificationBuilder(applicationContext, Contents.CHANNEL_ID_AUTO_ENTER, "자동응모")) {
+                if (isError) { // 오류 발생 시
+                    defaultNotification("오류", errorMsg)
+                    buildNotify(System.currentTimeMillis().toInt())
+                } else { // 오류가 아닐 시
+                    val shoesBitmap = Picasso.get()
+                        .load(shoesData.ShoesImageUrl)
+                        .get()
+                    val channelId = (5000..5000 + shoesData.ShoesId!!).random()
 
-            if (isError) { // 오류 발생 시
-                val notification = NotificationCompat.Builder(applicationContext, Contents.CHANNEL_ID_AUTO_ENTER)
-                    .setContentTitle("오류")
-                    .setContentText(errorMsg)
-                    .setVibrate(vibrate)
-                    .setSmallIcon(R.mipmap.ic_launcher)
-                    .build()
+                    if (isSuccess) { // 응모 완료 시
+                        imageNotification(
+                            "응모 완료! ( ${shoesData.ShoesTitle} )",
+                            "자동응모가 완료되었습니다.",
+                            shoesBitmap
+                        )
+                        buildNotify(channelId)
+                    } else { // 응모 실패 시
+                        val goWebsiteIntent = PendingIntent.getActivity(
+                            applicationContext,
+                            channelId,
+                            Intent(applicationContext, MainActivity::class.java).also {
+                                it.action = Contents.INTENT_ACTION_GOTO_WEBSITE
+                                it.putExtra(Contents.DRAW_URL, shoesData.ShoesUrl)
+                                it.putExtra(Contents.CHANNEL_ID, channelId)
+                            },
+                            PendingIntent.FLAG_ONE_SHOT
+                        )
 
-                with(NotificationManagerCompat.from(applicationContext)) { // 알림 생성
-                    notify(
-                        System.currentTimeMillis().toInt(),
-                        notification
-                    )
+                        imageNotification(
+                            "응모 실패 ( ${shoesData.ShoesTitle} )",
+                            errorMsg,
+                            shoesBitmap
+                        )
+                        addActions(arrayOf("직접 응모하기"), arrayOf(goWebsiteIntent))
+                        buildNotify(channelId)
+                    }
+                    deleteShoes(shoesData.ShoesUrl) // 신발 삭제
                 }
-            } else { // 오류가 아닐 시
-                val shoesBitmap = Picasso.get()
-                    .load(shoesData.ShoesImageUrl)
-                    .get()
-                val channelId = (5000..5000 + shoesData.ShoesId!!).random()
-
-                val notification = if (isSuccess) { // 응모 완료 시
-                    NotificationCompat.Builder(applicationContext, Contents.CHANNEL_ID_AUTO_ENTER)
-                        .setContentTitle("응모 완료! ( ${shoesData.ShoesTitle} )")
-                        .setContentText("자동응모가 완료되었습니다.")
-                        .setVibrate(vibrate)
-                        .setSmallIcon(R.mipmap.ic_launcher)
-                        .setLargeIcon(shoesBitmap)
-                        .build()
-                } else { // 응모 실패 시
-                    val goWebsiteIntent = PendingIntent.getActivity(
-                        applicationContext,
-                        channelId,
-                        Intent(applicationContext, MainActivity::class.java).also {
-                            it.action = Contents.INTENT_ACTION_GOTO_WEBSITE
-                            it.putExtra(Contents.DRAW_URL, shoesData.ShoesUrl)
-                            it.putExtra(Contents.CHANNEL_ID, channelId)
-                        },
-                        PendingIntent.FLAG_ONE_SHOT
-                    )
-                    NotificationCompat.Builder(applicationContext, Contents.CHANNEL_ID_AUTO_ENTER)
-                        .setContentTitle("응모 실패 ( ${shoesData.ShoesTitle} )")
-                        .setContentText(errorMsg)
-                        .setVibrate(vibrate)
-                        .setSmallIcon(R.mipmap.ic_launcher)
-                        .setLargeIcon(shoesBitmap)
-                        .addAction(0, "직접 응모하기", goWebsiteIntent)
-                        .build()
-                }
-
-                with(NotificationManagerCompat.from(applicationContext)) { // 알림 생성
-                    notify(
-                        channelId,
-                        notification
-                    )
-                }
-                deleteShoes(shoesData.ShoesUrl) // 신발 삭제
             }
+
         }
     }
 
