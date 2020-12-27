@@ -2,17 +2,13 @@ package com.nikealarm.nikedrawalarm.ui.fragment
 
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
-import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
 import androidx.activity.OnBackPressedCallback
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.transition.TransitionInflater
@@ -24,7 +20,6 @@ import com.nikealarm.nikedrawalarm.adapter.ImageListPagerAdapter
 import com.nikealarm.nikedrawalarm.component.worker.GetImageWorker
 import com.nikealarm.nikedrawalarm.databinding.FragmentImageListBinding
 import com.nikealarm.nikedrawalarm.other.Contents
-import com.nikealarm.nikedrawalarm.viewmodel.MyViewModel
 
 class ImageListFragment : Fragment(R.layout.fragment_image_list) {
     private lateinit var dots: Array<ImageView?>

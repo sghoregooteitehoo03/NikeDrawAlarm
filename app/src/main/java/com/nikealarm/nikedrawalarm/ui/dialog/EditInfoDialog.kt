@@ -18,7 +18,7 @@ import androidx.fragment.app.activityViewModels
 import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.databinding.DialogEditinfoBinding
 import com.nikealarm.nikedrawalarm.other.Contents
-import com.nikealarm.nikedrawalarm.viewmodel.MyViewModel
+import com.nikealarm.nikedrawalarm.viewmodel.ShareDataViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import javax.inject.Named
@@ -29,7 +29,7 @@ class EditInfoDialog : DialogFragment() {
     @Named(Contents.PREFERENCE_NAME_AUTO_ENTER_V2)
     lateinit var autoEnterPreference: SharedPreferences
 
-    private val mViewModel by activityViewModels<MyViewModel>()
+    private val mViewModel by activityViewModels<ShareDataViewModel>()
     private lateinit var imm: InputMethodManager
     private var fragmentBinding: DialogEditinfoBinding? = null
 

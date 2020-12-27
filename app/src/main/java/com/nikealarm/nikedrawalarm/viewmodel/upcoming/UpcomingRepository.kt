@@ -1,18 +1,13 @@
-package com.nikealarm.nikedrawalarm.viewmodel
+package com.nikealarm.nikedrawalarm.viewmodel.upcoming
 
 import androidx.lifecycle.LiveData
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
-import com.nikealarm.nikedrawalarm.database.*
+import com.nikealarm.nikedrawalarm.database.Dao
+import com.nikealarm.nikedrawalarm.database.SpecialShoesDataModel
+import javax.inject.Inject
 
-class MyRepository(private val mDao: Dao) {
-
-    // ShoesData
-    fun getShoesData(shoesCategory: String): LiveData<PagedList<ShoesDataModel>> {
-        return LivePagedListBuilder(mDao.getShoesData(shoesCategory), 20).build()
-    }
-
-    // SpecialShoesData
+class UpcomingRepository @Inject constructor(private val mDao: Dao) {
     fun getAllSpecialShoesData(): LiveData<PagedList<SpecialShoesDataModel>> {
         return LivePagedListBuilder(mDao.getAllSpecialShoesPagingData(), 20).build()
     }

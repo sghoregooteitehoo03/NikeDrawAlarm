@@ -9,15 +9,12 @@ import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.ActionBarDrawerToggle
-import androidx.appcompat.widget.Toolbar
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.view.GravityCompat
 import androidx.core.view.doOnPreDraw
-import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -31,7 +28,7 @@ import com.nikealarm.nikedrawalarm.databinding.FragmentShoesListBinding
 import com.nikealarm.nikedrawalarm.other.Contents
 import com.nikealarm.nikedrawalarm.other.CustomTabsBuilder
 import com.nikealarm.nikedrawalarm.ui.MainActivity
-import com.nikealarm.nikedrawalarm.viewmodel.MyViewModel
+import com.nikealarm.nikedrawalarm.viewmodel.shoes.ShoesViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -51,7 +48,7 @@ class ShoesListFragment : Fragment(R.layout.fragment_shoes_list),
     private lateinit var backToast: Toast
     private var fragmentBinding: FragmentShoesListBinding? = null
     private lateinit var shoesAdapter: ShoesListAdapter
-    private val mViewModel by activityViewModels<MyViewModel>()
+    private val mViewModel by viewModels<ShoesViewModel>()
 
     private val FINISH_INTERVAL_TIME = 2000L
     private var backPressedTime = 0L
@@ -66,9 +63,7 @@ class ShoesListFragment : Fragment(R.layout.fragment_shoes_list),
         super.onViewCreated(view, savedInstanceState)
 
         // 인스턴스 설정
-        shoesAdapter = ShoesListAdapter(
-            requireContext()
-        ).apply {
+        shoesAdapter = ShoesListAdapter().apply {
             setOnItemClickListener(this@ShoesListFragment)
         }
 

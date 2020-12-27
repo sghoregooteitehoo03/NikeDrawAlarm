@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.view.marginLeft
 import androidx.fragment.app.DialogFragment
 import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.databinding.DialogNotificationBinding

@@ -1,25 +1,19 @@
 package com.nikealarm.nikedrawalarm.ui.fragment
 
-import android.app.PendingIntent
-import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreferenceCompat
 import com.nikealarm.nikedrawalarm.BuildConfig
-import com.nikealarm.nikedrawalarm.component.MyAlarmReceiver
 import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.other.AlarmBuilder
 import com.nikealarm.nikedrawalarm.other.Contents
-import com.nikealarm.nikedrawalarm.viewmodel.MyViewModel
+import com.nikealarm.nikedrawalarm.viewmodel.ShareDataViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.*
 import javax.inject.Inject
@@ -27,7 +21,7 @@ import javax.inject.Named
 
 @AndroidEntryPoint
 class SettingScreenPreference : PreferenceFragmentCompat() {
-    private val mViewModel by activityViewModels<MyViewModel>()
+    private val mViewModel by activityViewModels<ShareDataViewModel>()
 
     @Inject
     @Named(Contents.PREFERENCE_NAME_TIME)

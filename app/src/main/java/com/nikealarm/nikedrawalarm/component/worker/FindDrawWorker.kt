@@ -1,19 +1,12 @@
 package com.nikealarm.nikedrawalarm.component.worker
 
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.os.Build
-import androidx.annotation.RequiresApi
-import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
 import androidx.hilt.Assisted
 import androidx.hilt.work.WorkerInject
 import androidx.work.Worker
 import androidx.work.WorkerParameters
-import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.database.*
 import com.nikealarm.nikedrawalarm.other.Contents
 import com.nikealarm.nikedrawalarm.other.NotificationBuilder

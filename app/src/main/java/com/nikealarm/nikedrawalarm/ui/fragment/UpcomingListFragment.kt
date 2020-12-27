@@ -1,34 +1,24 @@
 package com.nikealarm.nikedrawalarm.ui.fragment
 
-import android.app.AlarmManager
 import android.app.Dialog
-import android.app.PendingIntent
-import android.content.Context
-import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.Color
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
-import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.SimpleItemAnimator
 import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.adapter.UpcomingListAdapter
-import com.nikealarm.nikedrawalarm.component.MyAlarmReceiver
 import com.nikealarm.nikedrawalarm.database.EventDay
 import com.nikealarm.nikedrawalarm.database.ShoesDataModel
 import com.nikealarm.nikedrawalarm.database.SpecialShoesDataModel
@@ -37,7 +27,7 @@ import com.nikealarm.nikedrawalarm.other.AlarmBuilder
 import com.nikealarm.nikedrawalarm.other.Contents
 import com.nikealarm.nikedrawalarm.ui.MainActivity
 import com.nikealarm.nikedrawalarm.ui.dialog.AlarmDialog
-import com.nikealarm.nikedrawalarm.viewmodel.MyViewModel
+import com.nikealarm.nikedrawalarm.viewmodel.upcoming.UpcomingViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.*
 import javax.inject.Inject
@@ -46,7 +36,7 @@ import javax.inject.Named
 @AndroidEntryPoint
 class UpcomingListFragment : Fragment(R.layout.fragment_upcoming_list),
     UpcomingListAdapter.ClickListener {
-    private val mViewModel by viewModels<MyViewModel>()
+    private val mViewModel by viewModels<UpcomingViewModel>()
     private lateinit var mAdapter: UpcomingListAdapter
     private var fragmentBinding: FragmentUpcomingListBinding? = null
 
@@ -68,7 +58,7 @@ class UpcomingListFragment : Fragment(R.layout.fragment_upcoming_list),
         super.onViewCreated(view, savedInstanceState)
 
         // 인스턴스 설정
-        mAdapter = UpcomingListAdapter(requireContext(), allowAlarmPreferences).apply {
+        mAdapter = UpcomingListAdapter(allowAlarmPreferences).apply {
             setHasStableIds(true)
             setOnAlarmListener(this@UpcomingListFragment)
         }

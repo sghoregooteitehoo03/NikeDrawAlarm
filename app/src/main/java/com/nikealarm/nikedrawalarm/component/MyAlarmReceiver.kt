@@ -1,12 +1,9 @@
 package com.nikealarm.nikedrawalarm.component
 
-import android.app.AlarmManager
-import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
-import android.os.Build
 import android.util.Log
 import androidx.work.*
 import com.nikealarm.nikedrawalarm.component.worker.AutoEnterWorker
@@ -16,9 +13,6 @@ import com.nikealarm.nikedrawalarm.component.worker.ResetProductAlarmWorker
 import com.nikealarm.nikedrawalarm.other.AlarmBuilder
 import com.nikealarm.nikedrawalarm.other.Contents
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import java.util.*
 import javax.inject.Inject
 import javax.inject.Named
@@ -75,24 +69,12 @@ class MyAlarmReceiver : BroadcastReceiver() {
                                 workRequest
                             )
                     } else { // Draw 상품이 아니거나 자동응모 허용하지 않을 때
-//                        val workRequest = OneTimeWorkRequestBuilder<ProductNotifyWorker>()
-//                            .setInputData(workDataOf(Contents.WORKER_INPUT_DATA_KEY to shoesUrl))
-//                            .build()
-//
-//                        WorkManager.getInstance(context)
-//                            .enqueue(workRequest)
-                        val workRequest: OneTimeWorkRequest =
-                            OneTimeWorkRequestBuilder<AutoEnterWorker>()
-                                .addTag(Contents.WORKER_AUTO_ENTER)
-                                .setInputData(workDataOf(Contents.WORKER_AUTO_ENTER_INPUT_KEY to shoesUrl))
-                                .build()
+                        val workRequest = OneTimeWorkRequestBuilder<ProductNotifyWorker>()
+                            .setInputData(workDataOf(Contents.WORKER_INPUT_DATA_KEY to shoesUrl))
+                            .build()
 
                         WorkManager.getInstance(context)
-                            .enqueueUniqueWork(
-                                Contents.WORKER_AUTO_ENTER,
-                                ExistingWorkPolicy.APPEND_OR_REPLACE,
-                                workRequest
-                            )
+                            .enqueue(workRequest)
                     }
                 }
             }

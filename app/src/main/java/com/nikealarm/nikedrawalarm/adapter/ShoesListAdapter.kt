@@ -1,24 +1,15 @@
 package com.nikealarm.nikedrawalarm.adapter
 
-import android.content.Context
-import android.graphics.Color
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import android.widget.TextView
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
-import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.adapter.holder.ShoesItemViewHolder
 import com.nikealarm.nikedrawalarm.database.ShoesDataModel
 import com.nikealarm.nikedrawalarm.databinding.ItemShoesListBinding
 
-class ShoesListAdapter(
-    private val mContext: Context
-) :
+class ShoesListAdapter() :
     PagedListAdapter<ShoesDataModel, ShoesItemViewHolder>(
         diffCallback
     ) {

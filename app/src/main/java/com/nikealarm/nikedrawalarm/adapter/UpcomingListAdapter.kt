@@ -1,32 +1,16 @@
 package com.nikealarm.nikedrawalarm.adapter
 
-import android.content.Context
 import android.content.SharedPreferences
-import android.util.Log
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.view.animation.Animation
-import android.view.animation.Transformation
-import android.widget.FrameLayout
-import android.widget.ImageButton
-import android.widget.ImageView
-import android.widget.TextView
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
-import com.chauthai.swipereveallayout.SwipeRevealLayout
 import com.chauthai.swipereveallayout.ViewBinderHelper
-import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.adapter.holder.UpcomingItemViewHolder
-import com.nikealarm.nikedrawalarm.database.ShoesDataModel
 import com.nikealarm.nikedrawalarm.database.SpecialShoesDataModel
 import com.nikealarm.nikedrawalarm.databinding.ItemUpcomingListBinding
 
 class UpcomingListAdapter(
-    private val context: Context,
     private val allowAlarmPreferences: SharedPreferences
 ) :
     PagedListAdapter<SpecialShoesDataModel, UpcomingItemViewHolder>(
