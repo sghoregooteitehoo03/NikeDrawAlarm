@@ -27,6 +27,7 @@ import com.nikealarm.nikedrawalarm.other.AlarmBuilder
 import com.nikealarm.nikedrawalarm.other.Contents
 import com.nikealarm.nikedrawalarm.ui.MainActivity
 import com.nikealarm.nikedrawalarm.ui.dialog.AlarmDialog
+import com.nikealarm.nikedrawalarm.viewmodel.upcoming.UpcomingRepository
 import com.nikealarm.nikedrawalarm.viewmodel.upcoming.UpcomingViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.*
@@ -40,14 +41,6 @@ class UpcomingListFragment : Fragment(R.layout.fragment_upcoming_list),
     private lateinit var mAdapter: UpcomingListAdapter
     private var fragmentBinding: FragmentUpcomingListBinding? = null
 
-    @Inject
-    @Named(Contents.PREFERENCE_NAME_TIME)
-    lateinit var timePreferences: SharedPreferences
-
-    @Inject
-    @Named(Contents.PREFERENCE_NAME_ALLOW_ALARM)
-    lateinit var allowAlarmPreferences: SharedPreferences
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
@@ -58,7 +51,7 @@ class UpcomingListFragment : Fragment(R.layout.fragment_upcoming_list),
         super.onViewCreated(view, savedInstanceState)
 
         // 인스턴스 설정
-        mAdapter = UpcomingListAdapter(allowAlarmPreferences).apply {
+        mAdapter = UpcomingListAdapter(mViewModel.getAllowAlarmPref()).apply {
             setHasStableIds(true)
             setOnAlarmListener(this@UpcomingListFragment)
         }
@@ -201,10 +194,7 @@ class UpcomingListFragment : Fragment(R.layout.fragment_upcoming_list),
             AlarmDialog.setOnCheckClickListener(object : AlarmDialog.CheckClickListener {
                 override fun onCheckClickListener(dialog: Dialog) {
                     setAlarm(timeTrigger, specialShoesData)
-                    setPreference(
-                        specialShoesData.ShoesUrl,
-                        timeTrigger
-                    )
+                    mViewModel.setPreference(specialShoesData.ShoesUrl, timeTrigger)
 
                     mAdapter.notifyItemChanged(pos)
                     dialog.dismiss()
@@ -224,7 +214,7 @@ class UpcomingListFragment : Fragment(R.layout.fragment_upcoming_list),
         AlarmDialog.setOnCheckClickListener(object : AlarmDialog.CheckClickListener {
             override fun onCheckClickListener(dialog: Dialog) {
                 removeAlarm(specialShoesData)
-                removePreference(specialShoesData.ShoesUrl)
+                mViewModel.removePreference(specialShoesData.ShoesUrl)
 
                 mAdapter.notifyItemChanged(pos)
                 dialog.dismiss()
@@ -297,31 +287,6 @@ class UpcomingListFragment : Fragment(R.layout.fragment_upcoming_list),
         }
 
         return 0
-    }
-
-    // 데이터베이스에 저장
-    private fun setPreference(preferenceKey: String?, timeTrigger: Long) {
-        with(timePreferences.edit()) {
-            putLong(preferenceKey, timeTrigger)
-            commit()
-        }
-
-        with(allowAlarmPreferences.edit()) {
-            putBoolean(preferenceKey, true)
-            commit()
-        }
-    }
-
-    private fun removePreference(preferenceKey: String?) {
-        with(timePreferences.edit()) {
-            remove(preferenceKey)
-            commit()
-        }
-
-        with(allowAlarmPreferences.edit()) {
-            remove(preferenceKey)
-            commit()
-        }
     }
     // 알람 끝
 

@@ -22,4 +22,13 @@ class UpcomingViewModel @ViewModelInject constructor(
             }
         }
     )
+
+    fun setPreference(preferenceKey: String?, timeTrigger: Long) =
+        repository.setPreference(preferenceKey, timeTrigger)
+
+    fun removePreference(preferenceKey: String?) =
+        repository.removePreference(preferenceKey)
+
+    fun getAllowAlarmPref() =
+        repository.allowAlarmPref
 }

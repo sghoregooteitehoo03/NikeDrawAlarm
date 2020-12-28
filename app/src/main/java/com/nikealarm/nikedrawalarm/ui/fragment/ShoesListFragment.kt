@@ -1,7 +1,6 @@
 package com.nikealarm.nikedrawalarm.ui.fragment
 
 import android.content.Context
-import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
 import android.view.*
@@ -20,7 +19,6 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.navigation.NavigationView
-import com.nikealarm.nikedrawalarm.BuildConfig
 import com.nikealarm.nikedrawalarm.adapter.ShoesListAdapter
 import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.database.ShoesDataModel
@@ -34,24 +32,19 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import javax.inject.Inject
-import javax.inject.Named
 
 @AndroidEntryPoint
 class ShoesListFragment : Fragment(R.layout.fragment_shoes_list),
     ShoesListAdapter.ItemClickListener,
     NavigationView.OnNavigationItemSelectedListener {
-    @Inject
-    @Named(Contents.PREFERENCE_NAME_UPDATE)
-    lateinit var updatePref: SharedPreferences
 
-    private lateinit var backToast: Toast
     private var fragmentBinding: FragmentShoesListBinding? = null
     private lateinit var shoesAdapter: ShoesListAdapter
     private val mViewModel by viewModels<ShoesViewModel>()
 
     private val FINISH_INTERVAL_TIME = 2000L
     private var backPressedTime = 0L
+    private lateinit var backToast: Toast
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -71,8 +64,6 @@ class ShoesListFragment : Fragment(R.layout.fragment_shoes_list),
         initView(view)
         // 옵저버 설정
         setObserver()
-        // 업데이트 보여주기
-        showUpdate()
     }
 
     override fun onClickItem(newUrl: String?) {
@@ -225,6 +216,22 @@ class ShoesListFragment : Fragment(R.layout.fragment_shoes_list),
                 }
             }
         })
+        mViewModel.isUpdated.observe(viewLifecycleOwner, {
+            if (it) {
+                with(
+                    requireContext().getSharedPreferences(
+                        Contents.PREFERENCE_NAME_AUTO_ENTER,
+                        Context.MODE_PRIVATE
+                    ).edit()
+                ) {
+                    clear()
+                    commit()
+                }
+
+                findNavController().navigate(R.id.action_drawListFragment_to_updateDialog) // 다이얼로그 보여줌
+                mViewModel.afterUpdate()
+            }
+        })
     }
 
     private fun setToolbarTitle(shoesCategory: String) {
@@ -253,29 +260,6 @@ class ShoesListFragment : Fragment(R.layout.fragment_shoes_list),
                         show()
                     }
                 }
-            }
-        }
-    }
-
-    private fun showUpdate() { // 업데이트 내용 보여줌
-        val isFirst = updatePref.getBoolean(BuildConfig.VERSION_CODE.toString(), true)
-
-        if (isFirst) {
-            with(
-                requireContext().getSharedPreferences(
-                    Contents.PREFERENCE_NAME_AUTO_ENTER,
-                    Context.MODE_PRIVATE
-                ).edit()
-            ) {
-                clear()
-                commit()
-            }
-
-            findNavController().navigate(R.id.action_drawListFragment_to_updateDialog) // 다이얼로그 보여줌
-            with(updatePref.edit()) { // 한번만 보여주게 함
-                clear()
-                putBoolean(BuildConfig.VERSION_CODE.toString(), false)
-                commit()
             }
         }
     }
