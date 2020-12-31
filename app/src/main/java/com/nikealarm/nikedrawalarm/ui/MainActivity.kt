@@ -52,7 +52,7 @@ class MainActivity : AppCompatActivity() {
             Contents.INTENT_ACTION_GOTO_DRAWLIST -> {
                 setIntent(intent)
                 cancelNotification()
-                findViewById<View>(R.id.nav_host_fragment).findNavController().navigate(R.id.action_global_drawListFragment)
+                findNavController(R.id.nav_host_fragment).navigate(R.id.action_global_drawListFragment)
             }
         }
     }

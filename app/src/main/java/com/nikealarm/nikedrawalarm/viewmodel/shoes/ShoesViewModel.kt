@@ -1,13 +1,10 @@
 package com.nikealarm.nikedrawalarm.viewmodel.shoes
 
-import android.content.SharedPreferences
 import androidx.hilt.Assisted
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.*
 import androidx.paging.PagedList
 import com.nikealarm.nikedrawalarm.database.ShoesDataModel
-import com.nikealarm.nikedrawalarm.other.Contents
-import javax.inject.Named
 
 class ShoesViewModel @ViewModelInject constructor(
     private val repository: ShoesRepository,
