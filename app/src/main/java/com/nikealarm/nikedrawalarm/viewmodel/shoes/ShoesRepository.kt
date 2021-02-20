@@ -22,11 +22,13 @@ class ShoesRepository @Inject constructor(
     fun isUpdated() =
         updatePref.getBoolean(BuildConfig.VERSION_CODE.toString(), true)
 
-    fun afterUpdate() {
+    fun afterUpdate(): Boolean {
         with(updatePref.edit()) { // 한번만 보여주게 함
             clear()
             putBoolean(BuildConfig.VERSION_CODE.toString(), false)
             commit()
         }
+
+        return updatePref.getBoolean(BuildConfig.VERSION_CODE.toString(), true)
     }
 }

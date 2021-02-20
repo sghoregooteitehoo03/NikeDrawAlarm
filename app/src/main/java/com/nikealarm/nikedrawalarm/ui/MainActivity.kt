@@ -1,12 +1,14 @@
 package com.nikealarm.nikedrawalarm.ui
 
 import android.app.NotificationManager
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
+import android.widget.Toast
 import androidx.navigation.findNavController
 import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.other.Contents
@@ -45,9 +47,14 @@ class MainActivity : AppCompatActivity() {
 
                 val url = intent.getStringExtra(Contents.DRAW_URL)
                     ?: "https://www.nike.com/kr/launch/"
-                val builder = CustomTabsBuilder().getBuilder()
-                builder.build()
-                    .launchUrl(this, Uri.parse(url))
+                try {
+                    val builder = CustomTabsBuilder().getBuilder()
+                    builder.build()
+                        .launchUrl(this, Uri.parse(url))
+                } catch (e: Exception) {
+                    Toast.makeText(this, "크롬 브라우저가 존재하지 않습니다.", Toast.LENGTH_SHORT)
+                        .show()
+                }
             }
             Contents.INTENT_ACTION_GOTO_DRAWLIST -> {
                 setIntent(intent)

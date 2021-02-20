@@ -34,7 +34,7 @@ class UpdateDialog : DialogFragment() {
         binding.titleText.text = "업데이트"
         with(binding.messageText) {
             text =
-                "- 자동응모 방식 변경\n( UPCOMING에서 DRAW 상품을 알림 설정해놓으시면 응모 당일 날 자동으로 응모가 진행됩니다. )"
+                "- 자동응모 방식 변경\n( UPCOMING에서 DRAW 상품을 알림 설정해놓으시면 응모 당일 날 자동으로 응모가 진행됩니다. )\n\n- 데이터 못 읽어오는 버그 수정\n(알림을 다시 설정해주세요!)"
             textSize = 18f
             setPadding(12, 0, 12, 0)
         }

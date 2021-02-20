@@ -35,7 +35,6 @@ class SettingScreenPreference : PreferenceFragmentCompat() {
         setPreferencesFromResource(R.xml.setting_screen, rootKey)
 
         // 인스턴스 설정
-
         mViewModel.allowAutoEnter.value =
             autoEnterPreference.getBoolean(Contents.AUTO_ENTER_ALLOW, false)
 

@@ -1,5 +1,6 @@
 package com.nikealarm.nikedrawalarm.ui.fragment
 
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.net.Uri
 import android.os.Bundle
@@ -18,9 +19,11 @@ import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.work.*
 import com.google.android.material.navigation.NavigationView
 import com.nikealarm.nikedrawalarm.adapter.ShoesListAdapter
 import com.nikealarm.nikedrawalarm.R
+import com.nikealarm.nikedrawalarm.component.worker.AutoEnterWorker
 import com.nikealarm.nikedrawalarm.database.ShoesDataModel
 import com.nikealarm.nikedrawalarm.databinding.FragmentShoesListBinding
 import com.nikealarm.nikedrawalarm.other.Contents
@@ -68,28 +71,38 @@ class ShoesListFragment : Fragment(R.layout.fragment_shoes_list),
 
     override fun onClickItem(newUrl: String?) {
         val builder = CustomTabsBuilder().getBuilder()
-        with(builder) {
-            ResourcesCompat.getDrawable(resources, R.drawable.ic_back, null)?.toBitmap()
-                ?.let { bitmap ->
-                    setCloseButtonIcon(bitmap)
-                }
 
-            build().launchUrl(requireContext(), Uri.parse(newUrl!!))
+        try {
+            with(builder) {
+                ResourcesCompat.getDrawable(resources, R.drawable.ic_back, null)?.toBitmap()
+                    ?.let { bitmap ->
+                        setCloseButtonIcon(bitmap)
+                    }
+
+                build().launchUrl(requireContext(), Uri.parse(newUrl!!))
+            }
+        } catch (e: Exception) {
+            Toast.makeText(requireContext(), "크롬 브라우저가 존재하지 않습니다.", Toast.LENGTH_SHORT)
+                .show()
         }
     }
 
     override fun onClickImage(newUrl: String, shoesImageUrl: String, imageView: ImageView) {
-        val directions = ShoesListFragmentDirections.actionDrawListFragmentToImageListFragment(
-            newUrl,
-            shoesImageUrl
-        )
-        val extras = FragmentNavigatorExtras(
-            imageView to newUrl
-        )
-        findNavController().navigate(
-            directions,
-            extras
-        )
+        try {
+            val directions = ShoesListFragmentDirections.actionDrawListFragmentToImageListFragment(
+                newUrl,
+                shoesImageUrl
+            )
+            val extras = FragmentNavigatorExtras(
+                imageView to newUrl
+            )
+            findNavController().navigate(
+                directions,
+                extras
+            )
+        } catch (e: IllegalStateException) {
+            e.printStackTrace()
+        }
     }
 
     override fun onNavigationItemSelected(menuItem: MenuItem): Boolean {
@@ -110,15 +123,23 @@ class ShoesListFragment : Fragment(R.layout.fragment_shoes_list),
             }
             R.id.mainMenu_upcoming -> {
                 CoroutineScope(Dispatchers.IO).launch {
-                    delay(230)
-                    findNavController().navigate(R.id.action_drawListFragment_to_upcomingListFragment)
+                    try {
+                        delay(230)
+                        findNavController().navigate(R.id.action_drawListFragment_to_upcomingListFragment)
+                    } catch (e: IllegalStateException) {
+                        e.printStackTrace()
+                    }
                 }
                 true
             }
             R.id.mainMenu_setting -> {
                 CoroutineScope(Dispatchers.IO).launch {
-                    delay(230)
-                    findNavController().navigate(R.id.action_drawListFragment_to_settingFragment)
+                    try {
+                        delay(230)
+                        findNavController().navigate(R.id.action_drawListFragment_to_settingFragment)
+                    } catch (e: IllegalStateException) {
+                        e.printStackTrace()
+                    }
                 }
 
                 true
