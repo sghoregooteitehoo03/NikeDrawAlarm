@@ -5,10 +5,8 @@ import android.content.SharedPreferences
 import androidx.room.Room
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
-import com.nikealarm.nikedrawalarm.database.Dao
 import com.nikealarm.nikedrawalarm.database.MyDataBase
 import com.nikealarm.nikedrawalarm.other.Contents
-import com.nikealarm.nikedrawalarm.viewmodel.MyRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -36,15 +34,6 @@ object AppModule {
     fun provideAllowAlarmPreferences(@ApplicationContext context: Context) =
         context.getSharedPreferences(
             Contents.PREFERENCE_NAME_ALLOW_ALARM,
-            Context.MODE_PRIVATE
-        )
-
-    @Singleton
-    @Provides
-    @Named(Contents.PREFERENCE_NAME_AUTO_ENTER)
-    fun provideAutoEnterPreferences(@ApplicationContext context: Context) =
-        context.getSharedPreferences(
-            Contents.PREFERENCE_NAME_AUTO_ENTER,
             Context.MODE_PRIVATE
         )
 
@@ -89,9 +78,4 @@ object AppModule {
     @Provides
     fun provideDao(database: MyDataBase) =
         database.getDao()
-
-    @Singleton
-    @Provides
-    fun provideRepository(dao: Dao) =
-        MyRepository(dao)
 }

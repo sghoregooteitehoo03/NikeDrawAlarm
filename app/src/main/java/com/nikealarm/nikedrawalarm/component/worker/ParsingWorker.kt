@@ -296,7 +296,7 @@ class ParsingWorker @WorkerInject constructor(
         val ordinaryData = mDao.getAllShoesData()[index] // 기존의 있던 신발 데이터를 읽어옴
 
         if (newShoesData.shoesCategory != ordinaryData.shoesCategory) { // 카테고리가 바뀌었을 때
-            if (ordinaryData.shoesCategory == ShoesDataModel.CATEGORY_COMING_SOON) { // CATEGORY -> RELEASED
+            if (ordinaryData.shoesCategory == ShoesDataModel.CATEGORY_COMING_SOON) { // COMING SOON -> RELEASED
                 val newShoesPrice = ordinaryData.shoesPrice?.split("\n")?.get(1) // 신발 가격
 
                 mDao.updateShoesCategory(

@@ -3,7 +3,7 @@
 
     <PreferenceCategory
         app:iconSpaceReserved="false"
-        app:title="알림 설정">
+        app:title="데이터">
 
         <SwitchPreferenceCompat
             app:iconSpaceReserved="false"

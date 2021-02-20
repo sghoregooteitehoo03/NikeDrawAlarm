@@ -1,65 +1,43 @@
 package com.nikealarm.nikedrawalarm.ui.fragment
 
-import android.app.AlarmManager
-import android.app.Dialog
-import android.app.PendingIntent
-import android.content.Context
-import android.content.Intent
-import android.content.SharedPreferences
 import android.graphics.Color
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
-import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.TextView
-import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.SimpleItemAnimator
+import com.google.android.material.snackbar.Snackbar
 import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.adapter.UpcomingListAdapter
-import com.nikealarm.nikedrawalarm.component.MyAlarmReceiver
 import com.nikealarm.nikedrawalarm.database.EventDay
 import com.nikealarm.nikedrawalarm.database.ShoesDataModel
 import com.nikealarm.nikedrawalarm.database.SpecialShoesDataModel
+import com.nikealarm.nikedrawalarm.databinding.FragmentUpcomingListBinding
+import com.nikealarm.nikedrawalarm.other.AlarmBuilder
 import com.nikealarm.nikedrawalarm.other.Contents
 import com.nikealarm.nikedrawalarm.ui.MainActivity
-import com.nikealarm.nikedrawalarm.ui.dialog.AlarmDialog
-import com.nikealarm.nikedrawalarm.viewmodel.MyViewModel
+import com.nikealarm.nikedrawalarm.viewmodel.upcoming.UpcomingViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_upcoming_list.*
 import java.util.*
-import javax.inject.Inject
-import javax.inject.Named
 
 @AndroidEntryPoint
-class UpcomingListFragment : Fragment(), UpcomingListAdapter.AlarmListener {
-    private lateinit var mViewModel: MyViewModel
+class UpcomingListFragment : Fragment(R.layout.fragment_upcoming_list),
+    UpcomingListAdapter.ClickListener {
+    private val mViewModel by viewModels<UpcomingViewModel>()
     private lateinit var mAdapter: UpcomingListAdapter
+    private var fragmentBinding: FragmentUpcomingListBinding? = null
 
-    @Inject
-    @Named(Contents.PREFERENCE_NAME_TIME)
-    lateinit var timePreferences: SharedPreferences
-
-    @Inject
-    @Named(Contents.PREFERENCE_NAME_ALLOW_ALARM)
-    lateinit var allowAlarmPreferences: SharedPreferences
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
-        return inflater.inflate(R.layout.fragment_upcoming_list, container, false)
     }
 
     // 시작
@@ -67,39 +45,78 @@ class UpcomingListFragment : Fragment(), UpcomingListAdapter.AlarmListener {
         super.onViewCreated(view, savedInstanceState)
 
         // 인스턴스 설정
-        mViewModel = ViewModelProvider(this)[MyViewModel::class.java]
-        mAdapter = UpcomingListAdapter(requireContext(), allowAlarmPreferences).apply {
+        mAdapter = UpcomingListAdapter(mViewModel.getAllowAlarmPref()).apply {
             setHasStableIds(true)
             setOnAlarmListener(this@UpcomingListFragment)
         }
-        val spinnerAdapter = ArrayAdapter<String>(
-            requireContext(),
-            android.R.layout.simple_spinner_dropdown_item,
-            listOf("DEFAULT", "DRAW", "COMING")
-        )
 
         // 옵저버 설정
-        mViewModel.specialShoesList.observe(viewLifecycleOwner, Observer {
-            with(mAdapter) {
-                submitList(it)
-                notifyDataSetChanged()
-            }
-
-            if (it.size == 0) {
-                appearText()
-            } else {
-                if (upcomingFrag_noitemText.isEnabled) {
-                    disappearText()
-                }
-            }
-        })
-
+        setObserver()
         // 뷰 설정
-        with(upcomingFrag_toolbar) {  // 툴바
+        initView(view)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            android.R.id.home -> {
+                findNavController().navigateUp()
+                true
+            }
+            else -> false
+        }
+    }
+
+    override fun onAlarmListener(
+        specialShoesData: SpecialShoesDataModel?,
+        pos: Int,
+        isChecked: Boolean
+    ) {
+        if (isChecked) { // 알림이 설정 되어있을 때
+            removeAlarm(specialShoesData!!, pos)
+        } else { // 알림이 설정 되어있지 않을 때
+            setAlarm(specialShoesData!!, pos)
+        }
+    }
+
+    override fun onItemClickListener(position: Int) {
+        mAdapter.currentList?.get(position)?.isOpened =
+            !mAdapter.currentList?.get(position)!!.isOpened
+        Log.i("CheckList", "${mAdapter.currentList?.get(position)?.isOpened}")
+
+        if (mAdapter.previousPosition != -1 && mAdapter.previousPosition != position) { // 다른 리스트를 눌렀을 때
+            mAdapter.currentList?.get(mAdapter.previousPosition)?.isOpened =
+                !mAdapter.currentList?.get(mAdapter.previousPosition)!!.isOpened
+            mAdapter.notifyItemChanged(mAdapter.previousPosition)
+        }
+
+        mAdapter.notifyItemChanged(position)
+        mAdapter.previousPosition = if (mAdapter.previousPosition == position) { // 같은 리스트를 눌렀을 때
+            -1
+        } else { // 다른 리스트를 눌렀을 때
+            position
+        }
+    }
+
+    override fun onDestroy() {
+        fragmentBinding = null
+        super.onDestroy()
+    }
+
+    private fun initView(view: View) { // 뷰 설정
+        val binding = FragmentUpcomingListBinding.bind(view)
+        fragmentBinding = binding
+
+        with(binding.mainToolbar) {  // 툴바
             (requireActivity() as MainActivity).setSupportActionBar(this)
             (requireActivity() as MainActivity).supportActionBar?.setDisplayHomeAsUpEnabled(true)
         }
-        with(upcomingFrag_spinner) { // 스피너
+        with(binding.filterSpinner) { // 스피너
+            val spinnerAdapter = ArrayAdapter<String>(
+                requireContext(),
+                android.R.layout.simple_spinner_dropdown_item,
+                listOf("DEFAULT", "DRAW", "COMING")
+            )
+
             adapter = spinnerAdapter
             onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
                 override fun onItemSelected(
@@ -127,7 +144,7 @@ class UpcomingListFragment : Fragment(), UpcomingListAdapter.AlarmListener {
                 }
             }
         }
-        with(upcomingFrag_list) { // 리사이클
+        with(binding.upcomingList) { // 리사이클
             adapter = mAdapter
             layoutManager = LinearLayoutManager(requireContext())
             setHasFixedSize(true)
@@ -135,36 +152,26 @@ class UpcomingListFragment : Fragment(), UpcomingListAdapter.AlarmListener {
         }
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            android.R.id.home -> {
-                findNavController().navigateUp()
-                true
+    private fun setObserver() {
+        mViewModel.specialShoesList.observe(viewLifecycleOwner, Observer {
+            with(mAdapter) {
+                submitList(it)
+                notifyDataSetChanged()
             }
-            else -> false
-        }
-    }
 
-    override fun onAlarmListener(
-        specialShoesData: SpecialShoesDataModel?,
-        pos: Int,
-        isChecked: Boolean
-    ) {
-        if (isChecked) { // 알림이 설정 되어있을 때
-            removeNotification(specialShoesData!!, pos)
-        } else { // 알림이 설정 되어있지 않을 때6
-            setNotification(specialShoesData!!, pos)
-        }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        mViewModel.upcomingCategory.value = "DEFAULT"
+            if (it.size == 0) {
+                appearText()
+            } else {
+                if (fragmentBinding?.noItemText?.isEnabled!!) {
+                    disappearText()
+                }
+            }
+        })
     }
 
     // 알람 시작
-    // 알람 설정 알림창
-    private fun setNotification(specialShoesData: SpecialShoesDataModel, pos: Int) {
+    // 알람 설정
+    private fun setAlarm(specialShoesData: SpecialShoesDataModel, pos: Int) {
         val timeTrigger = getTimeInMillis(
             EventDay(
                 specialShoesData.SpecialYear!!,
@@ -175,114 +182,49 @@ class UpcomingListFragment : Fragment(), UpcomingListAdapter.AlarmListener {
         )
 
         if (timeTrigger != 0L) {
-            AlarmDialog.getAlarmDialog("알림 설정", "이 상품의 알림을 설정하시겠습니까?")
-                .show(requireActivity().supportFragmentManager, AlarmDialog.ALARM_DIALOG_TAG)
+            with(AlarmBuilder(requireContext())) {
+                val bundle = Bundle().apply { // 알람 설정
+                    putString(Contents.INTENT_KEY_POSITION, specialShoesData.ShoesUrl)
 
-            AlarmDialog.setOnCheckClickListener(object : AlarmDialog.CheckClickListener {
-                override fun onCheckClickListener(dialog: Dialog) {
-                    setAlarm(timeTrigger, specialShoesData)
-                    setPreference(
-                        specialShoesData.ShoesUrl,
-                        timeTrigger
-                    )
-
-                    mAdapter.notifyItemChanged(pos)
-                    dialog.dismiss()
+                    if (specialShoesData.ShoesCategory == ShoesDataModel.CATEGORY_DRAW) {
+                        putBoolean(Contents.INTENT_KEY_IS_DRAW, true)
+                    }
                 }
-            })
+
+                setIntent(Contents.INTENT_ACTION_PRODUCT_ALARM, bundle)
+                setAlarm(timeTrigger, specialShoesData.ShoesId!!)
+            }
+            mViewModel.setPreference(specialShoesData.ShoesUrl, timeTrigger) // 알람 데이터 삭제
+
+            mAdapter.notifyItemChanged(pos) // 리스트 상태 변경
+            Snackbar.make(fragmentBinding?.mainLayout!!, "해당 상품의 알림을 설정하였습니다.", Snackbar.LENGTH_SHORT)
+                .show()
         } else {
-            Toast.makeText(requireContext(), "알람 설정 중 문제가 발생하였습니다.", Toast.LENGTH_SHORT)
+            Snackbar.make(fragmentBinding?.mainLayout!!, "알람 설정 중 문제가 발생하였습니다.", Snackbar.LENGTH_SHORT)
                 .show()
         }
     }
 
-    // 알람 취소 알림창
-    private fun removeNotification(specialShoesData: SpecialShoesDataModel, pos: Int) {
-        AlarmDialog.getAlarmDialog("알림 설정", "이 상품의 알림을 취소하시겠습니까?")
-            .show(requireActivity().supportFragmentManager, AlarmDialog.ALARM_DIALOG_TAG)
-
-        AlarmDialog.setOnCheckClickListener(object : AlarmDialog.CheckClickListener {
-            override fun onCheckClickListener(dialog: Dialog) {
-                removeAlarm(specialShoesData)
-                removePreference(specialShoesData.ShoesUrl)
-
-                mAdapter.notifyItemChanged(pos)
-                dialog.dismiss()
-            }
-        })
-    }
-
-    // 알람 설정
-    private fun setAlarm(timeTrigger: Long, specialShoesData: SpecialShoesDataModel) {
-        val alarmIntent = Intent(requireContext(), MyAlarmReceiver::class.java).apply {
-            action = Contents.INTENT_ACTION_PRODUCT_ALARM
-            putExtra(Contents.INTENT_KEY_POSITION, specialShoesData.ShoesUrl)
-        }
-        val alarmPendingIntent = PendingIntent.getBroadcast(
-            requireContext(),
-            specialShoesData.ShoesId!!,
-            alarmIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT
-        )
-        val alarmManager =
-            requireContext().getSystemService(Context.ALARM_SERVICE) as AlarmManager
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            alarmManager.setExactAndAllowWhileIdle(
-                AlarmManager.RTC_WAKEUP,
-                timeTrigger,
-                alarmPendingIntent
-            )
-        } else {
-            alarmManager.setExact(
-                AlarmManager.RTC_WAKEUP,
-                timeTrigger,
-                alarmPendingIntent
-            )
-        }
-    }
-
     // 알람 삭제
-    private fun removeAlarm(specialShoesData: SpecialShoesDataModel) {
-        val alarmIntent = Intent(requireContext(), MyAlarmReceiver::class.java).apply {
-            action = Contents.INTENT_ACTION_PRODUCT_ALARM
-            putExtra(Contents.INTENT_KEY_POSITION, specialShoesData.ShoesUrl)
+    private fun removeAlarm(specialShoesData: SpecialShoesDataModel, pos: Int) {
+        with(AlarmBuilder(requireContext())) { // 알람 삭제
+            val bundle = Bundle().apply {
+                putString(Contents.INTENT_KEY_POSITION, specialShoesData.ShoesUrl)
+
+                if (specialShoesData.ShoesCategory == ShoesDataModel.CATEGORY_DRAW) {
+                    putBoolean(Contents.INTENT_KEY_IS_DRAW, true)
+                }
+            }
+
+            setIntent(Contents.INTENT_ACTION_PRODUCT_ALARM, bundle)
+            removeAlarm(specialShoesData.ShoesId!!)
         }
 
-        // 이미 설정된 알람이 있는지 확인
-        if (checkExistAlarm(alarmIntent, specialShoesData.ShoesId!!)) {
+        mViewModel.removePreference(specialShoesData.ShoesUrl) // 알람 데이터 삭제
+        mAdapter.notifyItemChanged(pos) // 리스트 상태 변경
 
-            // 설정된 알람이 있으면 삭제함
-            val alarmPendingIntent = PendingIntent.getBroadcast(
-                requireContext(),
-                specialShoesData.ShoesId,
-                alarmIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT
-            )
-
-            val alarmManager =
-                requireContext().getSystemService(Context.ALARM_SERVICE) as AlarmManager
-            alarmManager.cancel(alarmPendingIntent)
-            alarmPendingIntent.cancel()
-
-            Log.i("RemoveAlarm", "동작")
-        }
-    }
-
-    // 알림 확인
-    private fun checkExistAlarm(mIntent: Intent, requestCode: Int): Boolean {
-        val alarmPendingIntent = PendingIntent.getBroadcast(
-            requireContext(),
-            requestCode,
-            mIntent,
-            PendingIntent.FLAG_NO_CREATE
-        )
-
-        return alarmPendingIntent?.let {
-            true
-        } ?: let {
-            false
-        }
+        Snackbar.make(fragmentBinding?.mainLayout!!, "알림을 취소하였습니다.", Snackbar.LENGTH_SHORT)
+            .show()
     }
 
     private fun getTimeInMillis(eventDay: EventDay): Long {
@@ -319,36 +261,11 @@ class UpcomingListFragment : Fragment(), UpcomingListAdapter.AlarmListener {
 
         return 0
     }
-
-    // 데이터베이스에 저장
-    private fun setPreference(preferenceKey: String?, timeTrigger: Long) {
-        with(timePreferences.edit()) {
-            putLong(preferenceKey, timeTrigger)
-            commit()
-        }
-
-        with(allowAlarmPreferences.edit()) {
-            putBoolean(preferenceKey, true)
-            commit()
-        }
-    }
-
-    private fun removePreference(preferenceKey: String?) {
-        with(timePreferences.edit()) {
-            remove(preferenceKey)
-            commit()
-        }
-
-        with(allowAlarmPreferences.edit()) {
-            remove(preferenceKey)
-            commit()
-        }
-    }
     // 알람 끝
 
     // 애니메이션 설정 시작
     private fun appearText() {
-        with(upcomingFrag_noitemText) {
+        with(fragmentBinding?.noItemText!!) {
             isEnabled = true
 
             animate().setDuration(350)
@@ -358,7 +275,7 @@ class UpcomingListFragment : Fragment(), UpcomingListAdapter.AlarmListener {
     }
 
     private fun disappearText() {
-        with(upcomingFrag_noitemText) {
+        with(fragmentBinding?.noItemText!!) {
             isEnabled = false
 
             animate().setDuration(100)

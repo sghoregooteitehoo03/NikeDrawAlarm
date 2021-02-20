@@ -10,11 +10,6 @@
         app:destination="@id/loadingFragment"
         app:launchSingleTop="true" />
 
-    <action
-        android:id="@+id/action_global_autoEnterFragment"
-        app:destination="@id/autoEnterFragment"
-        app:launchSingleTop="true" />
-
     <fragment
         android:id="@+id/drawListFragment"
         android:name="com.nikealarm.nikedrawalarm.ui.fragment.ShoesListFragment"
@@ -79,27 +74,10 @@
         android:name="com.nikealarm.nikedrawalarm.ui.fragment.UpcomingListFragment"
         android:label="UpcomingListFragment"
         tools:layout="@layout/fragment_upcoming_list"/>
-    <fragment
-        android:id="@+id/autoEnterFragment"
-        android:name="com.nikealarm.nikedrawalarm.ui.fragment.AutoEnterFragment"
-        android:label="fragment_auto_enter"
-        tools:layout="@layout/fragment_auto_enter">
-        <action
-            android:id="@+id/action_autoEnterFragment_to_reEditDialog"
-            app:destination="@id/reEditDialog" />
-        <action
-            android:id="@+id/action_autoEnterFragment_to_terminationDialog"
-            app:destination="@id/terminationDialog" />
-    </fragment>
     <dialog
         android:id="@+id/editInfoDialog"
         android:name="com.nikealarm.nikedrawalarm.ui.dialog.EditInfoDialog"
         android:label="EditInfoDialog"
-        tools:layout="@layout/dialog_editinfo" />
-    <dialog
-        android:id="@+id/reEditDialog"
-        android:name="com.nikealarm.nikedrawalarm.ui.dialog.ReEditDialog"
-        android:label="ReEditDialog"
         tools:layout="@layout/dialog_editinfo" />
     <dialog
         android:id="@+id/terminationDialog"

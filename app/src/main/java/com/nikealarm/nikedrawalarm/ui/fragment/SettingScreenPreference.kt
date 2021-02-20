@@ -1,24 +1,19 @@
 package com.nikealarm.nikedrawalarm.ui.fragment
 
-import android.app.AlarmManager
-import android.app.PendingIntent
-import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
-import android.util.Log
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreferenceCompat
 import com.nikealarm.nikedrawalarm.BuildConfig
-import com.nikealarm.nikedrawalarm.component.MyAlarmReceiver
 import com.nikealarm.nikedrawalarm.R
+import com.nikealarm.nikedrawalarm.other.AlarmBuilder
 import com.nikealarm.nikedrawalarm.other.Contents
-import com.nikealarm.nikedrawalarm.viewmodel.MyViewModel
+import com.nikealarm.nikedrawalarm.viewmodel.ShareDataViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.*
 import javax.inject.Inject
@@ -26,8 +21,7 @@ import javax.inject.Named
 
 @AndroidEntryPoint
 class SettingScreenPreference : PreferenceFragmentCompat() {
-    private lateinit var mAlarmManager: AlarmManager
-    private lateinit var mViewModel: MyViewModel
+    private val mViewModel by activityViewModels<ShareDataViewModel>()
 
     @Inject
     @Named(Contents.PREFERENCE_NAME_TIME)
@@ -41,10 +35,8 @@ class SettingScreenPreference : PreferenceFragmentCompat() {
         setPreferencesFromResource(R.xml.setting_screen, rootKey)
 
         // 인스턴스 설정
-        mAlarmManager = context?.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        mViewModel = ViewModelProvider(requireActivity())[MyViewModel::class.java]
-
-        mViewModel.allowAutoEnter.value = autoEnterPreference.getBoolean(Contents.AUTO_ENTER_ALLOW, false)
+        mViewModel.allowAutoEnter.value =
+            autoEnterPreference.getBoolean(Contents.AUTO_ENTER_ALLOW, false)
 
         // Preference 설정
         // 알람 설정 스위치
@@ -65,7 +57,7 @@ class SettingScreenPreference : PreferenceFragmentCompat() {
                 setOnPreferenceChangeListener { preference, allow ->
                     mViewModel.allowAutoEnter.value = allow as Boolean
 
-                    if(allow) {
+                    if (allow) {
                         findNavController().navigate(R.id.editInfoDialog)
                     }
                     true
@@ -132,11 +124,7 @@ class SettingScreenPreference : PreferenceFragmentCompat() {
 
     // 알람 설정
     private fun setAlarm() {
-        val alarmIntent = Intent(context, MyAlarmReceiver::class.java).apply {
-            action = Contents.INTENT_ACTION_SYNC_ALARM
-        }
-
-        val mCalendar = Calendar.getInstance().apply {
+        val timeTrigger = Calendar.getInstance().apply {
             val time = if (this.get(Calendar.HOUR_OF_DAY) == 24) {
                 3
             } else {
@@ -146,30 +134,11 @@ class SettingScreenPreference : PreferenceFragmentCompat() {
             set(Calendar.MINUTE, 0)
             set(Calendar.SECOND, 0)
             set(Calendar.MILLISECOND, 0)
-        }
+        }.timeInMillis
 
-        val timeTrigger = mCalendar.timeInMillis
-
-        val alarmPendingIntent = PendingIntent.getBroadcast(
-            context,
-            Contents.SYNC_ALARM_CODE,
-            alarmIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT
-        )
-
-        // 오전 8시 알람 설정
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            mAlarmManager.setExactAndAllowWhileIdle(
-                AlarmManager.RTC_WAKEUP,
-                timeTrigger,
-                alarmPendingIntent
-            )
-        } else {
-            mAlarmManager.setExact(
-                AlarmManager.RTC_WAKEUP,
-                timeTrigger,
-                alarmPendingIntent
-            )
+        with(AlarmBuilder(requireContext())) {
+            setIntent(Contents.INTENT_ACTION_SYNC_ALARM)
+            setAlarm(timeTrigger, Contents.SYNC_ALARM_CODE)
         }
         setPreference(timeTrigger)
 
@@ -177,49 +146,15 @@ class SettingScreenPreference : PreferenceFragmentCompat() {
 //        val parsingWorkRequest = OneTimeWorkRequestBuilder<FindDrawWorker>()
 //            .build()
 //        WorkManager.getInstance(requireContext()).enqueue(parsingWorkRequest)
-
-        Log.i("SetAlarm", "동작")
     }
 
     // 알람 지우기
     private fun removeAlarm() {
-        val mIntent = Intent(context, MyAlarmReceiver::class.java).apply {
-            action = Contents.INTENT_ACTION_SYNC_ALARM
-        }
-
-        // 이미 설정된 알람이 있는지 확인
-        if (checkExistAlarm(mIntent)) {
-
-            // 설정된 알람이 있으면 삭제함
-            val alarmPendingIntent = PendingIntent.getBroadcast(
-                context,
-                Contents.SYNC_ALARM_CODE,
-                mIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT
-            )
-
-            mAlarmManager.cancel(alarmPendingIntent)
-            alarmPendingIntent.cancel()
-
-            Log.i("RemoveAlarm", "동작")
+        with(AlarmBuilder(requireContext())) {
+            setIntent(Contents.INTENT_ACTION_SYNC_ALARM)
+            removeAlarm(Contents.SYNC_ALARM_CODE)
         }
         removePreference()
-    }
-
-    // 알림 확인
-    private fun checkExistAlarm(mIntent: Intent): Boolean {
-        val alarmPendingIntent = PendingIntent.getBroadcast(
-            context,
-            Contents.SYNC_ALARM_CODE,
-            mIntent,
-            PendingIntent.FLAG_NO_CREATE
-        )
-
-        return alarmPendingIntent?.let {
-            true
-        } ?: let {
-            false
-        }
     }
     // 알람 설정 끝
 

@@ -8,11 +8,11 @@
     android:orientation="vertical">
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="wrap_content"
+        android:layout_width="320dp"
         android:layout_height="wrap_content">
 
         <TextView
-            android:id="@+id/notifyDialogFrag_titleText"
+            android:id="@+id/title_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
@@ -25,44 +25,43 @@
             tools:text="종료" />
 
         <TextView
-            android:id="@+id/notifyDialogFrag_messageText"
+            android:id="@+id/message_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="14dp"
             android:layout_marginTop="20dp"
-            android:layout_marginEnd="14dp"
             android:textSize="20sp"
             android:textStyle="bold"
-            app:layout_constraintBottom_toTopOf="@id/notifyDialogFrag_button_layout"
+            app:layout_constraintBottom_toTopOf="@id/button_layout"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/notifyDialogFrag_view"
+            app:layout_constraintTop_toBottomOf="@id/divide_view"
             tools:text="앱을 종료하시겠습니까?" />
 
         <View
-            android:id="@+id/notifyDialogFrag_view"
+            android:id="@+id/divide_view"
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:layout_marginTop="10dp"
             android:background="#eeeeee"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/notifyDialogFrag_titleText" />
+            app:layout_constraintTop_toBottomOf="@id/title_text" />
 
         <LinearLayout
-            android:id="@+id/notifyDialogFrag_button_layout"
+            android:id="@+id/button_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="18dp"
             android:layout_marginBottom="18dp"
+            android:gravity="center"
             android:orientation="horizontal"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/notifyDialogFrag_messageText">
+            app:layout_constraintTop_toBottomOf="@id/message_text">
 
             <Button
-                android:id="@+id/notifyDialogFrag_cancelButton"
+                android:id="@+id/cancel_btn"
                 android:layout_width="150dp"
                 android:layout_height="60dp"
                 android:layout_marginEnd="10dp"
@@ -70,11 +69,11 @@
                 android:text="취소"
                 android:textSize="20sp"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@+id/notifyDialogFrag_checkButton"
+                app:layout_constraintEnd_toStartOf="@id/check_btn"
                 app:layout_constraintStart_toStartOf="parent" />
 
             <Button
-                android:id="@+id/notifyDialogFrag_checkButton"
+                android:id="@+id/check_btn"
                 android:layout_width="150dp"
                 android:layout_height="60dp"
                 android:background="@drawable/dialog_check_button_shape"
@@ -83,7 +82,7 @@
                 android:textSize="20sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@+id/notifyDialogFrag_cancelButton" />
+                app:layout_constraintStart_toEndOf="@id/cancel_btn" />
         </LinearLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </LinearLayout>

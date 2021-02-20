@@ -12,7 +12,7 @@
         android:layout_height="wrap_content">
 
         <TextView
-            android:id="@+id/editInfoDialogFrag_titleText"
+            android:id="@+id/title_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
@@ -25,26 +25,26 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <View
-            android:id="@+id/editInfoDialogFrag_view"
+            android:id="@+id/divide_view"
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:layout_marginTop="10dp"
             android:background="#eeeeee"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/editInfoDialogFrag_titleText" />
+            app:layout_constraintTop_toBottomOf="@id/title_text" />
 
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/editInfoDialogFrag_idLayout"
+            android:id="@+id/id_layout"
             android:layout_width="200dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/editInfoDialogFrag_view">
+            app:layout_constraintTop_toBottomOf="@id/divide_view">
 
             <EditText
-                android:id="@+id/editInfoDialogFrag_idEdit"
+                android:id="@+id/id_edit"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="나이키 아이디 입력"
@@ -52,16 +52,16 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/editInfoDialogFrag_passLayout"
+            android:id="@+id/pass_layout"
             android:layout_width="200dp"
             android:layout_height="wrap_content"
             android:layout_marginBottom="10dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/editInfoDialogFrag_idLayout">
+            app:layout_constraintTop_toBottomOf="@id/id_layout">
 
             <com.maksim88.passwordedittext.PasswordEditText
-                android:id="@+id/editInfoDialogFrag_passEdit"
+                android:id="@+id/pass_edit"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="나이키 비밀번호 입력"
@@ -69,44 +69,56 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <androidx.appcompat.widget.AppCompatSpinner
-            android:id="@+id/editInfoDialogFrag_spinner"
+            android:id="@+id/size_spinner"
             android:layout_width="180dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/editInfoDialogFrag_passLayout" />
+            app:layout_constraintTop_toBottomOf="@id/pass_layout" />
 
         <TextView
-            android:id="@+id/editInfoDialogFrag_explainText"
+            android:id="@+id/explain_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp"
             android:text="* 절대 개인정보 수집을 위한 활동에\n  사용하지 않습니다."
             android:textStyle="bold"
-            app:layout_constraintBottom_toTopOf="@+id/editInfoDialogFrag_cancelButton"
             app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/editInfoDialogFrag_spinner" />
+            app:layout_constraintTop_toBottomOf="@id/size_spinner" />
+
+        <TextView
+            android:id="@+id/explain_text2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:text="* 의류 상품은 지원하지 않습니다."
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/explain_text" />
 
         <Button
-            android:id="@+id/editInfoDialogFrag_cancelButton"
+            android:id="@+id/cancel_btn"
             android:layout_width="150dp"
             android:layout_height="60dp"
+            android:layout_marginTop="8dp"
             android:layout_marginBottom="18dp"
             android:background="@drawable/dialog_cancel_button_shape"
             android:text="취소"
             android:textSize="20sp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/editInfoDialogFrag_checkButton"
+            app:layout_constraintEnd_toStartOf="@id/check_btn"
             app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toStartOf="parent" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/explain_text2" />
 
         <Button
-            android:id="@+id/editInfoDialogFrag_checkButton"
+            android:id="@+id/check_btn"
             android:layout_width="150dp"
             android:layout_height="60dp"
+            android:layout_marginTop="8dp"
             android:layout_marginBottom="18dp"
             android:background="@drawable/dialog_check_button_shape"
             android:text="확인"
@@ -115,6 +127,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toEndOf="@+id/editInfoDialogFrag_cancelButton" />
+            app:layout_constraintStart_toEndOf="@id/cancel_btn"
+            app:layout_constraintTop_toBottomOf="@id/explain_text2" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </LinearLayout>

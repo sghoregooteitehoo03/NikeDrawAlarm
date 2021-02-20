@@ -1,12 +1,7 @@
 package com.nikealarm.nikedrawalarm.ui.fragment
 
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
-import android.widget.Button
-import android.widget.ProgressBar
-import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -14,54 +9,68 @@ import androidx.navigation.fragment.findNavController
 import androidx.work.*
 import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.component.worker.ParsingWorker
+import com.nikealarm.nikedrawalarm.databinding.FragmentLoadingBinding
 import com.nikealarm.nikedrawalarm.other.Contents
-import kotlinx.android.synthetic.main.fragment_loading.*
 
-class LoadingFragment : Fragment() {
-    private lateinit var explainText: TextView
-    private lateinit var restartBtn: Button
-    private lateinit var progressBar: ProgressBar
+class LoadingFragment : Fragment(R.layout.fragment_loading) {
+    private var fragmentBinding: FragmentLoadingBinding? = null
 
     companion object {
+        var isOpened = false
         private var isStarted = false
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
 
         startWork()
         activity?.onBackPressedDispatcher?.addCallback(backPressedCallback)
-        return inflater.inflate(R.layout.fragment_loading, container, false)
     }
 
     // 시작
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // id 설정
-        explainText = view.findViewById(R.id.loadingFrag_errorText)
-        restartBtn = view.findViewById<Button>(R.id.loadingFrag_restart_btn).apply {
-            setOnClickListener {
-                startWorkAnimation()
-                startWork()
-            }
-        }
-        progressBar = view.findViewById(R.id.loadingFrag_progressBar)
-        loadingFrag_exitButton.setOnClickListener {
-            terminationApp()
-        }
+        // 뷰 설정
+        initView(view)
 
         // 옵저버 설정
+        setObserver()
+    }
+
+    override fun onDestroy() {
+        fragmentBinding = null
+        if (!isStarted) { // 로딩중에 앱을 나갔을 경우
+            WorkManager.getInstance(requireContext())
+                .cancelUniqueWork(Contents.WORKER_PARSING_DATA)
+        }
+        super.onDestroy()
+    }
+
+    private fun initView(view: View) { // 뷰 초기화
+        val binding = FragmentLoadingBinding.bind(view)
+        fragmentBinding = binding
+
+        binding.restartBtn.setOnClickListener {
+            startWorkAnimation()
+            startWork()
+        }
+        binding.exitBtn.setOnClickListener {
+            terminationApp()
+        }
+    }
+
+    private fun setObserver() { // 옵저버 설정
         WorkManager.getInstance(requireContext())
             .getWorkInfosByTagLiveData(Contents.WORKER_PARSING_DATA)
             .observe(viewLifecycleOwner, Observer {
                 when (it[0].state) {
                     WorkInfo.State.SUCCEEDED -> { // 로딩 성공 시
                         isStarted = true
-                        findNavController().navigateUp()
+
+                        if (isOpened) {
+                            findNavController().navigateUp()
+                        }
                         findNavController().navigate(R.id.action_loadingFragment_to_drawListFragment)
                     }
                     WorkInfo.State.FAILED -> { // 로딩 실패 시
@@ -71,20 +80,12 @@ class LoadingFragment : Fragment() {
                         val progress = it[0].progress
                         val value = progress.getInt(Contents.WORKER_PARSING_DATA_OUTPUT_KEY, 0)
 
-                        loadingFrag_percent_textView.text = "$value%"
+                        fragmentBinding?.percentText?.text = "$value%"
                     }
-                    else -> {}
+                    else -> {
+                    }
                 }
             })
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-
-        if(!isStarted) { // 로딩중에 앱을 나갔을 경우
-            WorkManager.getInstance(requireContext())
-                .cancelUniqueWork(Contents.WORKER_PARSING_DATA)
-        }
     }
 
     private val backPressedCallback = object : OnBackPressedCallback(true) {
@@ -109,24 +110,25 @@ class LoadingFragment : Fragment() {
     }
 
     private fun terminationApp() {
+        isOpened = true
         findNavController().navigate(R.id.terminationDialog)
     }
 
     // 애니메이션 설정
     private fun failedWorkAnimation() {
-        with(loadingFrag_errorLayout) {
+        with(fragmentBinding?.errorLayout!!) {
             animate().setDuration(200)
                 .alpha(1f)
                 .withLayer()
 
-            restartBtn.isEnabled = true
+            fragmentBinding?.restartBtn?.isEnabled = true
         }
-        with(loadingFrag_mainLayout) {
+        with(fragmentBinding?.mainLayout!!) {
             animate().setDuration(200)
                 .alpha(0f)
                 .withLayer()
         }
-        with(loadingFrag_explainText) {
+        with(fragmentBinding?.explainText!!) {
             animate().setDuration(200)
                 .alpha(0f)
                 .withLayer()
@@ -134,19 +136,19 @@ class LoadingFragment : Fragment() {
     }
 
     private fun startWorkAnimation() {
-        with(loadingFrag_errorLayout) {
+        with(fragmentBinding?.errorLayout!!) {
             animate().setDuration(200)
                 .alpha(0f)
                 .withLayer()
 
-            restartBtn.isEnabled = false
+            fragmentBinding?.restartBtn?.isEnabled = false
         }
-        with(loadingFrag_mainLayout) {
+        with(fragmentBinding?.mainLayout!!) {
             animate().setDuration(200)
                 .alpha(1f)
                 .withLayer()
         }
-        with(loadingFrag_explainText) {
+        with(fragmentBinding?.explainText!!) {
             animate().setDuration(200)
                 .alpha(1f)
                 .withLayer()

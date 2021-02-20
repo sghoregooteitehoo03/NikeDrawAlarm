@@ -1,37 +1,27 @@
 package com.nikealarm.nikedrawalarm.ui.fragment
 
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
-import android.view.ViewGroup
-import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.nikealarm.nikedrawalarm.R
+import com.nikealarm.nikedrawalarm.databinding.FragmentSettingBinding
 import com.nikealarm.nikedrawalarm.ui.MainActivity
 
-class SettingFragment : Fragment() {
+class SettingFragment : Fragment(R.layout.fragment_setting) {
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
-        return inflater.inflate(R.layout.fragment_setting, container, false)
     }
 
     // 시작
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // id 설정
-        val toolbar = view.findViewById<Toolbar>(R.id.settingFrag_toolbar).apply {
-            (activity as MainActivity).setSupportActionBar(this)
-            (activity as MainActivity).supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        }
+        // 뷰 설정
+        initView(view)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -41,6 +31,14 @@ class SettingFragment : Fragment() {
                 true
             }
             else -> false
+        }
+    }
+
+    private fun initView(view: View) {
+        val binding = FragmentSettingBinding.bind(view)
+        with(binding.mainToolbar) {
+            (activity as MainActivity).setSupportActionBar(this)
+            (activity as MainActivity).supportActionBar?.setDisplayHomeAsUpEnabled(true)
         }
     }
 }

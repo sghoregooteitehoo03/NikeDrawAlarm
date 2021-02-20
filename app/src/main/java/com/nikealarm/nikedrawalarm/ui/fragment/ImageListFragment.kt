@@ -2,17 +2,13 @@ package com.nikealarm.nikedrawalarm.ui.fragment
 
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
-import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
 import androidx.activity.OnBackPressedCallback
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.transition.TransitionInflater
@@ -22,17 +18,13 @@ import com.bumptech.glide.Glide
 import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.adapter.ImageListPagerAdapter
 import com.nikealarm.nikedrawalarm.component.worker.GetImageWorker
+import com.nikealarm.nikedrawalarm.databinding.FragmentImageListBinding
 import com.nikealarm.nikedrawalarm.other.Contents
-import com.nikealarm.nikedrawalarm.viewmodel.MyViewModel
-import kotlinx.android.synthetic.main.fragment_image_list.*
 
-class ImageListFragment : Fragment() {
+class ImageListFragment : Fragment(R.layout.fragment_image_list) {
     private lateinit var dots: Array<ImageView?>
-
-    private lateinit var viewPager: ViewPager2
-    private lateinit var sliderDotspanel: LinearLayout
-
     private val args: ImageListFragmentArgs by navArgs()
+    private var fragmentBinding: FragmentImageListBinding? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,43 +32,41 @@ class ImageListFragment : Fragment() {
             TransitionInflater.from(requireContext()).inflateTransition(R.transition.image_shared_element_transition)
         sharedElementReturnTransition =
             TransitionInflater.from(requireContext()).inflateTransition(R.transition.image_shared_return_element_transition)
-    }
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        val getImageWork = OneTimeWorkRequestBuilder<GetImageWorker>()
-            .addTag(Contents.WORKER_GET_IMAGE)
-            .setInputData(workDataOf(Contents.WORKER_GET_IMAGE_INPUT_KEY to args.shoesUrl))
-            .build()
-
-        WorkManager.getInstance(requireContext())
-            .enqueueUniqueWork(Contents.WORKER_GET_IMAGE, ExistingWorkPolicy.KEEP, getImageWork)
-
+        startWork()
         activity?.onBackPressedDispatcher?.addCallback(backPressed)
-        return inflater.inflate(R.layout.fragment_image_list, container, false)
     }
 
     // 시작
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // id 설정
-        with(imageListFrag_firstImage) {
+        // 뷰 설정
+        initView(view)
+        // 옵저버 설정
+        setObserver()
+    }
+
+    override fun onDestroyView() {
+        fragmentBinding = null
+        super.onDestroyView()
+    }
+
+    private fun initView(view: View) { // 뷰 설정
+        val binding = FragmentImageListBinding.bind(view)
+        fragmentBinding = binding
+
+        with(binding.firstImage) {
             Glide.with(context).load(args.shoesImageUrl).into(this)
             transitionName = args.shoesUrl
         }
-        viewPager = view.findViewById(R.id.imageListFrag_viewpager)
-        sliderDotspanel = view.findViewById(R.id.imageListFrag_sliderDots)
-        val cancelBtn = view.findViewById<ImageButton>(R.id.imageListFrag_cancelBtn).apply {
-            setOnClickListener {
-                exitFragment()
-            }
-        }
 
-        // 옵저버 설정
+        binding.cancelButton.setOnClickListener {
+            exitFragment()
+        }
+    }
+
+    private fun setObserver() { // 옵저버 설정
         WorkManager.getInstance(requireContext())
             .getWorkInfosByTagLiveData(Contents.WORKER_GET_IMAGE)
             .observe(viewLifecycleOwner, Observer {
@@ -89,21 +79,31 @@ class ImageListFragment : Fragment() {
                     setDots(dotsCount)
                     val viewPagerAdapter = ImageListPagerAdapter(imageList as Array<String>)
 
-                    viewPager.adapter = viewPagerAdapter
+                    fragmentBinding?.imageViewPager?.adapter = viewPagerAdapter
                     setData()
                 }
             })
     }
 
+    private fun startWork() { // 작업 시작
+        val getImageWork = OneTimeWorkRequestBuilder<GetImageWorker>()
+            .addTag(Contents.WORKER_GET_IMAGE)
+            .setInputData(workDataOf(Contents.WORKER_GET_IMAGE_INPUT_KEY to args.shoesUrl))
+            .build()
+
+        WorkManager.getInstance(requireContext())
+            .enqueueUniqueWork(Contents.WORKER_GET_IMAGE, ExistingWorkPolicy.KEEP, getImageWork)
+    }
+
     // 데이터가 준비 되었을 시
     private fun setData() {
-        imageListFrag_firstImage.visibility = View.GONE
-        imageListFrag_layout.visibility = View.VISIBLE
+        fragmentBinding?.firstImage?.visibility = View.GONE
+        fragmentBinding?.mainLayout?.visibility = View.VISIBLE
     }
 
     private fun resetData() {
-        imageListFrag_firstImage.visibility = View.VISIBLE
-        imageListFrag_layout.visibility = View.GONE
+        fragmentBinding?.firstImage?.visibility = View.VISIBLE
+        fragmentBinding?.mainLayout?.visibility = View.GONE
     }
 
     private fun setDots(size: Int) {
@@ -125,10 +125,10 @@ class ImageListFragment : Fragment() {
                 setMargins(8, 0, 8, 0)
             }
 
-            sliderDotspanel.addView(dots[i], params)
+            fragmentBinding?.sliderDots?.addView(dots[i], params)
         }
 
-        viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+        fragmentBinding?.imageViewPager?.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
 
             override fun onPageSelected(position: Int) {
                 super.onPageSelected(position)

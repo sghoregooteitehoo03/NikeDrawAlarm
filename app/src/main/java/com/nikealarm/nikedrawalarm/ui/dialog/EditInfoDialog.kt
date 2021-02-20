@@ -14,12 +14,12 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.fragment.app.DialogFragment
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.activityViewModels
 import com.nikealarm.nikedrawalarm.R
+import com.nikealarm.nikedrawalarm.databinding.DialogEditinfoBinding
 import com.nikealarm.nikedrawalarm.other.Contents
-import com.nikealarm.nikedrawalarm.viewmodel.MyViewModel
+import com.nikealarm.nikedrawalarm.viewmodel.ShareDataViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.dialog_editinfo.*
 import javax.inject.Inject
 import javax.inject.Named
 
@@ -29,8 +29,9 @@ class EditInfoDialog : DialogFragment() {
     @Named(Contents.PREFERENCE_NAME_AUTO_ENTER_V2)
     lateinit var autoEnterPreference: SharedPreferences
 
-    private lateinit var mViewModel: MyViewModel
+    private val mViewModel by activityViewModels<ShareDataViewModel>()
     private lateinit var imm: InputMethodManager
+    private var fragmentBinding: DialogEditinfoBinding? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -46,23 +47,27 @@ class EditInfoDialog : DialogFragment() {
         super.onViewCreated(view, savedInstanceState)
 
         // 인스턴스 설정
-        mViewModel = ViewModelProvider(requireActivity())[MyViewModel::class.java]
         imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
 
         // 뷰 설정
-        initView()
+        initView(view)
     }
 
     override fun onDismiss(dialog: DialogInterface) {
-        super.onDismiss(dialog)
         if (checkIsEmpty() || checkPreferences()) {
             mViewModel.allowAutoEnter.value = false
         }
+        fragmentBinding = null
+
+        super.onDismiss(dialog)
     }
 
-    private fun initView() {
+    private fun initView(view: View) {
         val id = autoEnterPreference.getString(Contents.AUTO_ENTER_ID, "")!!
         val password = autoEnterPreference.getString(Contents.AUTO_ENTER_PASSWORD, "")!!
+
+        val binding = DialogEditinfoBinding.bind(view)
+        fragmentBinding = binding
 
         val spinnerAdapter =
             ArrayAdapter(
@@ -86,7 +91,7 @@ class EditInfoDialog : DialogFragment() {
                     "310"
                 )
             )
-        with(editInfoDialogFrag_spinner) {
+        with(binding.sizeSpinner) {
             adapter = spinnerAdapter
 
             val size = autoEnterPreference.getString(Contents.AUTO_ENTER_SIZE, "")!!
@@ -99,9 +104,9 @@ class EditInfoDialog : DialogFragment() {
             )
         }
 
-        editInfoDialogFrag_idEdit.setText(id)
+        binding.idEdit.setText(id)
         // EditText Key Action
-        with(editInfoDialogFrag_passEdit) {
+        with(binding.passEdit) {
             setText(password)
             setOnEditorActionListener { v, actionId, event ->
                 when (actionId) {
@@ -113,10 +118,10 @@ class EditInfoDialog : DialogFragment() {
             }
         }
 
-        editInfoDialogFrag_checkButton.setOnClickListener {
+        binding.checkBtn.setOnClickListener {
             setData()
         }
-        editInfoDialogFrag_cancelButton.setOnClickListener {
+        binding.cancelBtn.setOnClickListener {
             dismiss()
         }
     }
@@ -125,38 +130,38 @@ class EditInfoDialog : DialogFragment() {
     private fun setData() {
         if (!checkIsEmpty()) {
             with(autoEnterPreference.edit()) {
-                putString(Contents.AUTO_ENTER_ID, editInfoDialogFrag_idEdit.text.toString())
+                putString(Contents.AUTO_ENTER_ID, fragmentBinding?.idEdit?.text?.toString())
                 putString(
                     Contents.AUTO_ENTER_PASSWORD,
-                    editInfoDialogFrag_passEdit.text.toString()
+                    fragmentBinding?.passEdit?.text?.toString()
                 )
                 putString(
                     Contents.AUTO_ENTER_SIZE,
-                    editInfoDialogFrag_spinner.selectedItem as String
+                    fragmentBinding?.sizeSpinner?.selectedItem as String
                 )
                 commit()
             }
 
             Toast.makeText(requireContext(), "정보가 저장되었습니다.", Toast.LENGTH_SHORT).show()
 
-            editInfoDialogFrag_idEdit.clearFocus()
-            editInfoDialogFrag_passEdit.clearFocus()
-            imm.hideSoftInputFromWindow(editInfoDialogFrag_idEdit.windowToken, 0)
-            imm.hideSoftInputFromWindow(editInfoDialogFrag_passEdit.windowToken, 0)
+            fragmentBinding?.idEdit?.clearFocus()
+            fragmentBinding?.passEdit?.clearFocus()
+            imm.hideSoftInputFromWindow(fragmentBinding?.idEdit?.windowToken, 0)
+            imm.hideSoftInputFromWindow(fragmentBinding?.passEdit?.windowToken, 0)
         } else {
-            if (editInfoDialogFrag_idEdit.text.toString().isEmpty()) { // id가 비어있을 때
+            if (fragmentBinding?.idEdit?.text.toString().isEmpty()) { // id가 비어있을 때
                 Toast.makeText(requireContext(), "아이디를 입력해주세요.", Toast.LENGTH_SHORT).show()
 
-                editInfoDialogFrag_idLayout.requestFocus()
-                imm.showSoftInput(editInfoDialogFrag_idEdit, 0)
-            } else if (editInfoDialogFrag_passEdit.text.toString()
+                fragmentBinding?.idLayout?.requestFocus()
+                imm.showSoftInput(fragmentBinding?.idEdit, 0)
+            } else if (fragmentBinding?.passEdit?.text.toString()
                     .isEmpty()
             ) { // password가 비어있을 때
                 Toast.makeText(requireContext(), "비밀번호를 입력해주세요.", Toast.LENGTH_SHORT).show()
 
-                editInfoDialogFrag_passLayout.requestFocus()
-                imm.showSoftInput(editInfoDialogFrag_passEdit, 0)
-            } else if (editInfoDialogFrag_spinner.selectedItemPosition == 0) { // 사이즈 선택 안했을 때
+                fragmentBinding?.passLayout?.requestFocus()
+                imm.showSoftInput(fragmentBinding?.passEdit, 0)
+            } else if (fragmentBinding?.sizeSpinner?.selectedItemPosition == 0) { // 사이즈 선택 안했을 때
                 Toast.makeText(requireContext(), "사이즈를 선택해주세요.", Toast.LENGTH_SHORT).show()
             }
         }
@@ -164,9 +169,9 @@ class EditInfoDialog : DialogFragment() {
 
     // 데이터 유효성 검사
     private fun checkIsEmpty(): Boolean {
-        return !(editInfoDialogFrag_idEdit.text.toString()
-            .isNotEmpty() && editInfoDialogFrag_passEdit.text.toString()
-            .isNotEmpty() && editInfoDialogFrag_spinner.selectedItemPosition != 0)
+        return !(fragmentBinding?.idEdit?.text!!.toString()
+            .isNotEmpty() && fragmentBinding?.passEdit?.text!!.toString()
+            .isNotEmpty() && fragmentBinding?.sizeSpinner?.selectedItemPosition != 0)
     }
 
     private fun checkPreferences(): Boolean {

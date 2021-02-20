@@ -1,27 +1,16 @@
-package com.nikealarm.nikedrawalarm.viewmodel
+package com.nikealarm.nikedrawalarm.viewmodel.upcoming
 
 import androidx.arch.core.util.Function
 import androidx.hilt.Assisted
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.*
 import androidx.paging.PagedList
-import com.nikealarm.nikedrawalarm.database.ShoesDataModel
 import com.nikealarm.nikedrawalarm.database.SpecialShoesDataModel
 
-class MyViewModel @ViewModelInject constructor(
-    private val repository: MyRepository,
+class UpcomingViewModel @ViewModelInject constructor(
+    private val repository: UpcomingRepository,
     @Assisted private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
-    // 전체 목록
-    val shoesCategory = MutableLiveData<String>(ShoesDataModel.CATEGORY_RELEASED)
-
-    val shoesList: LiveData<PagedList<ShoesDataModel>> = Transformations.switchMap(
-        shoesCategory, Function {
-            repository.getShoesData(it)
-        }
-    )
-
-    // Special 목록
     val upcomingCategory = MutableLiveData<String>()
 
     val specialShoesList: LiveData<PagedList<SpecialShoesDataModel>> = Transformations.switchMap(
@@ -34,7 +23,12 @@ class MyViewModel @ViewModelInject constructor(
         }
     )
 
-    // 기타
-    val allowAutoEnter = MutableLiveData<Boolean>()
-    val retryEnter = MutableLiveData<Boolean>(false)
+    fun setPreference(preferenceKey: String?, timeTrigger: Long) =
+        repository.setPreference(preferenceKey, timeTrigger)
+
+    fun removePreference(preferenceKey: String?) =
+        repository.removePreference(preferenceKey)
+
+    fun getAllowAlarmPref() =
+        repository.allowAlarmPref
 }

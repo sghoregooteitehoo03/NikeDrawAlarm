@@ -1,19 +1,22 @@
 package com.nikealarm.nikedrawalarm.ui
 
 import android.app.NotificationManager
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import androidx.navigation.fragment.findNavController
+import android.view.View
+import android.widget.Toast
+import androidx.navigation.findNavController
 import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.other.Contents
 import com.nikealarm.nikedrawalarm.other.CustomTabsBuilder
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.activity_main.*
 
 /*
+* adb shell dumpsys alarm (알림 체크)
 * UPCOMING 정보 시 분 초 표시 (서버 필요)
 * 진행중인 상품 알려주기
 * UI 수정 및 최적화
@@ -37,35 +40,36 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun ifNeedToMoveFragment(intent: Intent?) {
-        when(intent?.action) {
+        when (intent?.action) {
             Contents.INTENT_ACTION_GOTO_WEBSITE -> {
                 setIntent(intent)
                 cancelNotification()
 
                 val url = intent.getStringExtra(Contents.DRAW_URL)
                     ?: "https://www.nike.com/kr/launch/"
-                val builder = CustomTabsBuilder().getBuilder()
-                builder.build()
-                    .launchUrl(this, Uri.parse(url))
+                try {
+                    val builder = CustomTabsBuilder().getBuilder()
+                    builder.build()
+                        .launchUrl(this, Uri.parse(url))
+                } catch (e: Exception) {
+                    Toast.makeText(this, "크롬 브라우저가 존재하지 않습니다.", Toast.LENGTH_SHORT)
+                        .show()
+                }
             }
             Contents.INTENT_ACTION_GOTO_DRAWLIST -> {
                 setIntent(intent)
                 cancelNotification()
-                nav_host_fragment.findNavController().navigate(R.id.action_global_drawListFragment)
-            }
-            Contents.INTENT_ACTION_GOTO_AUTO_ENTER -> {
-                setIntent(intent)
-                cancelNotification()
-                nav_host_fragment.findNavController().navigate(R.id.action_global_autoEnterFragment)
+                findNavController(R.id.nav_host_fragment).navigate(R.id.action_global_drawListFragment)
             }
         }
     }
 
     private fun cancelNotification() {
         val closeChannelId = intent.getIntExtra(Contents.CHANNEL_ID, -1)
-        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val notificationManager =
+            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-        if(closeChannelId != -1) {
+        if (closeChannelId != -1) {
             notificationManager.cancel(closeChannelId)
         } else {
             notificationManager.cancelAll()

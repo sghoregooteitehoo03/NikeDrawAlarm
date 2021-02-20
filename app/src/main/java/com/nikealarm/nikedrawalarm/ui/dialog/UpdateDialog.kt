@@ -8,7 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import com.nikealarm.nikedrawalarm.R
-import kotlinx.android.synthetic.main.dialog_notification.*
+import com.nikealarm.nikedrawalarm.databinding.DialogNotificationBinding
 
 class UpdateDialog : DialogFragment() {
 
@@ -25,15 +25,21 @@ class UpdateDialog : DialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        initView()
+        initView(view)
     }
 
-    private fun initView() {
-        notifyDialogFrag_titleText.text = "업데이트"
-        notifyDialogFrag_messageText.text =
-            "- 업데이트 이후 알림 지워지는 버그 수정\n- 코드 안정화"
-        notifyDialogFrag_cancelButton.visibility = View.GONE
-        notifyDialogFrag_checkButton.setOnClickListener {
+    private fun initView(view: View) {
+        val binding = DialogNotificationBinding.bind(view)
+
+        binding.titleText.text = "업데이트"
+        with(binding.messageText) {
+            text =
+                "- 자동응모 방식 변경\n( UPCOMING에서 DRAW 상품을 알림 설정해놓으시면 응모 당일 날 자동으로 응모가 진행됩니다. )\n\n- 데이터 못 읽어오는 버그 수정\n(알림을 다시 설정해주세요!)"
+            textSize = 18f
+            setPadding(12, 0, 12, 0)
+        }
+        binding.cancelBtn.visibility = View.GONE
+        binding.checkBtn.setOnClickListener {
             dismiss()
         }
     }
