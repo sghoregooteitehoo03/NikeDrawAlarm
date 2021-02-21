@@ -2,8 +2,7 @@ package com.nikealarm.nikedrawalarm.component.worker
 
 import android.content.Context
 import android.util.Log
-import androidx.hilt.Assisted
-import androidx.hilt.work.WorkerInject
+import androidx.hilt.work.HiltWorker
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
@@ -11,12 +10,15 @@ import com.nikealarm.nikedrawalarm.database.Dao
 import com.nikealarm.nikedrawalarm.database.SpecialDataModel
 import com.nikealarm.nikedrawalarm.database.ShoesDataModel
 import com.nikealarm.nikedrawalarm.other.Contents
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
 import org.jsoup.Jsoup
 
-class ParsingWorker @WorkerInject constructor(
+@HiltWorker
+class ParsingWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted workerParams: WorkerParameters,
-    val mDao: Dao
+    private val mDao: Dao
 ) : Worker(
     context,
     workerParams
@@ -234,7 +236,8 @@ class ParsingWorker @WorkerInject constructor(
                 .text()
             val order = "$year${month.split("월")[0]}${day}".toInt()
 
-            val specialData = SpecialDataModel(null, specialUrl, year, month, day, whenStartEvent, order)
+            val specialData =
+                SpecialDataModel(null, specialUrl, year, month, day, whenStartEvent, order)
             insertSpecialData(specialData)
         }
     }
@@ -297,7 +300,13 @@ class ParsingWorker @WorkerInject constructor(
 
         if (newShoesData.shoesCategory != ordinaryData.shoesCategory) { // 카테고리가 바뀌었을 때
             if (ordinaryData.shoesCategory == ShoesDataModel.CATEGORY_COMING_SOON) { // COMING SOON -> RELEASED
-                val newShoesPrice = ordinaryData.shoesPrice?.split("\n")?.get(1) // 신발 가격
+                // TODO: 오류 수정 O
+                val newShoesPrice = try {
+                    ordinaryData.shoesPrice?.split("\n")?.get(1) // 신발 가격
+                } catch (e: ArrayIndexOutOfBoundsException) {
+                    e.printStackTrace()
+                    "가격 : "
+                }
 
                 mDao.updateShoesCategory(
                     newShoesPrice,
