@@ -67,14 +67,15 @@ class UpcomingListFragment : Fragment(R.layout.fragment_upcoming_list),
     }
 
     override fun onAlarmListener(
-        specialShoesData: SpecialShoesDataModel?,
         pos: Int,
         isChecked: Boolean
     ) {
+        val specialShoesData = mAdapter.currentList?.get(pos)!!
+
         if (isChecked) { // 알림이 설정 되어있을 때
-            removeAlarm(specialShoesData!!, pos)
+            removeAlarm(specialShoesData, pos)
         } else { // 알림이 설정 되어있지 않을 때
-            setAlarm(specialShoesData!!, pos)
+            setAlarm(specialShoesData, pos)
         }
     }
 
@@ -197,10 +198,18 @@ class UpcomingListFragment : Fragment(R.layout.fragment_upcoming_list),
             mViewModel.setPreference(specialShoesData.ShoesUrl, timeTrigger) // 알람 데이터 삭제
 
             mAdapter.notifyItemChanged(pos) // 리스트 상태 변경
-            Snackbar.make(fragmentBinding?.mainLayout!!, "해당 상품의 알림을 설정하였습니다.", Snackbar.LENGTH_SHORT)
+            Snackbar.make(
+                fragmentBinding?.mainLayout!!,
+                "해당 상품의 알림을 설정하였습니다.",
+                Snackbar.LENGTH_SHORT
+            )
                 .show()
         } else {
-            Snackbar.make(fragmentBinding?.mainLayout!!, "알람 설정 중 문제가 발생하였습니다.", Snackbar.LENGTH_SHORT)
+            Snackbar.make(
+                fragmentBinding?.mainLayout!!,
+                "알람 설정 중 문제가 발생하였습니다.",
+                Snackbar.LENGTH_SHORT
+            )
                 .show()
         }
     }

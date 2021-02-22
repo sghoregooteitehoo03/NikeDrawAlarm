@@ -300,7 +300,6 @@ class ParsingWorker @AssistedInject constructor(
 
         if (newShoesData.shoesCategory != ordinaryData.shoesCategory) { // 카테고리가 바뀌었을 때
             if (ordinaryData.shoesCategory == ShoesDataModel.CATEGORY_COMING_SOON) { // COMING SOON -> RELEASED
-                // TODO: 오류 수정 O
                 val newShoesPrice = try {
                     ordinaryData.shoesPrice?.split("\n")?.get(1) // 신발 가격
                 } catch (e: ArrayIndexOutOfBoundsException) {

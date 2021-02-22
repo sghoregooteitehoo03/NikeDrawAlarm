@@ -1,7 +1,7 @@
 package com.nikealarm.nikedrawalarm.ui.fragment
 
-import android.content.ActivityNotFoundException
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.*
@@ -23,7 +23,6 @@ import androidx.work.*
 import com.google.android.material.navigation.NavigationView
 import com.nikealarm.nikedrawalarm.adapter.ShoesListAdapter
 import com.nikealarm.nikedrawalarm.R
-import com.nikealarm.nikedrawalarm.component.worker.AutoEnterWorker
 import com.nikealarm.nikedrawalarm.database.ShoesDataModel
 import com.nikealarm.nikedrawalarm.databinding.FragmentShoesListBinding
 import com.nikealarm.nikedrawalarm.other.Contents
@@ -36,6 +35,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+// TODO: 공유기능 추가
 @AndroidEntryPoint
 class ShoesListFragment : Fragment(R.layout.fragment_shoes_list),
     ShoesListAdapter.ItemClickListener,
@@ -63,14 +63,16 @@ class ShoesListFragment : Fragment(R.layout.fragment_shoes_list),
             setOnItemClickListener(this@ShoesListFragment)
         }
 
-        // 뷰 초기화
-        initView(view)
-        // 옵저버 설정
-        setObserver()
+        initView(view) // 뷰 초기화
+        setObserver() // 옵저버 설정
+
+        checkUpdate() // 업데이트 확인
     }
 
-    override fun onClickItem(newUrl: String?) {
+    override fun onClickItem(pos: Int) {
         val builder = CustomTabsBuilder().getBuilder()
+        val newUrl = shoesAdapter.currentList?.get(pos)
+            ?.shoesUrl!!
 
         try {
             with(builder) {
@@ -79,7 +81,7 @@ class ShoesListFragment : Fragment(R.layout.fragment_shoes_list),
                         setCloseButtonIcon(bitmap)
                     }
 
-                build().launchUrl(requireContext(), Uri.parse(newUrl!!))
+                build().launchUrl(requireContext(), Uri.parse(newUrl))
             }
         } catch (e: Exception) {
             Toast.makeText(requireContext(), "크롬 브라우저가 존재하지 않습니다.", Toast.LENGTH_SHORT)
@@ -87,7 +89,11 @@ class ShoesListFragment : Fragment(R.layout.fragment_shoes_list),
         }
     }
 
-    override fun onClickImage(newUrl: String, shoesImageUrl: String, imageView: ImageView) {
+    override fun onClickImage(pos: Int, imageView: ImageView) {
+        val shoesData = shoesAdapter.currentList?.get(pos)!!
+        val newUrl = shoesData.shoesUrl!!
+        val shoesImageUrl = shoesData.shoesImageUrl!!
+
         try {
             val directions = ShoesListFragmentDirections.actionDrawListFragmentToImageListFragment(
                 newUrl,
@@ -102,6 +108,23 @@ class ShoesListFragment : Fragment(R.layout.fragment_shoes_list),
             )
         } catch (e: IllegalStateException) {
             e.printStackTrace()
+        }
+    }
+
+    // 공유하기
+    override fun onClickShare(pos: Int) {
+        val shoesData = shoesAdapter.currentList
+            ?.get(pos)!!
+        val uri = Uri.parse(shoesData.shoesImageUrl!!)
+
+        val intent = Intent(Intent.ACTION_SEND).apply {
+            type = "image/jpeg"
+            putExtra(Intent.EXTRA_STREAM, uri)
+            putExtra(Intent.EXTRA_TEXT, shoesData.shoesUrl!!)
+        }
+
+        if (intent.resolveActivity(requireContext().packageManager) != null) {
+            startActivity(intent)
         }
     }
 
@@ -237,22 +260,6 @@ class ShoesListFragment : Fragment(R.layout.fragment_shoes_list),
                 }
             }
         })
-        mViewModel.isUpdated.observe(viewLifecycleOwner, {
-            if (it) {
-                with(
-                    requireContext().getSharedPreferences(
-                        Contents.PREFERENCE_NAME_AUTO_ENTER,
-                        Context.MODE_PRIVATE
-                    ).edit()
-                ) {
-                    clear()
-                    commit()
-                }
-
-                findNavController().navigate(R.id.action_drawListFragment_to_updateDialog) // 다이얼로그 보여줌
-                mViewModel.afterUpdate()
-            }
-        })
     }
 
     private fun setToolbarTitle(shoesCategory: String) {
@@ -282,6 +289,23 @@ class ShoesListFragment : Fragment(R.layout.fragment_shoes_list),
                     }
                 }
             }
+        }
+    }
+
+    private fun checkUpdate() {
+        if (mViewModel.isUpdated()) {
+            with(
+                requireContext().getSharedPreferences(
+                    Contents.PREFERENCE_NAME_AUTO_ENTER,
+                    Context.MODE_PRIVATE
+                ).edit()
+            ) {
+                clear()
+                commit()
+            }
+
+            findNavController().navigate(R.id.action_drawListFragment_to_updateDialog) // 다이얼로그 보여줌
+            mViewModel.afterUpdate()
         }
     }
 

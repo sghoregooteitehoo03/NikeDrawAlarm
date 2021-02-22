@@ -17,8 +17,9 @@ class ShoesListAdapter() :
     private lateinit var itemListener: ItemClickListener
 
     interface ItemClickListener {
-        fun onClickItem(newUrl: String?)
-        fun onClickImage(newUrl: String, shoesImageUrl: String, imageView: ImageView)
+        fun onClickItem(pos: Int)
+        fun onClickImage(pos: Int, imageView: ImageView)
+        fun onClickShare(pos: Int)
     }
 
     fun setOnItemClickListener(listener: ItemClickListener) {
@@ -28,11 +29,11 @@ class ShoesListAdapter() :
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ShoesItemViewHolder {
         val view =
             ItemShoesListBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return ShoesItemViewHolder(view)
+        return ShoesItemViewHolder(view, itemListener)
     }
 
     override fun onBindViewHolder(holder: ShoesItemViewHolder, position: Int) {
-        holder.bindView(getItem(position), itemListener)
+        holder.bindView(getItem(position))
     }
 
     companion object {

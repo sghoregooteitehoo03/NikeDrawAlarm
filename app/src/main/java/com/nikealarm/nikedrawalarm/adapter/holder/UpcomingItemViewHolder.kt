@@ -13,12 +13,30 @@ import com.nikealarm.nikedrawalarm.database.ShoesDataModel
 import com.nikealarm.nikedrawalarm.database.SpecialShoesDataModel
 import com.nikealarm.nikedrawalarm.databinding.ItemUpcomingListBinding
 
-class UpcomingItemViewHolder(private val binding: ItemUpcomingListBinding) :
+class UpcomingItemViewHolder(
+    private val binding: ItemUpcomingListBinding,
+    clickListener: UpcomingListAdapter.ClickListener,
+    private val allowAlarmPreferences: SharedPreferences
+) :
     RecyclerView.ViewHolder(binding.root) {
 
     val swipeLayout = binding.swipeLayout
 
-    fun bindView(data: SpecialShoesDataModel?, clickListener: UpcomingListAdapter.ClickListener, allowAlarmPreferences: SharedPreferences) {
+    init {
+        binding.mainLayout.setOnClickListener {
+            clickListener.onItemClickListener(adapterPosition)
+        }
+
+        binding.alarmBtn.setOnClickListener {
+            if (binding.alarmBtn.tag == R.drawable.ic_baseline_notifications_active) {
+                clickListener.onAlarmListener(adapterPosition, true)
+            } else {
+                clickListener.onAlarmListener(adapterPosition, false)
+            }
+        }
+    }
+
+    fun bindView(data: SpecialShoesDataModel?) {
         binding.monthText.text = data?.SpecialMonth
         binding.dayText.text = data?.SpecialDay
         binding.categoryText.text = when (data?.ShoesCategory) {
@@ -39,22 +57,19 @@ class UpcomingItemViewHolder(private val binding: ItemUpcomingListBinding) :
             collapse()
         }
 
-        binding.mainLayout.setOnClickListener {
-            clickListener.onItemClickListener(adapterPosition)
-        }
 
-        if (isChecked(data.ShoesUrl, allowAlarmPreferences)) {
-            binding.alarmBtn.setImageResource(R.drawable.ic_baseline_notifications_active)
 
-            binding.alarmBtn.setOnClickListener {
-                clickListener.onAlarmListener(data, adapterPosition, true)
-            }
+        if (isChecked(data.ShoesUrl)) {
+            val res = R.drawable.ic_baseline_notifications_active
+
+            binding.alarmBtn.setImageResource(res)
+            binding.alarmBtn.tag = res
+
         } else {
-            binding.alarmBtn.setImageResource(R.drawable.ic_baseline_notifications_none)
+            val res = R.drawable.ic_baseline_notifications_none
 
-            binding.alarmBtn.setOnClickListener {
-                clickListener.onAlarmListener(data, adapterPosition, false)
-            }
+            binding.alarmBtn.setImageResource(res)
+            binding.alarmBtn.tag = res
         }
     }
 
@@ -133,7 +148,9 @@ class UpcomingItemViewHolder(private val binding: ItemUpcomingListBinding) :
     }
     // 애니메이션 설정 끝
 
-    private fun isChecked(preferenceKey: String?, allowAlarmPreferences: SharedPreferences): Boolean {
+    private fun isChecked(
+        preferenceKey: String?
+    ): Boolean {
         return allowAlarmPreferences.getBoolean(preferenceKey, false)
     }
 }

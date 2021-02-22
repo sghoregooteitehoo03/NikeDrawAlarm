@@ -155,7 +155,11 @@ class ImageListFragment : Fragment(R.layout.fragment_image_list) {
         backPressed.isEnabled = false
 
         resetData()
-        findNavController().navigateUp()
+        try {
+            findNavController().navigateUp()
+        } catch (e: IllegalStateException) {
+            e.printStackTrace()
+        }
     }
 
     private val backPressed = object : OnBackPressedCallback(true) {

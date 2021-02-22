@@ -17,9 +17,9 @@ class ShoesViewModel @Inject constructor(
         repository.getShoesData(it)
     }
 
-    val isUpdated = MutableLiveData(repository.isUpdated())
+    fun isUpdated() =
+        repository.isUpdated()
 
-    fun afterUpdate() {
-        isUpdated.value = repository.afterUpdate()
-    }
+    fun afterUpdate() =
+        repository.afterUpdate()
 }
