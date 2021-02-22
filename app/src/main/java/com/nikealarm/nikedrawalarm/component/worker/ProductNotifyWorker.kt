@@ -5,8 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.util.Log
-import androidx.hilt.Assisted
-import androidx.hilt.work.WorkerInject
+import androidx.hilt.work.HiltWorker
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import com.nikealarm.nikedrawalarm.database.Dao
@@ -15,15 +14,18 @@ import com.nikealarm.nikedrawalarm.other.Contents
 import com.nikealarm.nikedrawalarm.other.NotificationBuilder
 import com.nikealarm.nikedrawalarm.ui.MainActivity
 import com.squareup.picasso.Picasso
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
 import javax.inject.Named
 import kotlin.random.Random
 
-class ProductNotifyWorker @WorkerInject constructor(
+@HiltWorker
+class ProductNotifyWorker @AssistedInject constructor(
     @Assisted appContext: Context,
     @Assisted workerParams: WorkerParameters,
     @Named(Contents.PREFERENCE_NAME_TIME) val timePreferences: SharedPreferences,
     @Named(Contents.PREFERENCE_NAME_ALLOW_ALARM) val allowAlarmPreferences: SharedPreferences,
-    val mDao: Dao
+    private val mDao: Dao
 ) : Worker(
     appContext,
     workerParams

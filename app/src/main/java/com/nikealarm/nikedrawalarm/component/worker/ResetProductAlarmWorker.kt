@@ -4,8 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
-import androidx.hilt.Assisted
-import androidx.hilt.work.WorkerInject
+import androidx.hilt.work.HiltWorker
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import com.nikealarm.nikedrawalarm.database.Dao
@@ -13,14 +12,17 @@ import com.nikealarm.nikedrawalarm.database.ShoesDataModel
 import com.nikealarm.nikedrawalarm.database.SpecialShoesDataModel
 import com.nikealarm.nikedrawalarm.other.AlarmBuilder
 import com.nikealarm.nikedrawalarm.other.Contents
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
 import javax.inject.Named
 
-class ResetProductAlarmWorker @WorkerInject constructor(
+@HiltWorker
+class ResetProductAlarmWorker @AssistedInject constructor(
     @Assisted appContext: Context,
     @Assisted workerParams: WorkerParameters,
     @Named(Contents.PREFERENCE_NAME_TIME) val timePreferences: SharedPreferences,
     @Named(Contents.PREFERENCE_NAME_ALLOW_ALARM) val allowAlarmPreferences: SharedPreferences,
-    val mDao: Dao
+    private val mDao: Dao
 ) : Worker(appContext, workerParams) {
 
     override fun doWork(): Result {

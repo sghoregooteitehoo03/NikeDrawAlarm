@@ -111,7 +111,11 @@ class LoadingFragment : Fragment(R.layout.fragment_loading) {
 
     private fun terminationApp() {
         isOpened = true
-        findNavController().navigate(R.id.terminationDialog)
+        try {
+            findNavController().navigate(R.id.terminationDialog)
+        } catch (e: IllegalStateException) {
+            e.printStackTrace()
+        }
     }
 
     // 애니메이션 설정

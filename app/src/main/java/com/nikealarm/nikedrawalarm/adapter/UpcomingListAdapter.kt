@@ -18,7 +18,7 @@ class UpcomingListAdapter(
     ) {
 
     interface ClickListener {
-        fun onAlarmListener(specialShoesData: SpecialShoesDataModel?, pos: Int, isChecked: Boolean)
+        fun onAlarmListener(pos: Int, isChecked: Boolean)
         fun onItemClickListener(position: Int)
     }
 
@@ -29,7 +29,7 @@ class UpcomingListAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): UpcomingItemViewHolder {
         val view =
             ItemUpcomingListBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return UpcomingItemViewHolder(view)
+        return UpcomingItemViewHolder(view, clickListener, allowAlarmPreferences)
     }
 
     override fun onBindViewHolder(holder: UpcomingItemViewHolder, position: Int) {
@@ -37,7 +37,7 @@ class UpcomingListAdapter(
             setOpenOnlyOne(true)
             bind(holder.swipeLayout, getItemId(position).toString())
         }
-        holder.bindView(getItem(position), clickListener, allowAlarmPreferences)
+        holder.bindView(getItem(position))
     }
 
     override fun getItemId(position: Int): Long {

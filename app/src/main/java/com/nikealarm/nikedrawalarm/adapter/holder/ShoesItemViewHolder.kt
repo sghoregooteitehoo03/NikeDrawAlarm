@@ -7,21 +7,29 @@ import com.nikealarm.nikedrawalarm.adapter.ShoesListAdapter
 import com.nikealarm.nikedrawalarm.database.ShoesDataModel
 import com.nikealarm.nikedrawalarm.databinding.ItemShoesListBinding
 
-class ShoesItemViewHolder(private val binding: ItemShoesListBinding) :
+class ShoesItemViewHolder(private val binding: ItemShoesListBinding, clickListener: ShoesListAdapter.ItemClickListener) :
     RecyclerView.ViewHolder(binding.root) {
 
-    fun bindView(data: ShoesDataModel?, clickListener: ShoesListAdapter.ItemClickListener) {
+    init {
+        binding.shoesImage.setOnClickListener {
+            clickListener.onClickImage(
+                adapterPosition,
+                binding.shoesImage
+            )
+        }
+
+        binding.learnMoreText.setOnClickListener {
+            clickListener.onClickItem(adapterPosition)
+        }
+//        binding.shareText.setOnClickListener {
+//            clickListener.onClickShare(adapterPosition)
+//        }
+    }
+
+    fun bindView(data: ShoesDataModel?) {
         with(binding.shoesImage) {
             Glide.with(itemView).load(data?.shoesImageUrl).into(this)
             transitionName = data?.shoesUrl
-
-            setOnClickListener {
-                clickListener.onClickImage(
-                    data?.shoesUrl!!,
-                    data.shoesImageUrl!!,
-                    this
-                )
-            }
         }
         binding.shoesSubtitleText.text = data?.shoesSubTitle
         binding.shoesTitleText.text = data?.shoesTitle
@@ -30,10 +38,6 @@ class ShoesItemViewHolder(private val binding: ItemShoesListBinding) :
             binding.shoesHowToEventText.setTextColor(Color.RED)
         } else {
             binding.shoesHowToEventText.setTextColor(Color.BLACK)
-        }
-
-        binding.learnMoreText.setOnClickListener {
-            clickListener.onClickItem(data?.shoesUrl)
         }
     }
 }

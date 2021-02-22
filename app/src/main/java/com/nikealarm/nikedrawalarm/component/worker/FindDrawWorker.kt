@@ -3,8 +3,7 @@ package com.nikealarm.nikedrawalarm.component.worker
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import androidx.hilt.Assisted
-import androidx.hilt.work.WorkerInject
+import androidx.hilt.work.HiltWorker
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import com.nikealarm.nikedrawalarm.database.*
@@ -12,13 +11,15 @@ import com.nikealarm.nikedrawalarm.other.Contents
 import com.nikealarm.nikedrawalarm.other.NotificationBuilder
 import com.nikealarm.nikedrawalarm.ui.MainActivity
 import com.squareup.picasso.Picasso
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
 import org.jsoup.Jsoup
 
-/* 알림 울리는지 확인해보기 */
-class FindDrawWorker @WorkerInject constructor(
+@HiltWorker
+class FindDrawWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted workerParams: WorkerParameters,
-    val mDao: Dao
+    private val mDao: Dao
 ) : Worker(
     context,
     workerParams

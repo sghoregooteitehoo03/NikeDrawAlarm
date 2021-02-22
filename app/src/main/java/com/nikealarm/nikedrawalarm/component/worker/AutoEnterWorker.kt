@@ -14,8 +14,7 @@ import android.webkit.*
 import androidx.annotation.RequiresApi
 import androidx.concurrent.futures.CallbackToFutureAdapter
 import androidx.core.app.NotificationCompat
-import androidx.hilt.Assisted
-import androidx.hilt.work.WorkerInject
+import androidx.hilt.work.HiltWorker
 import androidx.work.*
 import com.google.common.util.concurrent.ListenableFuture
 import com.nikealarm.nikedrawalarm.R
@@ -27,13 +26,15 @@ import com.nikealarm.nikedrawalarm.other.NotificationBuilder
 import com.nikealarm.nikedrawalarm.other.WebState
 import com.nikealarm.nikedrawalarm.ui.MainActivity
 import com.squareup.picasso.Picasso
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
 import kotlinx.coroutines.*
 import java.util.concurrent.Executor
 import javax.inject.Named
 import kotlin.random.Random
 
-/* 테스트 해보기 */
-class AutoEnterWorker @WorkerInject constructor(
+@HiltWorker
+class AutoEnterWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted workerParams: WorkerParameters,
     @Named(Contents.PREFERENCE_NAME_AUTO_ENTER_V2) private val autoEnterPref: SharedPreferences,

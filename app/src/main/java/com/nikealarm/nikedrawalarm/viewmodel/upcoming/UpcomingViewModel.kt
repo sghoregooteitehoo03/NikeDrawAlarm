@@ -1,15 +1,16 @@
 package com.nikealarm.nikedrawalarm.viewmodel.upcoming
 
 import androidx.arch.core.util.Function
-import androidx.hilt.Assisted
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.*
 import androidx.paging.PagedList
 import com.nikealarm.nikedrawalarm.database.SpecialShoesDataModel
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
-class UpcomingViewModel @ViewModelInject constructor(
+@HiltViewModel
+class UpcomingViewModel @Inject constructor(
     private val repository: UpcomingRepository,
-    @Assisted private val savedStateHandle: SavedStateHandle
+    private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
     val upcomingCategory = MutableLiveData<String>()
 
