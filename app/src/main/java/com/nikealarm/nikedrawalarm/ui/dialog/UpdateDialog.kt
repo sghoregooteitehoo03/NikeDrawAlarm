@@ -34,7 +34,7 @@ class UpdateDialog : DialogFragment() {
         binding.titleText.text = "업데이트"
         with(binding.messageText) {
             text =
-                "- 버그 수정 및 코드 안정화"
+                "- 버그 수정 및 코드 안정화\n(자동응모 다시 설정해주세요!)"
             textSize = 18f
             setPadding(12, 0, 12, 0)
         }
