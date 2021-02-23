@@ -71,7 +71,6 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_marginTop="5dp"
-                android:layout_marginBottom="10dp"
                 android:background="?attr/selectableItemBackground"
                 android:gravity="center"
                 android:text="자세히 보기"
@@ -79,16 +78,16 @@
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
-            <!--            <TextView-->
-            <!--                android:id="@+id/share_text"-->
-            <!--                android:layout_width="wrap_content"-->
-            <!--                android:layout_height="wrap_content"-->
-            <!--                android:layout_gravity="center"-->
-            <!--                android:layout_marginTop="4dp"-->
-            <!--                android:layout_marginBottom="10dp"-->
-            <!--                android:background="?attr/selectableItemBackground"-->
-            <!--                android:text="공유하기"-->
-            <!--                android:textStyle="bold" />-->
+            <TextView
+                android:id="@+id/share_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="10dp"
+                android:background="?attr/selectableItemBackground"
+                android:text="공유하기"
+                android:textStyle="bold" />
         </LinearLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.cardview.widget.CardView>

@@ -115,11 +115,9 @@ class ShoesListFragment : Fragment(R.layout.fragment_shoes_list),
     override fun onClickShare(pos: Int) {
         val shoesData = shoesAdapter.currentList
             ?.get(pos)!!
-        val uri = Uri.parse(shoesData.shoesImageUrl!!)
 
         val intent = Intent(Intent.ACTION_SEND).apply {
-            type = "image/jpeg"
-            putExtra(Intent.EXTRA_STREAM, uri)
+            type = "text/plain"
             putExtra(Intent.EXTRA_TEXT, shoesData.shoesUrl!!)
         }
 
@@ -132,19 +130,19 @@ class ShoesListFragment : Fragment(R.layout.fragment_shoes_list),
         fragmentBinding?.drawer?.closeDrawer(GravityCompat.START)
 
         return when (menuItem.itemId) {
-            R.id.mainMenu_draw -> {
+            R.id.mainMenu_draw -> { // DRAW
                 setToolbarTitle(ShoesDataModel.CATEGORY_DRAW)
                 true
             }
-            R.id.mainMenu_comingSoon -> {
+            R.id.mainMenu_comingSoon -> { // COMING SOON
                 setToolbarTitle(ShoesDataModel.CATEGORY_COMING_SOON)
                 true
             }
-            R.id.mainMenu_released -> {
+            R.id.mainMenu_released -> { // RELEASED
                 setToolbarTitle(ShoesDataModel.CATEGORY_RELEASED)
                 true
             }
-            R.id.mainMenu_upcoming -> {
+            R.id.mainMenu_upcoming -> { // UPCOMING
                 CoroutineScope(Dispatchers.IO).launch {
                     try {
                         delay(230)
@@ -155,7 +153,18 @@ class ShoesListFragment : Fragment(R.layout.fragment_shoes_list),
                 }
                 true
             }
-            R.id.mainMenu_setting -> {
+            R.id.mainMenu_helper -> { // HELPER
+                CoroutineScope(Dispatchers.IO).launch {
+                    try {
+                        delay(230)
+                        findNavController().navigate(R.id.action_drawListFragment_to_helpFragment)
+                    } catch (e: IllegalStateException) {
+                        e.printStackTrace()
+                    }
+                }
+                true
+            }
+            R.id.mainMenu_setting -> { // SETTING
                 CoroutineScope(Dispatchers.IO).launch {
                     try {
                         delay(230)
@@ -164,7 +173,6 @@ class ShoesListFragment : Fragment(R.layout.fragment_shoes_list),
                         e.printStackTrace()
                     }
                 }
-
                 true
             }
             else -> false

@@ -24,12 +24,21 @@
         </menu>
     </item>
 
-    <item android:title="기타">
+    <item android:title="알람">
         <menu>
             <item
                 android:id="@+id/mainMenu_upcoming"
                 android:icon="@drawable/ic_calendar"
                 android:title="UPCOMING" />
+        </menu>
+    </item>
+
+    <item android:title="기타">
+        <menu>
+            <item
+                android:id="@+id/mainMenu_helper"
+                android:icon="@drawable/ic_help_outline"
+                android:title="도움말" />
 
             <item
                 android:id="@+id/mainMenu_setting"

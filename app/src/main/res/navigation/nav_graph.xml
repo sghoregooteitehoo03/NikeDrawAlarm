@@ -35,6 +35,13 @@
         <action
             android:id="@+id/action_drawListFragment_to_updateDialog"
             app:destination="@id/updateDialog" />
+        <action
+            android:id="@+id/action_drawListFragment_to_helpFragment"
+            app:destination="@id/helpFragment"
+            app:enterAnim="@animator/anim_enter"
+            app:exitAnim="@animator/anim_exit"
+            app:popEnterAnim="@animator/anim_pop_enter"
+            app:popExitAnim="@animator/anim_pop_exit" />
     </fragment>
     <fragment
         android:id="@+id/settingFragment"
@@ -73,7 +80,7 @@
         android:id="@+id/upcomingListFragment"
         android:name="com.nikealarm.nikedrawalarm.ui.fragment.UpcomingListFragment"
         android:label="UpcomingListFragment"
-        tools:layout="@layout/fragment_upcoming_list"/>
+        tools:layout="@layout/fragment_upcoming_list" />
     <dialog
         android:id="@+id/editInfoDialog"
         android:name="com.nikealarm.nikedrawalarm.ui.dialog.EditInfoDialog"
@@ -89,4 +96,9 @@
         android:name="com.nikealarm.nikedrawalarm.ui.dialog.UpdateDialog"
         android:label="UpdateDialog"
         tools:layout="@layout/dialog_notification" />
+    <fragment
+        android:id="@+id/helpFragment"
+        android:name="com.nikealarm.nikedrawalarm.ui.fragment.HelpFragment"
+        android:label="HelpFragment"
+        tools:layout="@layout/fragment_help" />
 </navigation>

@@ -14,6 +14,7 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import org.jsoup.Jsoup
 
+// TODO: 중복된 데이터 제거
 @HiltWorker
 class ParsingWorker @AssistedInject constructor(
     @Assisted context: Context,

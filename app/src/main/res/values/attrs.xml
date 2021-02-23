@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="GuideButton">
+        <attr name="guideIcon" format="reference|integer" />
+        <attr name="guideText" format="reference|string" />
+    </declare-styleable>
+</resources>

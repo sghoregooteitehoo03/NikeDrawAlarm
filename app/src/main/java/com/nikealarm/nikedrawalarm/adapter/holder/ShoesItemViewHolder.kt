@@ -21,9 +21,9 @@ class ShoesItemViewHolder(private val binding: ItemShoesListBinding, clickListen
         binding.learnMoreText.setOnClickListener {
             clickListener.onClickItem(adapterPosition)
         }
-//        binding.shareText.setOnClickListener {
-//            clickListener.onClickShare(adapterPosition)
-//        }
+        binding.shareText.setOnClickListener {
+            clickListener.onClickShare(adapterPosition)
+        }
     }
 
     fun bindView(data: ShoesDataModel?) {

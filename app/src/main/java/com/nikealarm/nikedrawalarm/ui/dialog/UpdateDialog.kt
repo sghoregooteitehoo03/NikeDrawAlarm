@@ -32,6 +32,7 @@ class UpdateDialog : DialogFragment() {
         val binding = DialogNotificationBinding.bind(view)
 
         binding.titleText.text = "업데이트"
+        // TODO: 업데이트 내용 채워넣기
         with(binding.messageText) {
             text =
                 "- 버그 수정 및 코드 안정화\n(자동응모 다시 설정해주세요!)"
