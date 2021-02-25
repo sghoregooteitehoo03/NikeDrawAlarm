@@ -60,6 +60,6 @@ interface Dao {
     @Query("SELECT * FROM ShoesDataModel WHERE ShoesId = :id") // R
     fun getShoesDataById(id: Int?): ShoesDataModel
 
-    @Query("SELECT EXISTS(SELECT * FROM ShoesDataModel WHERE ShoesTitle = :shoesTitle AND ShoesSubTitle = :shoesSubTitle AND ShoesUrl = :shoesUrl)")
-    fun existsShoesData(shoesTitle: String, shoesSubTitle: String, shoesUrl: String): Boolean
+    @Query("SELECT EXISTS(SELECT * FROM ShoesDataModel WHERE ShoesUrl = :shoesUrl)")
+    fun existsShoesData(shoesUrl: String): Boolean
 }

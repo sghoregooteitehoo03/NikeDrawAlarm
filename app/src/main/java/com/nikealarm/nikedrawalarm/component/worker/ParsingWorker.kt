@@ -66,32 +66,31 @@ class ParsingWorker @AssistedInject constructor(
                 return
             }
 
-            val shoesInfo = elementData.select("div.info-sect") // 신발 정보
-                .select("div.btn-box")
-                .select("span")
+            val shoesInfo = elementData.select("div.cta-container") // 신발 정보
                 .text()
+                .trim()
 
-            if (shoesInfo == "LEARN MORE") {
+            if (shoesInfo == "Learn More") {
                 progress += 2.5
                 setProgressAsync(workDataOf(Contents.WORKER_PARSING_DATA_OUTPUT_KEY to progress.toInt()))
 
                 continue
             }
 
-            val shoesSubTitle = elementData.select("div.text-box")
-                .select("p.txt-subject")
+            val shoesSubTitle = elementData.select("div.copy-container")
+                .select("h3")
                 .text()
-            val shoesTitle = elementData.select("div.text-box")
-                .select("p.txt-description")
+            val shoesTitle = elementData.select("div.copy-container")
+                .select("h6")
                 .text()
             val innerUrl =
                 "https://www.nike.com" + elementData.select("a").attr("href") // 해당 신발의 링크창을 읽어옴
 
-            if (mDao.existsShoesData(shoesTitle, shoesSubTitle, innerUrl)) { // 해당 데이터가 이미 존재 시
+            if (mDao.existsShoesData(innerUrl)) { // 해당 데이터가 이미 존재 시
                 val category = when (shoesInfo) {
                     "THE DRAW 진행예정", "THE DRAW 응모하기" -> ShoesDataModel.CATEGORY_DRAW
                     "THE DRAW 응모 마감", "THE DRAW 당첨 결과 확인", "THE DRAW 종료" -> ShoesDataModel.CATEGORY_DRAW_END
-                    "COMING SOON" -> ShoesDataModel.CATEGORY_COMING_SOON
+                    "Coming Soon" -> ShoesDataModel.CATEGORY_COMING_SOON
                     else -> ShoesDataModel.CATEGORY_RELEASED
                 }
 
@@ -112,25 +111,25 @@ class ParsingWorker @AssistedInject constructor(
                     .get()
 
                 // 신발 정보를 가져옴
-                val shoesPrice = "가격 : " + innerDoc.select("div.price") // 신발 가격
+                val shoesPrice = "가격 : " + innerDoc.select("div.headline-5") // 신발 가격
                     .text()
 
-                val shoesImageUrl = innerDoc.select("li.uk-width-1-2") // 신발 이미지
+                val shoesImageUrl = innerDoc.select("figure.snkrs-gallery-item") // 신발 이미지
                     .select("img")
-                    .eq(0)
                     .attr("src")
 
                 val insertShoesData: ShoesDataModel
                 when (shoesInfo) {
                     "THE DRAW 진행예정", "THE DRAW 응모하기" -> { // DRAW
-                        val innerElementData = innerDoc.select("span.uk-text-bold")
+                        val innerElementData = innerDoc.select("div.draw-description-container")
+                            .select("p")
 
                         var howToEvent = "" // 이벤트 참여방법
-                        for (j in 0..2) {
-                            howToEvent += innerElementData.select("p")
-                                .eq(j)
+                        for (j in 1..3) {
+                            howToEvent += innerElementData.eq(j)
                                 .text() + "\n"
                         }
+
                         howToEvent += shoesPrice
 
                         insertShoesData = ShoesDataModel(
@@ -154,8 +153,10 @@ class ParsingWorker @AssistedInject constructor(
                             ShoesDataModel.CATEGORY_DRAW_END
                         )
                     }
-                    "COMING SOON" -> { // COMING SOON
-                        val launchDate = "${innerDoc.select("div.txt-date").text()}\n${shoesPrice}"
+                    "Coming Soon" -> { // COMING SOON
+                        val launchDate = "${
+                            innerDoc.select("div.available-date-component").text()
+                        }\n${shoesPrice}"
 
                         insertShoesData = ShoesDataModel(
                             null,
@@ -198,7 +199,8 @@ class ParsingWorker @AssistedInject constructor(
 
     // UPCOMING 파싱
     private fun parseSpecialData() {
-        val url = "https://www.nike.com/kr/launch/?type=upcoming&activeDate=date-filter:AFTER"
+        var index = 1
+        val url = "https://www.nike.com/kr/launch/?type=upcoming&activeDate=date-filter:AFTER_DATE"
         val doc = Jsoup.connect(url) // nike SNKRS창을 읽어옴
             .userAgent("19.0.1.84.52")
             .get()
@@ -209,42 +211,41 @@ class ParsingWorker @AssistedInject constructor(
                 return
             }
 
-            val category = elementData.select("div.info-sect")
-                .select("div.btn-box")
-                .select("span.btn-link")
-                .text()
-            val specialUrl = "https://www.nike.com" + elementData.select("a").attr("href")
+            if (index % 2 != 0) {
+                val category = elementData.select("div.cta-container")
+                    .text()
+                    .trim()
 
-            if (checkCategory(category) || mDao.existsSpecialData(specialUrl)) { // 이미 데이터 존재하지 않고 special이 아니면 continue
-                continue
+                val specialUrl = "https://www.nike.com" + elementData.select("a").attr("href")
+
+                if (checkCategory(category)
+                    || mDao.existsSpecialData(specialUrl)
+                ) { // 이미 데이터 존재하지 않고 special이 아니면 continue
+                    continue
+                }
+
+                val date = elementData.attr("data-active-date")
+
+                val year = date.split("/")[0]
+                val month = elementData.select("p.headline-4")
+                    .text()
+                val day = String.format("%02d", elementData.select("p.headline-1").text().toInt())
+                val whenStartEvent = elementData.select("h3.headline-5")
+                    .text()
+                val order = "${year}${month.split("월")[0]}${day}".toInt()
+
+                val specialData =
+                    SpecialDataModel(null, specialUrl, year, month, day, whenStartEvent, order)
+                insertSpecialData(specialData)
             }
 
-            val date = elementData.attr("data-active-date")
-                .split(" ")[0]
-            val year = date.split("-")[0]
-            val month = elementData.select("div.img-sect")
-                .select("div.date")
-                .select("span.month")
-                .text()
-            val day = elementData.select("div.img-sect")
-                .select("div.date")
-                .select("span.day")
-                .text()
-            val whenStartEvent = elementData.select("div.info-sect")
-                .select("div.text-box")
-                .select("p.txt-subject")
-                .text()
-            val order = "$year${month.split("월")[0]}${day}".toInt()
-
-            val specialData =
-                SpecialDataModel(null, specialUrl, year, month, day, whenStartEvent, order)
-            insertSpecialData(specialData)
+            index++
         }
     }
 
     private fun checkCategory(category: String): Boolean {
         return when (category) {
-            "THE DRAW 진행예정", "COMING SOON" -> {
+            "THE DRAW 진행예정", "Coming Soon" -> {
                 false
             }
             else -> {

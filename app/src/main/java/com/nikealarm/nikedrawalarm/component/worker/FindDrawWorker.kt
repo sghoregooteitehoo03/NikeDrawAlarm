@@ -51,45 +51,43 @@ class FindDrawWorker @AssistedInject constructor(
         val elementsData = doc.select("li.launch-list-item")
 
         for (elementData in elementsData) {
-            val shoesInfo = elementData.select("div.info-sect") // 신발 정보
-                .select("div.btn-box")
-                .select("span")
+            val shoesInfo = elementData.select("div.cta-container") // 신발 정보
                 .text()
+                .trim()
 
-            if (shoesInfo == "LEARN MORE") {
+            if (shoesInfo == "Learn More") {
                 continue
             }
 
-            val shoesSubTitle = elementData.select("div.text-box")
-                .select("p.txt-subject")
+            val shoesSubTitle = elementData.select("div.copy-container")
+                .select("h3")
                 .text()
-            val shoesTitle = elementData.select("div.text-box")
-                .select("p.txt-description")
+            val shoesTitle = elementData.select("div.copy-container")
+                .select("h6")
                 .text()
             val innerUrl = "https://www.nike.com" + elementData.select("a")
                 .attr("href") // 해당 draw 링크창을 읽어옴
 
             // draw가 없을 시
-            if (!mDao.existsShoesData(shoesTitle, shoesSubTitle, innerUrl)) {
+            if (!mDao.existsShoesData(innerUrl)) {
                 if (shoesInfo == "THE DRAW 진행예정") {
                     val innerDoc = Jsoup.connect(innerUrl)
                         .userAgent("19.0.1.84.52")
                         .get()
 
                     // 신발 정보를 가져옴
-                    val shoesPrice = "가격 : " + innerDoc.select("div.price") // draw 신발 가격
+                    val shoesPrice = "가격 : " + innerDoc.select("div.headline-5") // draw 신발 가격
                         .text()
-                    val shoesImageUrl = innerDoc.select("li.uk-width-1-2") // draw 신발 이미지
+                    val shoesImageUrl = innerDoc.select("figure.snkrs-gallery-item") // draw 신발 이미지
                         .select("img")
-                        .eq(0)
                         .attr("src")
 
-                    val innerElementData = innerDoc.select("span.uk-text-bold")
+                    val innerElementData = innerDoc.select("div.draw-description-container")
+                        .select("p")
 
                     var howToEvent = "" // 이벤트 참여방법
-                    for (j in 0..2) {
-                        howToEvent += innerElementData.select("p")
-                            .eq(j)
+                    for (j in 1..3) {
+                        howToEvent += innerElementData.eq(j)
                             .text() + "\n"
                     }
 
@@ -116,7 +114,7 @@ class FindDrawWorker @AssistedInject constructor(
 
     // UPCOMING 파싱
     private fun parseSpecialData() {
-        val url = "https://www.nike.com/kr/launch/?type=upcoming&activeDate=date-filter:AFTER"
+        val url = "https://www.nike.com/kr/launch/?type=upcoming&activeDate=date-filter:AFTER_DATE"
         val doc = Jsoup.connect(url) // nike UPCOMING창을 읽어옴
             .userAgent("19.0.1.84.52")
             .get()
@@ -124,48 +122,34 @@ class FindDrawWorker @AssistedInject constructor(
         var channelId = 0
 
         for (elementData in elementsData) {
-            val category = elementData.select("div.info-sect")
-                .select("div.btn-box")
-                .select("span.btn-link")
-                .text()
-            val specialUrl = "https://www.nike.com" + elementData.select("a").attr("href")
+            if (channelId % 2 == 0) {
+                val category = elementData.select("div.cta-container")
+                    .text()
+                    .trim()
 
-            if (category != "THE DRAW 진행예정" || mDao.existsSpecialData(specialUrl)) { // DRAW가 아니거나 이미 데이터가 존재할 시
-                continue
+                val specialUrl = "https://www.nike.com" + elementData.select("a").attr("href")
+
+                if (category != "THE DRAW 진행예정" || mDao.existsSpecialData(specialUrl)) { // DRAW가 아니거나 이미 데이터가 존재할 시
+                    continue
+                }
+
+                val date = elementData.attr("data-active-date")
+                val year = date.split("/")[0]
+                val month = elementData.select("p.headline-4")
+                    .text()
+                val day = String.format("%02d", elementData.select("p.headline-1").text().toInt())
+                val whenStartEvent = elementData.select("h3.headline-5")
+                    .text()
+                val order = "${year}${month.split("월")[0]}${day}".toInt()
+
+                val specialShoesData =
+                    SpecialDataModel(null, specialUrl, year, month, day, whenStartEvent, order)
+                insertSpecialShoesData(specialShoesData)
+
+                val index = mDao.getAllSpecialShoesData()
+                    .indexOf(SpecialShoesDataModel(0, "", "", null, null, specialUrl))
+                createNotification(mDao.getAllSpecialShoesData()[index], channelId)
             }
-
-            val date = elementData.attr("data-active-date")
-                .split(" ")[0]
-            val year = date.split("-")[0]
-            val month = elementData.select("div.img-sect")
-                .select("div.date")
-                .select("span.month")
-                .text()
-            val day = elementData.select("div.img-sect")
-                .select("div.date")
-                .select("span.day")
-                .text()
-            val whenStartEvent = elementData.select("div.info-sect")
-                .select("div.text-box")
-                .select("p.txt-subject")
-                .text()
-            val order = "$year${month.split("월")[0]}${day}".toInt()
-
-            val specialShoesData = SpecialDataModel(
-                null,
-                specialUrl,
-                year,
-                month,
-                day,
-                whenStartEvent,
-                order
-            )
-
-            insertSpecialShoesData(specialShoesData)
-
-            val index = mDao.getAllSpecialShoesData()
-                .indexOf(SpecialShoesDataModel(0, "", "", null, null, specialUrl))
-            createNotification(mDao.getAllSpecialShoesData()[index], channelId)
 
             channelId++
         }

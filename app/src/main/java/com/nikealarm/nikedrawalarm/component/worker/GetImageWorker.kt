@@ -32,7 +32,8 @@ class GetImageWorker(context: Context, workerParams: WorkerParameters) : Worker(
             .userAgent("19.0.1.84.52")
             .get()
 
-        val elementsData = doc.select("li.uk-width-1-2")
+        val elementsData = doc.select("div.swiper-wrapper")
+            .select("div.ncss-col-sm-12")
         for(elementData in elementsData) {
             val imageUrl = elementData.select("img")
                 .attr("src")
