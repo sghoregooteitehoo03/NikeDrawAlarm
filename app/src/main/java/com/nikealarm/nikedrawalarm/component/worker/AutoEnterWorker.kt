@@ -156,8 +156,7 @@ class AutoEnterWorker @AssistedInject constructor(
                                 }
                             }
                             WebState.WEB_SELECT_SIZE -> { // 신발 사이즈 선택
-                                val size =
-                                    autoEnterPref.getString(Contents.AUTO_ENTER_SIZE, "")!!
+                                val size = autoEnterPref.getString(Contents.AUTO_ENTER_SIZE, "")!!
 
                                 if (size.isNotEmpty()) {
                                     javaScriptInterface.setSize(size)
