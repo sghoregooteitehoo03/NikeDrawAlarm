@@ -15,7 +15,6 @@ import com.nikealarm.nikedrawalarm.databinding.FragmentHelpBinding
 import com.nikealarm.nikedrawalarm.ui.MainActivity
 import kotlin.math.abs
 
-// TODO: 수정하기
 class HelpFragment : Fragment(R.layout.fragment_help) {
     private var fragmentBinding: FragmentHelpBinding? = null
     private var pagerAdapter: ExplainImagePagerAdapter? = null
@@ -76,7 +75,12 @@ class HelpFragment : Fragment(R.layout.fragment_help) {
         binding.getDrawInfoLayout.setOnClickListener {
             val text =
                 "1. 설정을 누릅니다.\n2. DRAW 정보 받기를 활성화 합니다.\n3. 앱이 꺼져있는 상태에서도 새로운 DRAW 정보를 받으실 수 있습니다."
-//            setData(binding.getDrawInfoText.text.toString(), text)
+            val imageList = listOf(
+                R.drawable.get_draw1,
+                R.drawable.get_draw2,
+                R.drawable.get_draw3
+            )
+            setData(binding.getDrawInfoText.text.toString(), text, imageList)
         }
 
         // 자동응모
@@ -84,13 +88,26 @@ class HelpFragment : Fragment(R.layout.fragment_help) {
             val text =
                 "1. 설정을 누릅니다.\n2. 자동응모 허용을 누른 후 자동응모에 이용할 정보를 입력합니다.\n3. 메인화면으로 돌아가 UPCOMING을 누릅니다.\n" +
                         "4. 원하는 DRAW 상품을 알림설정을 합니다.\n5. 응모 당일 자동으로 응모가 되는것을 확인할 수 있습니다."
-//            setData(binding.useAutoText.text.toString(), text)
+            val imageList = listOf(
+                R.drawable.get_draw1,
+                R.drawable.use_auto1,
+                R.drawable.set_alarm1,
+                R.drawable.use_auto2,
+                R.drawable.use_auto3
+            )
+            setData(binding.useAutoText.text.toString(), text, imageList)
         }
 
         // 앱 실행 x
         binding.noLaunchAppLayout.setOnClickListener {
             val text = "1. 앱 아이콘을 꾹 눌러 앱 정보를 누릅니다.\n2. 저장공간을 누릅니다.\n3. 데이터 삭제를 누른 후 앱을 재실행 합니다."
-//            setData(binding.noLaunchAppText.text.toString(), text)
+            val imageList = listOf(
+                R.drawable.no_launch1,
+                R.drawable.no_launch2,
+                R.drawable.no_launch3,
+                R.drawable.no_launch4
+            )
+            setData(binding.noLaunchAppText.text.toString(), text, imageList)
         }
     }
 
