@@ -30,12 +30,8 @@ import com.nikealarm.nikedrawalarm.other.CustomTabsBuilder
 import com.nikealarm.nikedrawalarm.ui.MainActivity
 import com.nikealarm.nikedrawalarm.viewmodel.shoes.ShoesViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 
-// TODO: 공유기능 추가
 @AndroidEntryPoint
 class ShoesListFragment : Fragment(R.layout.fragment_shoes_list),
     ShoesListAdapter.ItemClickListener,
@@ -146,7 +142,9 @@ class ShoesListFragment : Fragment(R.layout.fragment_shoes_list),
                 CoroutineScope(Dispatchers.IO).launch {
                     try {
                         delay(230)
-                        findNavController().navigate(R.id.action_drawListFragment_to_upcomingListFragment)
+                        withContext(Dispatchers.Main) {
+                            findNavController().navigate(R.id.action_drawListFragment_to_upcomingListFragment)
+                        }
                     } catch (e: IllegalStateException) {
                         e.printStackTrace()
                     }
@@ -157,7 +155,9 @@ class ShoesListFragment : Fragment(R.layout.fragment_shoes_list),
                 CoroutineScope(Dispatchers.IO).launch {
                     try {
                         delay(230)
-                        findNavController().navigate(R.id.action_drawListFragment_to_helpFragment)
+                        withContext(Dispatchers.Main) {
+                            findNavController().navigate(R.id.action_drawListFragment_to_helpFragment)
+                        }
                     } catch (e: IllegalStateException) {
                         e.printStackTrace()
                     }
@@ -168,7 +168,9 @@ class ShoesListFragment : Fragment(R.layout.fragment_shoes_list),
                 CoroutineScope(Dispatchers.IO).launch {
                     try {
                         delay(230)
-                        findNavController().navigate(R.id.action_drawListFragment_to_settingFragment)
+                        withContext(Dispatchers.Main) {
+                            findNavController().navigate(R.id.action_drawListFragment_to_settingFragment)
+                        }
                     } catch (e: IllegalStateException) {
                         e.printStackTrace()
                     }

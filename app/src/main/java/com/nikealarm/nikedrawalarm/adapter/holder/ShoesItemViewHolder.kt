@@ -7,7 +7,10 @@ import com.nikealarm.nikedrawalarm.adapter.ShoesListAdapter
 import com.nikealarm.nikedrawalarm.database.ShoesDataModel
 import com.nikealarm.nikedrawalarm.databinding.ItemShoesListBinding
 
-class ShoesItemViewHolder(private val binding: ItemShoesListBinding, clickListener: ShoesListAdapter.ItemClickListener) :
+class ShoesItemViewHolder(
+    private val binding: ItemShoesListBinding,
+    clickListener: ShoesListAdapter.ItemClickListener
+) :
     RecyclerView.ViewHolder(binding.root) {
 
     init {
@@ -21,7 +24,7 @@ class ShoesItemViewHolder(private val binding: ItemShoesListBinding, clickListen
         binding.learnMoreText.setOnClickListener {
             clickListener.onClickItem(adapterPosition)
         }
-        binding.shareText.setOnClickListener {
+        binding.shareButton.setOnClickListener {
             clickListener.onClickShare(adapterPosition)
         }
     }

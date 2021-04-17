@@ -35,7 +35,7 @@ class UpdateDialog : DialogFragment() {
         // TODO: 업데이트 내용 채워넣기
         with(binding.messageText) {
             text =
-                "- 버그 수정 및 코드 안정화\n(자동응모 다시 설정해주세요!)"
+                "- 링크 공유기능 추가\n- 자동응모 버그 수정\n(자동응모와 알림들을 다시 설정해주세요!)"
             textSize = 18f
             setPadding(12, 0, 12, 0)
         }

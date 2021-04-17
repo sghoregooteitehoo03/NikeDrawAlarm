@@ -24,7 +24,7 @@
         </menu>
     </item>
 
-    <item android:title="알람">
+    <item android:title="일정">
         <menu>
             <item
                 android:id="@+id/mainMenu_upcoming"

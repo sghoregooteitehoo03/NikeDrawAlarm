@@ -15,6 +15,7 @@
         android:layout_height="match_parent">
 
         <LinearLayout
+            android:id="@+id/info_layout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical"
@@ -71,23 +72,24 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_marginTop="5dp"
+                android:layout_marginBottom="10dp"
                 android:background="?attr/selectableItemBackground"
                 android:gravity="center"
                 android:text="자세히 보기"
                 android:textColor="@android:color/holo_blue_light"
                 android:textSize="18sp"
                 android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/share_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginTop="4dp"
-                android:layout_marginBottom="10dp"
-                android:background="?attr/selectableItemBackground"
-                android:text="공유하기"
-                android:textStyle="bold" />
         </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/share_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:background="?attr/selectableItemBackground"
+            android:padding="4dp"
+            android:src="@drawable/ic_share"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.cardview.widget.CardView>

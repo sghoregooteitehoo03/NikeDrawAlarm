@@ -18,7 +18,7 @@ import javax.inject.Inject
 import javax.inject.Named
 
 @AndroidEntryPoint
-class MyAlarmReceiver : BroadcastReceiver() {
+class MyAlarmReceiver : HiltBroadcastReceiver() {
     @Inject
     @Named(Contents.PREFERENCE_NAME_TIME)
     lateinit var timePreferences: SharedPreferences
@@ -27,16 +27,17 @@ class MyAlarmReceiver : BroadcastReceiver() {
     @Named(Contents.PREFERENCE_NAME_AUTO_ENTER_V2)
     lateinit var autoEnterPerf: SharedPreferences
 
-    override fun onReceive(context: Context, intent: Intent) {
-        // This method is called when the BroadcastReceiver is receiving an Intent broadcast.
+    override fun onReceive(context: Context?, intent: Intent?) {
+        super.onReceive(context, intent)
+
         // 재부팅 및 앱 업데이트 후 알람 재설정
-        if (intent.action == "android.intent.action.BOOT_COMPLETED" || intent.action == "android.intent.action.MY_PACKAGE_REPLACED") {
-            reSetAlarm(context)
+        if (intent!!.action == "android.intent.action.BOOT_COMPLETED" || intent.action == "android.intent.action.MY_PACKAGE_REPLACED") {
+            reSetAlarm(context!!)
             reSetProductAlarm(context)
         } else {
             // 매일 데이터를 갱신 함
             if (intent.action == Contents.INTENT_ACTION_SYNC_ALARM) {
-                reSetAlarm(context)
+                reSetAlarm(context!!)
 
                 if (isNotDawn()) { // 새벽이 아닐 때만 동작
                     val parsingWorkRequest = OneTimeWorkRequestBuilder<FindDrawWorker>()
@@ -56,13 +57,19 @@ class MyAlarmReceiver : BroadcastReceiver() {
                     Log.i("Check4", "동작 $dataPosition")
 
                     if (isDraw && isAllow) { // Draw 상품이고 자동응모를 허용할 때
+                        val constrains = Constraints.Builder()
+                            .setRequiredNetworkType(NetworkType.UNMETERED)
+                            .build()
+
                         val workRequest: OneTimeWorkRequest =
                             OneTimeWorkRequestBuilder<AutoEnterWorker>()
                                 .addTag(Contents.WORKER_AUTO_ENTER)
                                 .setInputData(workDataOf(Contents.WORKER_AUTO_ENTER_INPUT_KEY to shoesUrl))
+                                .setConstraints(constrains)
                                 .build()
 
-                        WorkManager.getInstance(context)
+                        // 자동응모
+                        WorkManager.getInstance(context!!)
                             .enqueueUniqueWork(
                                 Contents.WORKER_AUTO_ENTER,
                                 ExistingWorkPolicy.APPEND_OR_REPLACE,
@@ -73,7 +80,8 @@ class MyAlarmReceiver : BroadcastReceiver() {
                             .setInputData(workDataOf(Contents.WORKER_INPUT_DATA_KEY to shoesUrl))
                             .build()
 
-                        WorkManager.getInstance(context)
+                        // 상품 알림
+                        WorkManager.getInstance(context!!)
                             .enqueue(workRequest)
                     }
                 }

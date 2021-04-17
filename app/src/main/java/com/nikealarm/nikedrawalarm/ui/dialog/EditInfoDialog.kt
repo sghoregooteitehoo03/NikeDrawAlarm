@@ -15,6 +15,7 @@ import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
 import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.databinding.DialogEditinfoBinding
 import com.nikealarm.nikedrawalarm.other.Contents
@@ -143,11 +144,7 @@ class EditInfoDialog : DialogFragment() {
             }
 
             Toast.makeText(requireContext(), "정보가 저장되었습니다.", Toast.LENGTH_SHORT).show()
-
-            fragmentBinding?.idEdit?.clearFocus()
-            fragmentBinding?.passEdit?.clearFocus()
-            imm.hideSoftInputFromWindow(fragmentBinding?.idEdit?.windowToken, 0)
-            imm.hideSoftInputFromWindow(fragmentBinding?.passEdit?.windowToken, 0)
+            findNavController().navigateUp()
         } else {
             if (fragmentBinding?.idEdit?.text.toString().isEmpty()) { // id가 비어있을 때
                 Toast.makeText(requireContext(), "아이디를 입력해주세요.", Toast.LENGTH_SHORT).show()
