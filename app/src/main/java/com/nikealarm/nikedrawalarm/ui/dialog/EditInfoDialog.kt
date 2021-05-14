@@ -76,6 +76,10 @@ class EditInfoDialog : DialogFragment() {
                 android.R.layout.simple_spinner_dropdown_item,
                 listOf(
                     "신발 사이즈 선택",
+                    "220",
+                    "225",
+                    "230",
+                    "235",
                     "240",
                     "245",
                     "250",

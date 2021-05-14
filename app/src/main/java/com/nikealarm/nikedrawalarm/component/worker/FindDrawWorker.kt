@@ -14,6 +14,8 @@ import com.squareup.picasso.Picasso
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import org.jsoup.Jsoup
+import java.text.SimpleDateFormat
+import java.util.*
 
 @HiltWorker
 class FindDrawWorker @AssistedInject constructor(
@@ -133,17 +135,15 @@ class FindDrawWorker @AssistedInject constructor(
                     continue
                 }
 
+                val format = SimpleDateFormat("yyyy/MM/dd hh:mm", Locale.KOREA)
                 val date = elementData.attr("data-active-date")
-                val year = date.split("/")[0]
-                val month = elementData.select("p.headline-4")
-                    .text()
-                val day = String.format("%02d", elementData.select("p.headline-1").text().toInt())
+                val dateTime = format.parse(date)?.time
+
                 val whenStartEvent = elementData.select("h3.headline-5")
                     .text()
-                val order = "${year}${month.split("월")[0]}${day}".toInt()
 
                 val specialShoesData =
-                    SpecialDataModel(null, specialUrl, year, month, day, whenStartEvent, order)
+                    SpecialDataModel(null, specialUrl, dateTime, whenStartEvent)
                 insertSpecialShoesData(specialShoesData)
 
                 val index = mDao.getAllSpecialShoesData()

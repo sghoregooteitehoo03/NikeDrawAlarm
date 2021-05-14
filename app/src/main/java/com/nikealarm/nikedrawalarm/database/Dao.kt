@@ -7,13 +7,13 @@ import androidx.room.Dao
 @Dao
 interface Dao {
     // SpecialShoesData
-    @Query("SELECT ShoesId, ShoesSubTitle, ShoesTitle, ShoesPrice, ShoesImageUrl, ShoesUrl, ShoesCategory, SpecialYear, SpecialMonth, SpecialDay, SpecialWhenEvent, SpecialOrder FROM ShoesDataModel INNER JOIN SpecialDataModel ON ShoesUrl = SpecialUrl ORDER BY SpecialOrder ASC")
+    @Query("SELECT ShoesId, ShoesSubTitle, ShoesTitle, ShoesPrice, ShoesImageUrl, ShoesUrl, ShoesCategory, SpecialTime, SpecialWhenEvent FROM ShoesDataModel INNER JOIN SpecialDataModel ON ShoesUrl = SpecialUrl ORDER BY SpecialTime ASC")
     fun getAllSpecialShoesData(): List<SpecialShoesDataModel>
 
-    @Query("SELECT ShoesId, ShoesSubTitle, ShoesTitle, ShoesPrice, ShoesImageUrl, ShoesUrl, ShoesCategory, SpecialYear, SpecialMonth, SpecialDay, SpecialWhenEvent, SpecialOrder FROM ShoesDataModel INNER JOIN SpecialDataModel ON ShoesUrl = SpecialUrl ORDER BY SpecialOrder ASC")
+    @Query("SELECT ShoesId, ShoesSubTitle, ShoesTitle, ShoesPrice, ShoesImageUrl, ShoesUrl, ShoesCategory, SpecialTime, SpecialWhenEvent FROM ShoesDataModel INNER JOIN SpecialDataModel ON ShoesUrl = SpecialUrl ORDER BY SpecialTime ASC")
     fun getAllSpecialShoesPagingData(): DataSource.Factory<Int, SpecialShoesDataModel>
 
-    @Query("SELECT ShoesId, ShoesSubTitle, ShoesTitle, ShoesPrice, ShoesImageUrl, ShoesUrl, ShoesCategory, SpecialYear, SpecialMonth, SpecialDay, SpecialWhenEvent, SpecialOrder FROM ShoesDataModel INNER JOIN SpecialDataModel ON ShoesUrl = SpecialUrl WHERE ShoesCategory = :upcomingCategory ORDER BY SpecialOrder ASC")
+    @Query("SELECT ShoesId, ShoesSubTitle, ShoesTitle, ShoesPrice, ShoesImageUrl, ShoesUrl, ShoesCategory, SpecialTime, SpecialWhenEvent FROM ShoesDataModel INNER JOIN SpecialDataModel ON ShoesUrl = SpecialUrl WHERE ShoesCategory = :upcomingCategory ORDER BY SpecialTime ASC")
     fun getSpecialShoesPagingData(upcomingCategory: String): DataSource.Factory<Int, SpecialShoesDataModel>
 
     // SpecialData

@@ -26,8 +26,10 @@ import com.nikealarm.nikedrawalarm.other.Contents
 import com.nikealarm.nikedrawalarm.ui.MainActivity
 import com.nikealarm.nikedrawalarm.viewmodel.upcoming.UpcomingViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import java.text.SimpleDateFormat
 import java.util.*
 
+// TODO: 알람설정 수정 O
 @AndroidEntryPoint
 class UpcomingListFragment : Fragment(R.layout.fragment_upcoming_list),
     UpcomingListAdapter.ClickListener {
@@ -173,14 +175,8 @@ class UpcomingListFragment : Fragment(R.layout.fragment_upcoming_list),
     // 알람 시작
     // 알람 설정
     private fun setAlarm(specialShoesData: SpecialShoesDataModel, pos: Int) {
-        val timeTrigger = getTimeInMillis(
-            EventDay(
-                specialShoesData.SpecialYear!!,
-                specialShoesData.SpecialMonth!!,
-                specialShoesData.SpecialDay!!,
-                specialShoesData.SpecialWhenEvent!!
-            )
-        )
+        val timeTrigger =
+            getTimeInMillis(specialShoesData.SpecialTime, specialShoesData.SpecialWhenEvent!!)
 
         if (timeTrigger != 0L) {
             with(AlarmBuilder(requireContext())) {
@@ -236,33 +232,28 @@ class UpcomingListFragment : Fragment(R.layout.fragment_upcoming_list),
             .show()
     }
 
-    private fun getTimeInMillis(eventDay: EventDay): Long {
-        val time = eventDay.eventTime.substring(2, 8).trim().split(":")
+    private fun getTimeInMillis(dateTime: Long?, whenEvent: String): Long {
+        val event = whenEvent.substring(2, 8).trim().split(":")
 
-        if (time.size > 1) {
-            val year = eventDay.eventYear.toIntOrNull()
-            val month = if (eventDay.eventMonth[1].toString() != "월") {
-                "${eventDay.eventMonth[0]}${eventDay.eventMonth[1]}".toIntOrNull() // 10월, 11월, 12월 처리
-            } else {
-                eventDay.eventMonth[0].toString().toIntOrNull()
-            }
-            val day = eventDay.eventDay.toIntOrNull()
+        if (dateTime != null && event.size > 1) {
+            val year = SimpleDateFormat("yyyy", Locale.KOREA).format(dateTime)
+                .toInt()
+            val month = SimpleDateFormat("MM", Locale.KOREA).format(dateTime)
+                .toInt()
+            val day = SimpleDateFormat("dd", Locale.KOREA).format(dateTime)
+                .toInt()
 
-            val hour = time[0].toIntOrNull()
-            val minute = time[1].toIntOrNull()
+            val hour = event[0].toInt()
+            val minute = event[1].toInt()
 
             val mCalendar = Calendar.getInstance().apply {
-                if (year != null && month != null && day != null && hour != null && minute != null) {
-                    set(Calendar.YEAR, year)
-                    set(Calendar.MONTH, month - 1)
-                    set(Calendar.DAY_OF_MONTH, day)
-                    set(Calendar.HOUR_OF_DAY, hour)
-                    set(Calendar.MINUTE, minute)
-                    set(Calendar.SECOND, 0)
-                    set(Calendar.MILLISECOND, 0)
-                } else {
-                    return 0
-                }
+                set(Calendar.YEAR, year)
+                set(Calendar.MONTH, month - 1)
+                set(Calendar.DAY_OF_MONTH, day)
+                set(Calendar.HOUR_OF_DAY, hour)
+                set(Calendar.MINUTE, minute)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
             }
 
             return mCalendar.timeInMillis
@@ -270,7 +261,7 @@ class UpcomingListFragment : Fragment(R.layout.fragment_upcoming_list),
 
         return 0
     }
-    // 알람 끝
+// 알람 끝
 
     // 애니메이션 설정 시작
     private fun appearText() {
@@ -292,5 +283,5 @@ class UpcomingListFragment : Fragment(R.layout.fragment_upcoming_list),
                 .withLayer()
         }
     }
-    // 애니메이션 설정 끝
+// 애니메이션 설정 끝
 }

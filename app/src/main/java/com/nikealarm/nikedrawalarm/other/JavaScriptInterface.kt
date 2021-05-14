@@ -1,5 +1,6 @@
 package com.nikealarm.nikedrawalarm.other
 
+import android.util.Log
 import android.webkit.JavascriptInterface
 import org.jsoup.Jsoup
 
@@ -16,7 +17,10 @@ class JavaScriptInterface() {
     fun checkData(): String {
         while (true) {
             if (!isStopped) {
+                Log.i("AutoInfinity", "반복")
+
                 if (html != null) {
+                    Log.i("AutoCheckSize", "신발 사이즈 체크")
                     val doc = Jsoup.parse(html)
                     val sizeList = doc.select("div.select-box")
                         .select("select")
@@ -43,7 +47,10 @@ class JavaScriptInterface() {
     fun isSuccess(shoesUrl: String?): Boolean { // 응모 성공여부 확인
         while (true) {
             if (!isStopped) {
+                Log.i("AutoInfinity", "반복")
+
                 if (html != null) {
+                    Log.i("AutoCheckSuccessDraw", "응모 성공여부 확인")
                     val doc = Jsoup.parse(html)
                     val shoesList = doc.select("div.order-list")
 
