@@ -2,6 +2,7 @@ package com.nikealarm.nikedrawalarm.database
 
 import androidx.room.Ignore
 
+// TODO: 데이터 구조 수정 O
 data class SpecialShoesDataModel(
     val ShoesId: Int?,
     val ShoesSubTitle: String,
@@ -10,11 +11,8 @@ data class SpecialShoesDataModel(
     val ShoesImageUrl: String? = null,
     val ShoesUrl: String? = null,
     val ShoesCategory: String? = null,
-    val SpecialYear: String? = null,
-    val SpecialMonth: String? = null,
-    val SpecialDay: String? = null,
+    val SpecialTime: Long? = null,
     val SpecialWhenEvent: String? = null,
-    val SpecialOrder: Int? = null
 ) {
     @Ignore
     var isOpened = false

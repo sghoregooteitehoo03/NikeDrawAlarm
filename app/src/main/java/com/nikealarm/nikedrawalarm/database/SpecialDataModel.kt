@@ -4,6 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
+// TODO: 데이터 구조 수정 O
 @Entity
 data class SpecialDataModel(
     @PrimaryKey(autoGenerate = true)
@@ -11,17 +12,11 @@ data class SpecialDataModel(
     val id: Int?,
     @ColumnInfo(name = "SpecialUrl")
     val specialUrl: String,
-    @ColumnInfo(name = "SpecialYear")
-    val specialYear: String? = null,
-    @ColumnInfo(name = "SpecialMonth")
-    val specialMonth: String? = null,
-    @ColumnInfo(name = "SpecialDay")
-    val specialDay: String? = null,
+    @ColumnInfo(name = "SpecialTime")
+    val specialTime: Long? = null,
     @ColumnInfo(name = "SpecialWhenEvent")
-    val specialWhenEvent: String? = null,
-    @ColumnInfo(name = "SpecialOrder")
-    val specialOrder: Int? = null
-    ) {
+    val specialWhenEvent: String? = null
+) {
 
     override fun equals(other: Any?): Boolean {
         other as SpecialDataModel

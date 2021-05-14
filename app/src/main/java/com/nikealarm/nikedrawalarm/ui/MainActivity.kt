@@ -18,10 +18,12 @@ import dagger.hilt.android.AndroidEntryPoint
 /*
 * adb shell dumpsys alarm (알림 체크)
 * UPCOMING 정보 시 분 초 표시 (서버 필요)
-* 진행중인 상품 알려주기
-* UI 수정 및 최적화
-* 코드 최적화
 * */
+
+// TODO:
+//  1. 응모 여러개 있을 때 두번째부터 응모 안되는 버그 수정 ㅁ
+//  2. 데이터 이용시 응모 안되는 버그 수정 O
+//  3. 알림 작동 안되는 버그 수정 ㅁ
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 

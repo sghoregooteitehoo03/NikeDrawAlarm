@@ -33,6 +33,7 @@ import java.util.concurrent.Executor
 import javax.inject.Named
 import kotlin.random.Random
 
+// TODO: 5분이상 넘어갈 시 동작 중지 O
 @HiltWorker
 class AutoEnterWorker @AssistedInject constructor(
     @Assisted context: Context,
@@ -50,17 +51,18 @@ class AutoEnterWorker @AssistedInject constructor(
     private lateinit var shoesData: SpecialShoesDataModel
 
     private var state: String? = WebState.WEB_LOGIN
+    private val timeoutScope = CoroutineScope(Dispatchers.Default)
+    private val scope = CoroutineScope(Dispatchers.Default)
     private var isError = false
 
     override fun onStopped() {
         super.onStopped()
         javaScriptInterface.setStopped(true)
-        Log.i("Check", "중단")
+        Log.i("AutoCancel", "중단")
     }
 
     override fun startWork(): ListenableFuture<Result> {
-        Log.i("Check5", "동작")
-
+        Log.i("AutoStart", "동작")
         CoroutineScope(Dispatchers.Default).launch {
             val index = mDao.getAllSpecialShoesData()
                 .indexOf(
@@ -106,21 +108,33 @@ class AutoEnterWorker @AssistedInject constructor(
         }
 
         return CallbackToFutureAdapter.getFuture { completer ->
+            timeoutScope.launch { // 타임아웃 설정
+                delay(5 * 60 * 1000)
+                stop()
+
+                completer.set(Result.success())
+                createNotification(false, WebState.ERROR_OTHER)
+            }
+
             customWebViewClient = object : WebViewClient() {
                 var errorMessage = ""
                 var shoesUrl: String? = null
 
                 override fun onPageFinished(view: WebView?, url: String?) {
                     super.onPageFinished(view, url)
+                    Log.i("AutoLoading", "로딩")
 
                     if (!isStopped && !isError) { // 취소되지 않았을 때
                         if (url == "https://www.nike.com/kr/launch/login?error=true") { // 로그인 실패 시
+                            Log.i("AutoLoginFail", "로그인 실패")
+
                             state = WebState.WEB_FAIL
                             errorMessage = WebState.ERROR_LOGIN
                         }
 
                         when (state) {
                             WebState.WEB_LOGIN -> { // 웹 로그인
+                                Log.i("AutoLogin", "로그인")
                                 val nikeId = autoEnterPref.getString(
                                     Contents.AUTO_ENTER_ID,
                                     ""
@@ -142,6 +156,7 @@ class AutoEnterWorker @AssistedInject constructor(
                                 }
                             }
                             WebState.WEB_AFTER_LOGIN -> { // 웹 로그인 후
+                                Log.i("AutoAfterLogin", "로그인 후")
                                 shoesUrl =
                                     inputData.getString(Contents.WORKER_AUTO_ENTER_INPUT_KEY)
 
@@ -156,13 +171,14 @@ class AutoEnterWorker @AssistedInject constructor(
                                 }
                             }
                             WebState.WEB_SELECT_SIZE -> { // 신발 사이즈 선택
+                                Log.i("AutoSelectSize", "사이즈 선택")
                                 val size = autoEnterPref.getString(Contents.AUTO_ENTER_SIZE, "")!!
 
                                 if (size.isNotEmpty()) {
                                     javaScriptInterface.setSize(size)
                                     webView.loadUrl("javascript:window.Android.getHtml(document.getElementsByTagName('body')[0].innerHTML);")
 
-                                    CoroutineScope(Dispatchers.Default).launch {
+                                    scope.launch {
                                         errorMessage = javaScriptInterface.checkData()
 
                                         withContext(Dispatchers.Main) {
@@ -192,12 +208,13 @@ class AutoEnterWorker @AssistedInject constructor(
                                 }
                             }
                             WebState.WEB_CHECK_DRAWED -> { // 응모 확인
+                                Log.i("AutoCheckDraw", "응모 여부 확인")
                                 if (url == "https://www.nike.com/kr/ko_kr/mypage") { // My page에서 DrawList로 감
                                     webView.loadUrl("https://www.nike.com/kr/ko_kr/account/theDrawList")
                                 } else { // DrawList
                                     webView.loadUrl("javascript:window.Android.getHtml(document.getElementsByTagName('body')[0].innerHTML);")
 
-                                    CoroutineScope(Dispatchers.Default).launch {
+                                    scope.launch {
                                         val isSuccess = javaScriptInterface.isSuccess(shoesUrl)
 
                                         withContext(Dispatchers.Main) {
@@ -217,11 +234,15 @@ class AutoEnterWorker @AssistedInject constructor(
                                 }
                             }
                             WebState.WEB_SUCCESS -> { // 성공
+                                Log.i("AutoSuccess", "응모 성공")
+
                                 completer.set(Result.success())
                                 createNotification(true)
                             }
                             WebState.WEB_FAIL -> { // 오류 처리
-                                completer.set(Result.success(workDataOf(Contents.WORKER_AUTO_ENTER_OUTPUT_KEY to errorMessage)))
+                                Log.i("AutoSuccess", "응모 실패")
+
+                                completer.set(Result.success())
                                 createNotification(false, errorMessage)
                             }
                         }
@@ -269,6 +290,8 @@ class AutoEnterWorker @AssistedInject constructor(
     private fun createNotification(isSuccess: Boolean, errorMsg: String = "") {
         val builder =
             NotificationBuilder(applicationContext, Contents.CHANNEL_ID_AUTO_ENTER, "자동응모")
+        timeoutScope.cancel()
+        scope.cancel()
 
         if (isError) { // 오류 발생 시
             with(builder) {

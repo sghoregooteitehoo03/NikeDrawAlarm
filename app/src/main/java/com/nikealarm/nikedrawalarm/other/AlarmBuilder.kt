@@ -8,6 +8,7 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import com.nikealarm.nikedrawalarm.component.MyAlarmReceiver
+import com.nikealarm.nikedrawalarm.ui.MainActivity
 
 class AlarmBuilder(private val context: Context) {
     private lateinit var alarmIntent: Intent
@@ -36,9 +37,21 @@ class AlarmBuilder(private val context: Context) {
             context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            alarmManager.setExactAndAllowWhileIdle(
-                AlarmManager.RTC_WAKEUP,
-                timeTrigger,
+//            alarmManager.setExactAndAllowWhileIdle(
+//                AlarmManager.RTC_WAKEUP,
+//                timeTrigger,
+//                alarmPendingIntent
+//            )
+            val actionIntent = Intent(context, MainActivity::class.java)
+            val actionPendingIntent = PendingIntent.getActivity(
+                context,
+                requestCode,
+                actionIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT
+            )
+
+            alarmManager.setAlarmClock(
+                AlarmManager.AlarmClockInfo(timeTrigger, actionPendingIntent),
                 alarmPendingIntent
             )
         } else {
@@ -52,7 +65,7 @@ class AlarmBuilder(private val context: Context) {
     }
 
     fun removeAlarm(requestCode: Int) {
-        if(checkExistAlarm(requestCode)) {
+        if (checkExistAlarm(requestCode)) {
             val alarmPendingIntent = PendingIntent.getBroadcast(
                 context,
                 requestCode,

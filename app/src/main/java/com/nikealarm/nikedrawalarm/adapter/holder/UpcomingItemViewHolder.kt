@@ -12,7 +12,10 @@ import com.nikealarm.nikedrawalarm.adapter.UpcomingListAdapter
 import com.nikealarm.nikedrawalarm.database.ShoesDataModel
 import com.nikealarm.nikedrawalarm.database.SpecialShoesDataModel
 import com.nikealarm.nikedrawalarm.databinding.ItemUpcomingListBinding
+import java.text.SimpleDateFormat
+import java.util.*
 
+// TODO: 수정 O
 class UpcomingItemViewHolder(
     private val binding: ItemUpcomingListBinding,
     clickListener: UpcomingListAdapter.ClickListener,
@@ -37,8 +40,8 @@ class UpcomingItemViewHolder(
     }
 
     fun bindView(data: SpecialShoesDataModel?) {
-        binding.monthText.text = data?.SpecialMonth
-        binding.dayText.text = data?.SpecialDay
+        binding.monthText.text = SimpleDateFormat("M월", Locale.KOREA).format(data?.SpecialTime)
+        binding.dayText.text = SimpleDateFormat("dd", Locale.KOREA).format(data?.SpecialTime)
         binding.categoryText.text = when (data?.ShoesCategory) {
             ShoesDataModel.CATEGORY_DRAW -> "DRAW"
             ShoesDataModel.CATEGORY_COMING_SOON -> "COMING"

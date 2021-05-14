@@ -13,8 +13,10 @@ import com.nikealarm.nikedrawalarm.other.Contents
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import org.jsoup.Jsoup
+import java.text.SimpleDateFormat
+import java.util.*
 
-// TODO: 중복된 데이터 제거
+// TODO: 파싱 수정
 @HiltWorker
 class ParsingWorker @AssistedInject constructor(
     @Assisted context: Context,
@@ -225,18 +227,15 @@ class ParsingWorker @AssistedInject constructor(
                     continue
                 }
 
+                val format = SimpleDateFormat("yyyy/MM/dd hh:mm", Locale.KOREA)
                 val date = elementData.attr("data-active-date")
+                val dateTime = format.parse(date)?.time
 
-                val year = date.split("/")[0]
-                val month = elementData.select("p.headline-4")
-                    .text()
-                val day = String.format("%02d", elementData.select("p.headline-1").text().toInt())
                 val whenStartEvent = elementData.select("h3.headline-5")
                     .text()
-                val order = "${year}${month.split("월")[0]}${day}".toInt()
 
                 val specialData =
-                    SpecialDataModel(null, specialUrl, year, month, day, whenStartEvent, order)
+                    SpecialDataModel(null, specialUrl, dateTime, whenStartEvent)
                 insertSpecialData(specialData)
             }
 
