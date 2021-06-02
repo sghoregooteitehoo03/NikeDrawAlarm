@@ -7,8 +7,8 @@ import androidx.work.Worker
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import com.nikealarm.nikedrawalarm.database.Dao
-import com.nikealarm.nikedrawalarm.database.SpecialDataModel
 import com.nikealarm.nikedrawalarm.database.ShoesDataModel
+import com.nikealarm.nikedrawalarm.database.SpecialDataModel
 import com.nikealarm.nikedrawalarm.other.Contents
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -64,7 +64,8 @@ class ParsingWorker @AssistedInject constructor(
         val elementsData = doc.select("li.launch-list-item") // 여러개의 신발
         var progress = 0.0
 
-        for (elementData in elementsData) {
+        for (i in 0..39) {
+            val elementData = elementsData[i]
             if (isStopped) { // cancel 됐을 때
                 return
             }

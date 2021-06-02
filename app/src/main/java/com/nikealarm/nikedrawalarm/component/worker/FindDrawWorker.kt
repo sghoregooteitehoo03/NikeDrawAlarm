@@ -52,7 +52,8 @@ class FindDrawWorker @AssistedInject constructor(
             .get()
         val elementsData = doc.select("li.launch-list-item")
 
-        for (elementData in elementsData) {
+        for (i in 0..39) {
+            val elementData = elementsData[i]
             val shoesInfo = elementData.select("div.cta-container") // 신발 정보
                 .text()
                 .trim()
