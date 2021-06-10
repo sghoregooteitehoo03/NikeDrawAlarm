@@ -70,12 +70,12 @@ class EditInfoDialog : DialogFragment() {
         val binding = DialogEditinfoBinding.bind(view)
         fragmentBinding = binding
 
-        val spinnerAdapter =
+        val shoesSizeAdapter =
             ArrayAdapter(
                 requireContext(),
                 android.R.layout.simple_spinner_dropdown_item,
                 listOf(
-                    "신발 사이즈 선택",
+                    "신발 사이즈",
                     "220",
                     "225",
                     "230",
@@ -96,15 +96,32 @@ class EditInfoDialog : DialogFragment() {
                     "310"
                 )
             )
+        val loginWayAdapter = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_spinner_dropdown_item,
+            listOf("로그인 방식", "나이키", "카카오톡", "페이스북")
+        )
         with(binding.sizeSpinner) {
-            adapter = spinnerAdapter
+            adapter = shoesSizeAdapter
 
             val size = autoEnterPreference.getString(Contents.AUTO_ENTER_SIZE, "")!!
             setSelection(
                 if (size.isEmpty()) {
                     0
                 } else {
-                    spinnerAdapter.getPosition(size)
+                    shoesSizeAdapter.getPosition(size)
+                }
+            )
+        }
+        with(binding.loginSpinner) {
+            adapter = loginWayAdapter
+
+            val loginWay = autoEnterPreference.getString(Contents.AUTO_ENTER_LOGIN_WAY, "")!!
+            setSelection(
+                if (loginWay.isEmpty()) {
+                    0
+                } else {
+                    loginWayAdapter.getPosition(loginWay)
                 }
             )
         }
@@ -141,6 +158,10 @@ class EditInfoDialog : DialogFragment() {
                     fragmentBinding?.passEdit?.text?.toString()
                 )
                 putString(
+                    Contents.AUTO_ENTER_LOGIN_WAY,
+                    fragmentBinding!!.loginSpinner.selectedItem as String
+                )
+                putString(
                     Contents.AUTO_ENTER_SIZE,
                     fragmentBinding?.sizeSpinner?.selectedItem as String
                 )
@@ -162,6 +183,8 @@ class EditInfoDialog : DialogFragment() {
 
                 fragmentBinding?.passLayout?.requestFocus()
                 imm.showSoftInput(fragmentBinding?.passEdit, 0)
+            } else if (fragmentBinding?.loginSpinner?.selectedItemPosition == 0) {
+                Toast.makeText(requireContext(), "로그인 방식을 선택해주세요.", Toast.LENGTH_SHORT).show()
             } else if (fragmentBinding?.sizeSpinner?.selectedItemPosition == 0) { // 사이즈 선택 안했을 때
                 Toast.makeText(requireContext(), "사이즈를 선택해주세요.", Toast.LENGTH_SHORT).show()
             }
@@ -170,9 +193,10 @@ class EditInfoDialog : DialogFragment() {
 
     // 데이터 유효성 검사
     private fun checkIsEmpty(): Boolean {
-        return !(fragmentBinding?.idEdit?.text!!.toString()
-            .isNotEmpty() && fragmentBinding?.passEdit?.text!!.toString()
-            .isNotEmpty() && fragmentBinding?.sizeSpinner?.selectedItemPosition != 0)
+        return !(fragmentBinding?.idEdit?.text!!.toString().isNotEmpty()
+                && fragmentBinding?.passEdit?.text!!.toString().isNotEmpty()
+                && fragmentBinding!!.loginSpinner.selectedItemPosition != 0
+                && fragmentBinding?.sizeSpinner?.selectedItemPosition != 0)
     }
 
     private fun checkPreferences(): Boolean {

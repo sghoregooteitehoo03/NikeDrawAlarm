@@ -24,7 +24,10 @@ import dagger.hilt.android.AndroidEntryPoint
 //  1. 응모 여러개 있을 때 두번째부터 응모 안되는 버그 수정 ㅁ
 //  2. 데이터 이용시 응모 안되는 버그 수정 O
 //  3. 알림 작동 안되는 버그 수정 ㅁ
-//  4. 알림은 동작하나 자동응모가 실행 안되는 버그 (WorkManager가 Doze모드에서 동작 X)
+//  4. 알림은 동작하나 자동응모가 실행 안되는 버그 O
+//  . 카카오톡 페이스북 로그인 구현
+//  . 처음 시작 시 허용 비허용 구현 (다음에)
+//  . material로 수정 O
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 

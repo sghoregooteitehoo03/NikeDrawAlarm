@@ -15,7 +15,11 @@ import androidx.annotation.RequiresApi
 import androidx.concurrent.futures.CallbackToFutureAdapter
 import androidx.core.app.NotificationCompat
 import androidx.hilt.work.HiltWorker
-import androidx.work.*
+import androidx.work.ForegroundInfo
+import androidx.work.ListenableWorker
+import androidx.work.WorkManager
+import androidx.work.WorkerParameters
+import com.bumptech.glide.Glide
 import com.google.common.util.concurrent.ListenableFuture
 import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.database.Dao
@@ -25,15 +29,13 @@ import com.nikealarm.nikedrawalarm.other.JavaScriptInterface
 import com.nikealarm.nikedrawalarm.other.NotificationBuilder
 import com.nikealarm.nikedrawalarm.other.WebState
 import com.nikealarm.nikedrawalarm.ui.MainActivity
-import com.squareup.picasso.Picasso
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.*
-import java.util.concurrent.Executor
 import javax.inject.Named
 import kotlin.random.Random
 
-// TODO: 5분이상 넘어갈 시 동작 중지 O
+// 카카오: https://accounts.kakao.com/login?continue=https%3A%2F%2Fkauth.kakao.com%2Foauth%2Fauthorize%3Fencode_state%3Dfalse%26response_type%3Dcode%26redirect_uri%3Dhttps%253A%252F%252Fwww.nike.com%252Fkr%252Flaunch%252Fsignin%252Fkakao%26client_id%3D19a5f0bf086abcc9b460e13af8a834b6%26state%3Dhttps%3A%2F%2Fwww.nike.com%2Fkr%2Flaunch%2Flogin
 @HiltWorker
 class AutoEnterWorker @AssistedInject constructor(
     @Assisted context: Context,
@@ -49,15 +51,22 @@ class AutoEnterWorker @AssistedInject constructor(
     private lateinit var webView: WebView
     private lateinit var shoesBitmap: Bitmap
     private lateinit var shoesData: SpecialShoesDataModel
+    private lateinit var loginWay: String
 
     private var state: String? = WebState.WEB_LOGIN
+    private var errorMessage = ""
+
     private val timeoutScope = CoroutineScope(Dispatchers.Default)
     private val scope = CoroutineScope(Dispatchers.Default)
+    private val loginScope = CoroutineScope(Dispatchers.Default)
     private var isError = false
+    private var isLoging = false
 
+    // TODO: 자동응모 취소 시 타임아웃은 그대로 동작 되는 버그
     override fun onStopped() {
         super.onStopped()
         javaScriptInterface.setStopped(true)
+
         Log.i("AutoCancel", "중단")
     }
 
@@ -86,12 +95,12 @@ class AutoEnterWorker @AssistedInject constructor(
 
         CoroutineScope(Dispatchers.Main).launch {
             webView = WebView(applicationContext)
+            loginWay = autoEnterPref.getString(Contents.AUTO_ENTER_LOGIN_WAY, "")!!
 
             with(webView) {
                 clearCookie()
                 settings.javaScriptEnabled = true
                 settings.cacheMode = WebSettings.LOAD_CACHE_ELSE_NETWORK
-                settings.blockNetworkImage = true
                 settings.setAppCacheEnabled(true)
                 settings.domStorageEnabled = true
                 settings.layoutAlgorithm = WebSettings.LayoutAlgorithm.NARROW_COLUMNS
@@ -101,7 +110,10 @@ class AutoEnterWorker @AssistedInject constructor(
                 scrollBarStyle = View.SCROLLBARS_INSIDE_OVERLAY
                 setLayerType(View.LAYER_TYPE_HARDWARE, null)
 
-                loadUrl("https://www.nike.com/kr/launch/login")
+                when (loginWay) {
+                    "나이키" -> loadUrl("https://www.nike.com/kr/launch/login")
+                    "카카오톡" -> loadUrl("https://accounts.kakao.com/login?continue=https%3A%2F%2Fkauth.kakao.com%2Foauth%2Fauthorize%3Fencode_state%3Dfalse%26response_type%3Dcode%26redirect_uri%3Dhttps%253A%252F%252Fwww.nike.com%252Fkr%252Flaunch%252Fsignin%252Fkakao%26client_id%3D19a5f0bf086abcc9b460e13af8a834b6%26state%3Dhttps%3A%2F%2Fwww.nike.com%2Fkr%2Flaunch%2Flogin")
+                }
                 webViewClient = customWebViewClient
                 webChromeClient = WebChromeClient()
             }
@@ -117,8 +129,17 @@ class AutoEnterWorker @AssistedInject constructor(
             }
 
             customWebViewClient = object : WebViewClient() {
-                var errorMessage = ""
                 var shoesUrl: String? = null
+
+                override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
+                    super.onPageStarted(view, url, favicon)
+                    if (isLoging) {
+                        loginScope.cancel()
+                        javaScriptInterface.clearHtml()
+
+                        isLoging = false
+                    }
+                }
 
                 override fun onPageFinished(view: WebView?, url: String?) {
                     super.onPageFinished(view, url)
@@ -135,7 +156,7 @@ class AutoEnterWorker @AssistedInject constructor(
                         when (state) {
                             WebState.WEB_LOGIN -> { // 웹 로그인
                                 Log.i("AutoLogin", "로그인")
-                                val nikeId = autoEnterPref.getString(
+                                val id = autoEnterPref.getString(
                                     Contents.AUTO_ENTER_ID,
                                     ""
                                 )!!
@@ -144,10 +165,8 @@ class AutoEnterWorker @AssistedInject constructor(
                                     ""
                                 )!!
 
-                                if (nikeId.isNotEmpty() && password.isNotEmpty()) { // 로그인
-                                    webView
-                                        .loadUrl("javascript:(function(){$('i.brz-icon-checkbox').click(), document.getElementById('j_username').value = '${nikeId}', document.getElementById('j_password').value = '${password}', $('button.button.large.width-max').click()})()")
-                                    state = WebState.WEB_AFTER_LOGIN
+                                if (id.isNotEmpty() && password.isNotEmpty()) { // 로그인
+                                    login(id, password)
                                 } else { // 오류 처리
                                     errorMessage = WebState.ERROR_OTHER
                                     state = WebState.WEB_FAIL
@@ -211,7 +230,7 @@ class AutoEnterWorker @AssistedInject constructor(
                                 Log.i("AutoCheckDraw", "응모 여부 확인")
                                 if (url == "https://www.nike.com/kr/ko_kr/mypage") { // My page에서 DrawList로 감
                                     webView.loadUrl("https://www.nike.com/kr/ko_kr/account/theDrawList")
-                                } else { // DrawList
+                                } else if (url == "https://www.nike.com/kr/ko_kr/account/theDrawList") { // DrawList
                                     webView.loadUrl("javascript:window.Android.getHtml(document.getElementsByTagName('body')[0].innerHTML);")
 
                                     scope.launch {
@@ -231,6 +250,11 @@ class AutoEnterWorker @AssistedInject constructor(
                                             }
                                         }
                                     }
+                                } else {
+                                    errorMessage = WebState.ERROR_LOGIN
+                                    state = WebState.WEB_FAIL
+
+                                    webView.loadUrl("")
                                 }
                             }
                             WebState.WEB_SUCCESS -> { // 성공
@@ -240,7 +264,7 @@ class AutoEnterWorker @AssistedInject constructor(
                                 createNotification(true)
                             }
                             WebState.WEB_FAIL -> { // 오류 처리
-                                Log.i("AutoSuccess", "응모 실패")
+                                Log.i("AutoSuccess", "응모 실패: $errorMessage")
 
                                 completer.set(Result.success())
                                 createNotification(false, errorMessage)
@@ -264,8 +288,10 @@ class AutoEnterWorker @AssistedInject constructor(
             createChannel()
         }
 
-        shoesBitmap = Picasso.get()
+        shoesBitmap = Glide.with(applicationContext)
+            .asBitmap()
             .load(shoesData.ShoesImageUrl)
+            .submit()
             .get()
         val cancelIntent = WorkManager.getInstance(applicationContext)
             .createCancelPendingIntent(id)
@@ -333,7 +359,7 @@ class AutoEnterWorker @AssistedInject constructor(
                 }
             }
 
-            deleteShoes(shoesData.ShoesUrl) // 신발 삭제
+//            deleteShoes(shoesData.ShoesUrl) // 신발 삭제
         }
     }
 
@@ -353,8 +379,43 @@ class AutoEnterWorker @AssistedInject constructor(
 
     private fun clearCookie() { // 쿠키 삭제
         with(CookieManager.getInstance()) {
-            removeAllCookies(ValueCallback {})
+            removeAllCookies {}
             flush()
+        }
+    }
+
+    private fun login(id: String, password: String) {
+        when (loginWay) {
+            "나이키" -> {
+                Log.i("AutoLoginNike", "나이키 로그인")
+                webView
+                    .loadUrl("javascript:(function(){$('i.brz-icon-checkbox').click(), document.getElementById('j_username').value = '${id}', document.getElementById('j_password').value = '${password}', $('button.button.large.width-max').click()})()")
+                state = WebState.WEB_AFTER_LOGIN
+            }
+            "카카오톡" -> {
+                // id_email_2, id_password_3, button.btn_g.submit.btn_disabled.btn_type2
+                Log.i("AutoLoginKaKao", "카카오 로그인")
+                isLoging = true
+
+                webView
+                    .loadUrl("javascript:(function(){$('span.ico_account.ico_check').click(), document.getElementById('id_email_2').value = '${id}', document.getElementById('id_password_3').value = '${password}', document.getElementsByClassName('submit')[0].click()})()")
+                webView.loadUrl("javascript:window.Android.getHtml(document.getElementsByTagName('body')[0].innerHTML);")
+
+                state = WebState.WEB_AFTER_LOGIN
+                loginScope.launch {
+                    if (!javaScriptInterface.isLoginKaKao()) {
+                        if(isLoging) {
+                            withContext(Dispatchers.Main) {
+                                errorMessage = WebState.ERROR_LOGIN
+                                state = WebState.WEB_FAIL
+
+                                webView.loadUrl("")
+                                isLoging = false
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 

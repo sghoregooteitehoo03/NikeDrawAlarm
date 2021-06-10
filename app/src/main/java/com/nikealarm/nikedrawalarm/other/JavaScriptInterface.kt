@@ -9,9 +9,31 @@ class JavaScriptInterface() {
     private var isStopped = false
     private lateinit var shoesSize: String
 
+    fun clearHtml() {
+        html = null
+    }
+
     @JavascriptInterface
     fun getHtml(_html: String) {
         html = _html
+    }
+
+    fun isLoginKaKao(): Boolean {
+        while (true) {
+            if (!isStopped) {
+                Log.i("AutoInfinity", "반복")
+
+                if (html != null) {
+                    val doc = Jsoup.parse(html)
+                    // TODO: 버그 수정
+                    val errorAlert = doc.select("div#errorAlert")
+                        .text()
+
+                    Log.i("AutoIsLogin", "로그인 확인 여부: ${errorAlert}")
+                    return errorAlert.isEmpty()
+                }
+            }
+        }
     }
 
     fun checkData(): String {
@@ -29,7 +51,7 @@ class JavaScriptInterface() {
                     val drawState = doc.select("span.btn-buy")
                         .text()
 
-                    html = null
+                    clearHtml()
                     if (drawState != "THE DRAW 응모하기") { // 응모 중인지 확인
                         return WebState.ERROR_END_DRAW
                     } else if (!sizeList.contains(shoesSize)) { // 사이즈가 존재하는지 확인

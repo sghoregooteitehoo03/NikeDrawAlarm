@@ -19,6 +19,7 @@ import java.util.*
 import javax.inject.Inject
 import javax.inject.Named
 
+// TODO: Test: adb shell dumpsys battery unplug
 @AndroidEntryPoint
 class MyAlarmReceiver : HiltBroadcastReceiver() {
     @Inject
@@ -58,31 +59,29 @@ class MyAlarmReceiver : HiltBroadcastReceiver() {
                 dataPosition?.let { shoesUrl ->
                     Log.i("Check4", "동작 $dataPosition")
 
-                    if (isConnection(context!!)) {
-                        if (isDraw && isAllow) { // Draw 상품이고 자동응모를 허용할 때
-                            Log.i("Check5", "동작")
-                            val workRequest: OneTimeWorkRequest =
-                                OneTimeWorkRequestBuilder<AutoEnterWorker>()
-                                    .addTag(Contents.WORKER_AUTO_ENTER)
-                                    .setInputData(workDataOf(Contents.WORKER_AUTO_ENTER_INPUT_KEY to shoesUrl))
-                                    .build()
-
-                            // 자동응모
-                            WorkManager.getInstance(context)
-                                .enqueueUniqueWork(
-                                    Contents.WORKER_AUTO_ENTER,
-                                    ExistingWorkPolicy.APPEND_OR_REPLACE,
-                                    workRequest
-                                )
-                        } else { // Draw 상품이 아니거나 자동응모 허용하지 않을 때
-                            val workRequest = OneTimeWorkRequestBuilder<ProductNotifyWorker>()
-                                .setInputData(workDataOf(Contents.WORKER_INPUT_DATA_KEY to shoesUrl))
+                    if (isDraw && isAllow) { // Draw 상품이고 자동응모를 허용할 때
+                        Log.i("Check5", "동작")
+                        val workRequest: OneTimeWorkRequest =
+                            OneTimeWorkRequestBuilder<AutoEnterWorker>()
+                                .addTag(Contents.WORKER_AUTO_ENTER)
+                                .setInputData(workDataOf(Contents.WORKER_AUTO_ENTER_INPUT_KEY to shoesUrl))
                                 .build()
 
-                            // 상품 알림
-                            WorkManager.getInstance(context)
-                                .enqueue(workRequest)
-                        }
+                        // 자동응모
+                        WorkManager.getInstance(context!!)
+                            .enqueueUniqueWork(
+                                Contents.WORKER_AUTO_ENTER,
+                                ExistingWorkPolicy.APPEND_OR_REPLACE,
+                                workRequest
+                            )
+                    } else { // Draw 상품이 아니거나 자동응모 허용하지 않을 때
+                        val workRequest = OneTimeWorkRequestBuilder<ProductNotifyWorker>()
+                            .setInputData(workDataOf(Contents.WORKER_INPUT_DATA_KEY to shoesUrl))
+                            .build()
+
+                        // 상품 알림
+                        WorkManager.getInstance(context!!)
+                            .enqueue(workRequest)
                     }
                 }
             }

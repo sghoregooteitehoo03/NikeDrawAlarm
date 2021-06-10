@@ -84,7 +84,7 @@
         android:padding="15dp"
         android:text="종료하기"
         android:textColor="#ffffff"
-        android:textSize="25sp"
+        android:textSize="20sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

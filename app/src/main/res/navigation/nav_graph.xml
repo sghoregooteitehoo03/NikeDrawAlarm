@@ -101,4 +101,8 @@
         android:name="com.nikealarm.nikedrawalarm.ui.fragment.HelpFragment"
         android:label="HelpFragment"
         tools:layout="@layout/fragment_help" />
+    <fragment
+        android:id="@+id/testFragment"
+        android:name="com.nikealarm.nikedrawalarm.ui.fragment.TestFragment"
+        android:label="TestFragment"/>
 </navigation>
