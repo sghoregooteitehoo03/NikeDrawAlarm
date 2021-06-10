@@ -29,7 +29,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import java.text.SimpleDateFormat
 import java.util.*
 
-// TODO: 알람설정 수정 O
 @AndroidEntryPoint
 class UpcomingListFragment : Fragment(R.layout.fragment_upcoming_list),
     UpcomingListAdapter.ClickListener {

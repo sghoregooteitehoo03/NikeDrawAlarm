@@ -2,7 +2,6 @@ package com.nikealarm.nikedrawalarm.database
 
 import androidx.room.Ignore
 
-// TODO: 데이터 구조 수정 O
 data class SpecialShoesDataModel(
     val ShoesId: Int?,
     val ShoesSubTitle: String,

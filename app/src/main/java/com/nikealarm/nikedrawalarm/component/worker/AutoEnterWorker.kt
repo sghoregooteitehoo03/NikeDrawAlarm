@@ -15,7 +15,11 @@ import androidx.annotation.RequiresApi
 import androidx.concurrent.futures.CallbackToFutureAdapter
 import androidx.core.app.NotificationCompat
 import androidx.hilt.work.HiltWorker
-import androidx.work.*
+import androidx.work.ForegroundInfo
+import androidx.work.ListenableWorker
+import androidx.work.WorkManager
+import androidx.work.WorkerParameters
+import com.bumptech.glide.Glide
 import com.google.common.util.concurrent.ListenableFuture
 import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.database.Dao
@@ -25,15 +29,12 @@ import com.nikealarm.nikedrawalarm.other.JavaScriptInterface
 import com.nikealarm.nikedrawalarm.other.NotificationBuilder
 import com.nikealarm.nikedrawalarm.other.WebState
 import com.nikealarm.nikedrawalarm.ui.MainActivity
-import com.squareup.picasso.Picasso
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.*
-import java.util.concurrent.Executor
 import javax.inject.Named
 import kotlin.random.Random
 
-// TODO: 5분이상 넘어갈 시 동작 중지 O
 @HiltWorker
 class AutoEnterWorker @AssistedInject constructor(
     @Assisted context: Context,
@@ -57,6 +58,9 @@ class AutoEnterWorker @AssistedInject constructor(
 
     override fun onStopped() {
         super.onStopped()
+
+        scope.cancel()
+        timeoutScope.cancel()
         javaScriptInterface.setStopped(true)
         Log.i("AutoCancel", "중단")
     }
@@ -264,8 +268,10 @@ class AutoEnterWorker @AssistedInject constructor(
             createChannel()
         }
 
-        shoesBitmap = Picasso.get()
+        shoesBitmap = Glide.with(applicationContext)
+            .asBitmap()
             .load(shoesData.ShoesImageUrl)
+            .submit()
             .get()
         val cancelIntent = WorkManager.getInstance(applicationContext)
             .createCancelPendingIntent(id)
@@ -353,7 +359,7 @@ class AutoEnterWorker @AssistedInject constructor(
 
     private fun clearCookie() { // 쿠키 삭제
         with(CookieManager.getInstance()) {
-            removeAllCookies(ValueCallback {})
+            removeAllCookies {}
             flush()
         }
     }

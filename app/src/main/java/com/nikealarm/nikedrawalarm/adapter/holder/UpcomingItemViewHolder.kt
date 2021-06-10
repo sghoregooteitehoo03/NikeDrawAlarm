@@ -15,7 +15,6 @@ import com.nikealarm.nikedrawalarm.databinding.ItemUpcomingListBinding
 import java.text.SimpleDateFormat
 import java.util.*
 
-// TODO: 수정 O
 class UpcomingItemViewHolder(
     private val binding: ItemUpcomingListBinding,
     clickListener: UpcomingListAdapter.ClickListener,

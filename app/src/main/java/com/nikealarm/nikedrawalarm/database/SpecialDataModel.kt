@@ -4,7 +4,6 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-// TODO: 데이터 구조 수정 O
 @Entity
 data class SpecialDataModel(
     @PrimaryKey(autoGenerate = true)
