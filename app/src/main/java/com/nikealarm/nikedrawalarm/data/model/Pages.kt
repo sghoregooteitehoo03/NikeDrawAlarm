@@ -1,4 +1,4 @@
-package com.nikealarm.nikedrawalarm.data
+package com.nikealarm.nikedrawalarm.data.model
 
 data class Pages(
     var prev: String,

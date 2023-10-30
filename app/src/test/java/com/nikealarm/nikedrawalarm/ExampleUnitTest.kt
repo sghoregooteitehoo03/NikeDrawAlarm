@@ -1,15 +1,13 @@
 package com.nikealarm.nikedrawalarm
 
-import com.nikealarm.nikedrawalarm.database.ShoesDataModel
-import com.nikealarm.nikedrawalarm.other.RetrofitService
-import kotlinx.coroutines.runBlocking
-import okhttp3.OkHttpClient
+import com.nikealarm.nikedrawalarm.data.model.LaunchView
+import com.nikealarm.nikedrawalarm.data.model.MerchProduct
+import com.nikealarm.nikedrawalarm.domain.model.ProductCategory
+import com.nikealarm.nikedrawalarm.domain.model.ProductState
 import org.junit.Test
-
 import org.junit.Assert.*
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
-import java.util.concurrent.TimeUnit
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 /**
  * Example local unit test, which will execute on the development machine (host).
@@ -24,39 +22,132 @@ class ExampleUnitTest {
 
     @Test
     fun test() {
-        runBlocking {
-            val url = "https://api.nike.com/"
-            val builder = Retrofit.Builder()
-                .baseUrl(url)
-                .client(OkHttpClient.Builder().apply {
-                    readTimeout(2, TimeUnit.MINUTES)
-                }.build())
-                .addConverterFactory(GsonConverterFactory.create())
-                .build()
-            val retrofit = builder.create(RetrofitService::class.java)
+//        runBlocking {
+//            val builder = Retrofit.Builder()
+//                .baseUrl(Contents.NIKE_API_URL)
+//                .client(OkHttpClient.Builder().apply {
+//                    readTimeout(2, TimeUnit.MINUTES)
+//                }.build())
+//                .addConverterFactory(GsonConverterFactory.create())
+//                .build()
+//            val retrofit = builder.create(RetrofitService::class.java)
+//
+//            val data = retrofit.getFeedProductData(anchor = 700, count = 100)
+//
+//            //product, multi_product
+//            val productList = data.objects
+//                .filter {
+//                    it.publishedContent.properties.threadType == "product" ||
+//                            it.publishedContent.properties.threadType == "multi_product"
+//                }.map { filterProduct ->
+//                    val productInfoList = filterProduct
+//                        .publishedContent
+//                        .nodes
+//                        .filter { it.subType == "carousel" }
+//                        .mapIndexed { index, nodes ->
+//                            val explains: String =
+//                                nodes.properties.jsonBody?.content?.get(0)?.content?.filter {
+//                                    !it.text.contains("SNKRS")
+//                                }?.get(0)?.text ?: ""
+//
+//                            try {
+//                                ProductInfo(
+//                                    productId = filterProduct.productInfo[index].merchProduct.id,
+//                                    title = nodes.properties.title,
+//                                    subTitle = nodes.properties.subtitle,
+//                                    price = filterProduct.productInfo[index].merchPrice.currentPrice,
+//                                    images = nodes.nodes!!.map { it.properties.squarishURL },
+//                                    eventDate = getDateToLong(filterProduct.productInfo[index].launchView?.startEntryDate),
+//                                    explains = explains,
+//                                    sizes = filterProduct.productInfo[index].skus?.map {
+//                                        it.countrySpecifications[0].localizedSize
+//                                    } ?: listOf(),
+//                                    url = Contents.NIKE_PRODUCT_URL + filterProduct.publishedContent.properties.seo.slug,
+//                                    category = getShoesCategory(
+//                                        filterProduct.productInfo[index].merchProduct,
+//                                        filterProduct.productInfo[index].launchView
+//                                    )
+//                                )
+//                            } catch (e: IndexOutOfBoundsException) {
+//                                ProductInfo(
+//                                    productId = "",
+//                                    title = nodes.properties.title,
+//                                    subTitle = nodes.properties.subtitle,
+//                                    price = -1,
+//                                    images = nodes.nodes!!.map { it.properties.squarishURL },
+//                                    eventDate = 0L,
+//                                    explains = explains,
+//                                    sizes = listOf(),
+//                                    url = Contents.NIKE_PRODUCT_URL + filterProduct.publishedContent.properties.seo.slug,
+//                                    category = ProductCategory.Feed
+//                                )
+//                            }
+//                        }
+//                    val collection =
+//                        if (filterProduct.publishedContent.nodes[0].subType == "image") {// 컬렉션 제품인 경우
+//                            Collection(
+//                                id = filterProduct.id,
+//                                title = filterProduct.publishedContent.nodes[1].properties.title,
+//                                subTitle = filterProduct.publishedContent.nodes[1].properties.subtitle,
+//                                price = "컬렉션 제품",
+//                                thumbnailImage = filterProduct.publishedContent.nodes[0].properties.portraitURL,
+//                                explains = filterProduct.publishedContent.nodes[1].properties.jsonBody?.content?.get(
+//                                    0
+//                                )?.content?.get(0)?.text ?: "",
+//                                url = Contents.NIKE_PRODUCT_URL + filterProduct.publishedContent.properties.seo.slug
+//                            )
+//                        } else {
+//                            null
+//                        }
+//
+//                    Product(
+//                        collection = collection,
+//                        productInfoList = productInfoList
+//                    )
+//                    data
+//                }
+//
+//            println("listSize: ${productList.size}")
+//        }
+    }
 
-            val data = retrofit.getSnkrsData(anchor = 0)
-            var index = 0
-            val shoesList = data.objects
-                .filter {
-                    it.publishedContent.properties.threadType == "product"
+    @Test
+    fun funtionTest() {
+//        //2023-08-16T01:00:00.000Z
+//        println("time: ${getDateToLong("2023-08-16T01:00:00.000Z")}")
+        val str = " 1232"
+        println(str.contains("SKU"))
+    }
+
+    private fun getDateToLong(date: String?): Long {
+        if (date == null) {
+            return 0L
+        }
+
+        val dateFormat = SimpleDateFormat(
+            "yyyy-MM-dd'T'hh:mm:ss.SSS'Z'",
+            Locale.KOREA
+        )
+
+        return (dateFormat.parse(date)?.time?.plus(32400000) ?: 0L)  // (+9 Hours) UTC -> KOREA
+    }
+
+    private fun getShoesCategory(
+        merchProduct: MerchProduct,
+        launchView: LaunchView?
+    ): ProductCategory {
+        return if (launchView != null) {
+            if (launchView.stopEntryDate != null && merchProduct.commerceEndDate == null) {
+                ProductCategory.Draw
+            } else {
+                if (merchProduct.status == ProductState.PRODUCT_STATUS_INACTIVE && merchProduct.commerceEndDate != null) {
+                    ProductCategory.SoldOut
+                } else {
+                    ProductCategory.Coming
                 }
-                .map { shoes ->
-                    val shoesUrl = "https://www.nike.com/kr/launch/t/"
-
-                    index++
-                    ShoesDataModel(
-                        id = null,
-                        shoesSubTitle = shoes.publishedContent.properties.coverCard.properties.subtitle,
-                        shoesTitle = shoes.publishedContent.properties.coverCard.properties.title,
-                        shoesPrice = shoes.productInfo[0].merchPrice.currentPrice.toString(),
-                        shoesImageUrl = shoes.publishedContent.properties.coverCard.properties.squarishURL,
-                        shoesUrl = shoesUrl + shoes.publishedContent.properties.seo.slug,
-                        shoesCategory = ShoesDataModel.CATEGORY_RELEASED
-                    )
-                }
-
-            println("list: $shoesList")
+            }
+        } else {
+            ProductCategory.Feed
         }
     }
 }
