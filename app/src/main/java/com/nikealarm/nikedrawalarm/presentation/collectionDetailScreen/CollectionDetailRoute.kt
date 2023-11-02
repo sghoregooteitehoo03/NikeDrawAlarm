@@ -1,4 +1,4 @@
-package com.nikealarm.nikedrawalarm.presentation.productDetailScreen
+package com.nikealarm.nikedrawalarm.presentation.collectionDetailScreen
 
 import android.content.Context
 import android.net.Uri
@@ -9,38 +9,31 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.nikealarm.nikedrawalarm.domain.model.Product
 import com.nikealarm.nikedrawalarm.domain.model.ProductInfo
 import com.nikealarm.nikedrawalarm.presentation.ui.DisposableEffectWithLifeCycle
 
-// TODO:
-//  . 좋아요 기능 O
-//  . 최근 방문 기능
-//  . 알림 설정 기능
-
 @Composable
-fun ProductDetailRoute(
-    viewModel: ProductDetailViewModel = hiltViewModel(),
-    sendProductInfo: ProductInfo?,
-    onCreate: () -> Unit,
+fun CollectionDetailRoute(
+    viewModel: CollectionDetailViewModel = hiltViewModel(),
+    sendProduct: Product?,
+    onProductItemClick: (ProductInfo) -> Unit,
     onDispose: () -> Unit
 ) {
-    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
     DisposableEffectWithLifeCycle(
-        onCreate = {
-            onCreate()
-            viewModel.initValue(sendProductInfo)
-        },
+        onCreate = { viewModel.initValue(sendProduct) },
         onDispose = onDispose
     )
 
-    ProductDetailScreen(
+    CollectionDetailScreen(
         state = state,
-        onFavoriteClick = viewModel::clickFavorite,
         onLearnMoreClick = { url ->
             openCustomTabs(context, url)
-        }
+        },
+        onProductItemClick = onProductItemClick
     )
 }
 

@@ -14,6 +14,8 @@ import com.nikealarm.nikedrawalarm.util.Constants
 import java.text.SimpleDateFormat
 import java.util.Locale
 
+// TODO: 출시 기간이 지난 상품은 eventDate 0으로 초기화 시키기
+
 class ProductPagingSource(
     private val retrofitService: RetrofitService,
     private val filteredCategory: ProductCategory
@@ -103,7 +105,7 @@ class ProductPagingSource(
 
                     Product(
                         collection = collection,
-                        productInfoList = productInfoList
+                        productInfoList = productInfoList.filter { it.price != -1 } // 오류인 상품은 제외 시킴
                     )
                 }
 

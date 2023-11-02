@@ -1,5 +1,7 @@
 package com.nikealarm.nikedrawalarm.domain.model
 
+import com.nikealarm.nikedrawalarm.data.model.entity.ProductEntity
+
 data class ProductInfo(
     val productId: String,
     val title: String,
@@ -11,7 +13,19 @@ data class ProductInfo(
     val sizes: List<String>,
     val url: String,
     val category: ProductCategory
-)
+) {
+    fun getProductEntity() =
+        ProductEntity(
+            productId = productId,
+            title = title,
+            subTitle = subTitle,
+            price = price,
+            thumbnailImage = images[0],
+            eventDate = eventDate,
+            url = url,
+            category = category.text
+        )
+}
 
 object ProductState {
     const val PRODUCT_STATUS_ACTIVE = "ACTVICE"

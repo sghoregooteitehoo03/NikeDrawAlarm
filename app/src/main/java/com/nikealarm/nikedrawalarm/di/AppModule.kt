@@ -1,8 +1,12 @@
 package com.nikealarm.nikedrawalarm.di
 
+import android.content.Context
+import androidx.room.Room
+import com.nikealarm.nikedrawalarm.data.repository.database.ProductDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -22,4 +26,18 @@ object AppModule {
                 readTimeout(2, TimeUnit.MINUTES)
             }.build())
             .addConverterFactory(GsonConverterFactory.create())
+
+    @Singleton
+    @Provides
+    fun provideAppDatabase(@ApplicationContext context: Context) =
+        Room.databaseBuilder(
+            context,
+            ProductDatabase::class.java,
+            "ProductDB"
+        ).build()
+
+    @Singleton
+    @Provides
+    fun provideDao(database: ProductDatabase) =
+        database.getDao()
 }

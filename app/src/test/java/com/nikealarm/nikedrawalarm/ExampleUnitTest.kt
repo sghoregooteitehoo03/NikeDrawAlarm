@@ -7,6 +7,9 @@ import com.nikealarm.nikedrawalarm.domain.model.ProductState
 import org.junit.Test
 import org.junit.Assert.*
 import java.text.SimpleDateFormat
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 /**
@@ -113,10 +116,9 @@ class ExampleUnitTest {
 
     @Test
     fun funtionTest() {
-//        //2023-08-16T01:00:00.000Z
-//        println("time: ${getDateToLong("2023-08-16T01:00:00.000Z")}")
-        val str = " 1232"
-        println(str.contains("SKU"))
+        val simpleformat = SimpleDateFormat("M. d. a hh:mm출시").format(System.currentTimeMillis())
+
+        print(simpleformat)
     }
 
     private fun getDateToLong(date: String?): Long {
