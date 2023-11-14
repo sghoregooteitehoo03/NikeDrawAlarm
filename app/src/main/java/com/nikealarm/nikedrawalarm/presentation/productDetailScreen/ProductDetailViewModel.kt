@@ -65,6 +65,7 @@ class ProductDetailViewModel @Inject constructor(
         }
     }
 
+    // 상품 알림 설정
     fun setNotification(notificationTime: Long) = viewModelScope.launch {
         val productInfo = _uiState.value.productInfo
         if (productInfo != null) {

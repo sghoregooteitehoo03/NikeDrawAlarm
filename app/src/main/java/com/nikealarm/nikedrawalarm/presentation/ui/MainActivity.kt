@@ -35,11 +35,6 @@ import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Black
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.NikeDrawAssistant
 import dagger.hilt.android.AndroidEntryPoint
 
-// TODO:
-//  . 알림 퍼미션 권한 확인 O (설정 화면에서)
-//  . 알림 설정 및 해제 확인
-
-@OptIn(ExperimentalPermissionsApi::class)
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     private val gViewModel by viewModels<GlobalViewModel>()

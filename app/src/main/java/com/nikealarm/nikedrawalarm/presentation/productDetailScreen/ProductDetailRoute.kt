@@ -16,7 +16,6 @@ import com.nikealarm.nikedrawalarm.presentation.ui.DisposableEffectWithLifeCycle
 
 // TODO:
 //  . 최근 방문 기능
-//  . 알림 설정 기능
 
 @Composable
 fun ProductDetailRoute(

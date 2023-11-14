@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -64,10 +65,12 @@ fun CollectionDetailScreen(
             }
             MoreInfoList(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 14.dp, end = 14.dp),
+                    .fillMaxWidth(),
                 listExplain = "제품 (${state.product?.productInfoList?.size ?: 0})",
                 listScope = {
+                    item {
+                        Spacer(modifier = Modifier.width(14.dp))
+                    }
                     items(state.product?.productInfoList ?: listOf()) { productInfo ->
                         ProductInfoItem(
                             modifier = Modifier.padding(4.dp),
@@ -77,6 +80,9 @@ fun CollectionDetailScreen(
                             thumbnailImage = productInfo.images[0],
                             onClick = { onProductItemClick(productInfo) }
                         )
+                    }
+                    item {
+                        Spacer(modifier = Modifier.width(10.dp))
                     }
                 }
             )

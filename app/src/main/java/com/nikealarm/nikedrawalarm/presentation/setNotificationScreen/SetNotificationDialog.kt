@@ -85,6 +85,7 @@ fun NotificationPager(
             Spacer(modifier = Modifier.height(46.dp))
             Divider(color = Gray)
         }
+        // TODO: 페이지 넘길때 마다 진동울리게
         VerticalPager(
             state = pagerState,
             modifier = Modifier

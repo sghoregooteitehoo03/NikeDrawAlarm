@@ -101,13 +101,18 @@ fun ProductDetailScreen(
             }
             MoreInfoList(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 14.dp, end = 14.dp),
+                    .fillMaxWidth(),
                 listExplain = "사이즈 목록",
                 listScope = {
+                    item {
+                        Spacer(modifier = Modifier.width(14.dp))
+                    }
                     items(productInfo?.sizes ?: listOf("")) { size ->
                         ProductSizeItem(size = size)
                         Spacer(modifier = Modifier.width(12.dp))
+                    }
+                    item {
+                        Spacer(modifier = Modifier.width(2.dp))
                     }
                 }
             )
@@ -261,7 +266,8 @@ fun MoreInfoList(
     Column(modifier = modifier) {
         Text(
             text = listExplain,
-            style = Typography.h4.copy(fontWeight = FontWeight.Medium)
+            style = Typography.h4.copy(fontWeight = FontWeight.Medium),
+            modifier = Modifier.padding(start = 14.dp)
         )
         Spacer(modifier = Modifier.height(12.dp))
         LazyRow(content = listScope)
