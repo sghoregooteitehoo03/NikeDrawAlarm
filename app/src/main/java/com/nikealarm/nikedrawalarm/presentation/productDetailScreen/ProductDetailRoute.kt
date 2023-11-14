@@ -9,11 +9,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.nikealarm.nikedrawalarm.data.model.entity.NotificationEntity
 import com.nikealarm.nikedrawalarm.domain.model.ProductInfo
+import com.nikealarm.nikedrawalarm.presentation.setNotificationScreen.SetNotificationDialog
 import com.nikealarm.nikedrawalarm.presentation.ui.DisposableEffectWithLifeCycle
 
 // TODO:
-//  . 좋아요 기능 O
 //  . 최근 방문 기능
 //  . 알림 설정 기능
 
@@ -21,7 +22,10 @@ import com.nikealarm.nikedrawalarm.presentation.ui.DisposableEffectWithLifeCycle
 fun ProductDetailRoute(
     viewModel: ProductDetailViewModel = hiltViewModel(),
     sendProductInfo: ProductInfo?,
-    onCreate: () -> Unit,
+    isDialogOpen: Boolean,
+    onDismiss: () -> Unit,
+    onNotificationChange: (NotificationEntity?) -> Unit,
+    onDialogButtonClick: () -> Unit,
     onDispose: () -> Unit
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -29,19 +33,35 @@ fun ProductDetailRoute(
 
     DisposableEffectWithLifeCycle(
         onCreate = {
-            onCreate()
             viewModel.initValue(sendProductInfo)
         },
         onDispose = onDispose
     )
 
-    ProductDetailScreen(
-        state = state,
-        onFavoriteClick = viewModel::clickFavorite,
-        onLearnMoreClick = { url ->
-            openCustomTabs(context, url)
+    if (state.productInfo != null) {
+        ProductDetailScreen(
+            state = state,
+            onFavoriteClick = viewModel::clickFavorite,
+            onLearnMoreClick = { url ->
+                openCustomTabs(context, url)
+            }
+        )
+
+        if (state.productInfo!!.eventDate != 0L) {
+            onNotificationChange(state.notificationEntity)
         }
-    )
+
+        if (isDialogOpen) {
+            SetNotificationDialog(
+                onDismissRequest = onDismiss,
+                onButtonClick = {
+                    viewModel.setNotification(it)
+                    onDialogButtonClick()
+                },
+                settingTime = state.notificationEntity?.notificationDate ?: 0L
+            )
+        }
+    }
 }
 
 private fun openCustomTabs(context: Context, url: String) {

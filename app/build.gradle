@@ -12,7 +12,7 @@ android {
 
     defaultConfig {
         applicationId "com.nikealarm.nikedrawalarm"
-        minSdkVersion 21
+        minSdkVersion 23
         targetSdkVersion 34
         versionCode 21
         versionName "3.0.0"
@@ -101,6 +101,9 @@ dependencies {
 
     // Paging
     implementation "androidx.paging:paging-compose:3.2.1"
+
+    // Permission
+    implementation "com.google.accompanist:accompanist-permissions:0.33.2-alpha"
 
     // Room
     implementation "androidx.room:room-runtime:2.6.0"

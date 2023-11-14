@@ -20,13 +20,14 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.NotificationsNone
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.nikealarm.nikedrawalarm.presentation.collectionDetailScreen.CollectionDetailRoute
 import com.nikealarm.nikedrawalarm.presentation.productDetailScreen.ProductDetailRoute
 import com.nikealarm.nikedrawalarm.presentation.productScreen.ProductRoute
@@ -34,6 +35,11 @@ import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Black
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.NikeDrawAssistant
 import dagger.hilt.android.AndroidEntryPoint
 
+// TODO:
+//  . 알림 퍼미션 권한 확인 O (설정 화면에서)
+//  . 알림 설정 및 해제 확인
+
+@OptIn(ExperimentalPermissionsApi::class)
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     private val gViewModel by viewModels<GlobalViewModel>()
@@ -91,12 +97,13 @@ class MainActivity : ComponentActivity() {
 
                                         UiScreen.ProductDetailScreen.route -> {
                                             if (gViewModel.getProductInfoData()?.eventDate != 0L) {
-                                                val state by gViewModel.notificationEntity.collectAsStateWithLifecycle()
-                                                val icon = if (state != null) {
-                                                    Icons.Default.Notifications
-                                                } else {
-                                                    Icons.Default.NotificationsNone
-                                                }
+                                                val notificationEntity by remember { gViewModel.notificationEntity }
+                                                val icon =
+                                                    if (notificationEntity != null) {
+                                                        Icons.Default.Notifications
+                                                    } else {
+                                                        Icons.Default.NotificationsNone
+                                                    }
 
                                                 Icon(
                                                     imageVector = icon,
@@ -104,7 +111,8 @@ class MainActivity : ComponentActivity() {
                                                     modifier = it
                                                         .size(24.dp)
                                                         .clickable {
-
+                                                            // TODO: 설정 화면 구현 후 수정
+                                                            gViewModel.dialogOpen(true)
                                                         },
                                                     tint = Black
                                                 )
@@ -137,14 +145,14 @@ class MainActivity : ComponentActivity() {
                                 onCreate = { gViewModel.sendProductData(null) }
                             )
                         }
-                        composable(route = UiScreen.ProductDetailScreen.route) {
+                        composable(route = UiScreen.ProductDetailScreen.route) { backStack ->
+                            val isDialogOpen by gViewModel.isDialogOpen
                             ProductDetailRoute(
                                 sendProductInfo = gViewModel.getProductInfoData(),
-                                onCreate = {
-                                    gViewModel.getNotificationData(
-                                        gViewModel.getProductInfoData()?.productId ?: ""
-                                    )
-                                },
+                                isDialogOpen = isDialogOpen,
+                                onDismiss = { gViewModel.dialogOpen(false) },
+                                onDialogButtonClick = { gViewModel.dialogOpen(false) },
+                                onNotificationChange = { gViewModel.setNotificationEntity(it) },
                                 onDispose = { gViewModel.sendProductInfoData(null) }
                             )
                         }
@@ -164,3 +172,33 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+
+//                                                            // 푸쉬 알림을 보낼 수 있는 경우
+//                                                            if (NotificationManagerCompat
+//                                                                    .from(this@MainActivity)
+//                                                                    .areNotificationsEnabled()
+//                                                            ) {
+//                                                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+//                                                                    // 안드로이드 버전이 14인 경우 권한이 설정되어있는지 확인
+//                                                                    if (alarmManager.canScheduleExactAlarms()) {
+//                                                                        gViewModel.dialogOpen(true)
+//                                                                    } else { // 설정되어 있지 않으면 설정화면으로 이동
+//
+//                                                                    }
+//                                                                } else { // 알림 설정화면 다이얼로그 오픈
+//                                                                    gViewModel.dialogOpen(true)
+//                                                                }
+//                                                            } else {
+//                                                                // 푸쉬 알림을 보낼 수 없는 경우
+//                                                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//
+//                                                                    val intent =
+//                                                                        Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+//                                                                            this.putExtra(
+//                                                                                Settings.EXTRA_APP_PACKAGE,
+//                                                                                applicationContext.packageName
+//                                                                            )
+//                                                                        }
+//                                                                    startActivity(intent)
+//                                                                }
+//                                                            }

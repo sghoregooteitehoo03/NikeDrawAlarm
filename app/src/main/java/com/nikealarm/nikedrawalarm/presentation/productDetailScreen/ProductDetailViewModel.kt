@@ -1,23 +1,19 @@
 package com.nikealarm.nikedrawalarm.presentation.productDetailScreen
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.nikealarm.nikedrawalarm.domain.model.Product
 import com.nikealarm.nikedrawalarm.domain.model.ProductInfo
 import com.nikealarm.nikedrawalarm.domain.usecase.GetFavoriteUseCase
+import com.nikealarm.nikedrawalarm.domain.usecase.GetNotificationUseCase
 import com.nikealarm.nikedrawalarm.domain.usecase.InsertFavoriteUseCase
-import com.nikealarm.nikedrawalarm.util.Result
+import com.nikealarm.nikedrawalarm.domain.usecase.SetNotificationUseCase
+import com.nikealarm.nikedrawalarm.util.AlarmBuilder
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -25,8 +21,11 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ProductDetailViewModel @Inject constructor(
+    private val alarmBuilder: AlarmBuilder,
     private val getFavoriteUseCase: GetFavoriteUseCase,
-    private val insertFavoriteUseCase: InsertFavoriteUseCase
+    private val getNotificationUseCase: GetNotificationUseCase,
+    private val insertFavoriteUseCase: InsertFavoriteUseCase,
+    private val setNotificationUseCase: SetNotificationUseCase
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(ProductDetailUiState())
     val uiState = _uiState
@@ -37,21 +36,24 @@ class ProductDetailViewModel @Inject constructor(
         )
 
     fun initValue(productInfo: ProductInfo?) {
-        getFavoriteUseCase(productId = productInfo?.productId ?: "")
-            .onEach { result ->
-                when (result) {
-                    is Result.Success -> _uiState.update {
-                        it.copy(
-                            productInfo = productInfo,
-                            isFavorite = result.data != null
-                        )
-                    }
+        val productId = productInfo?.productId ?: ""
 
-                    else -> {
-
+        combine(
+            getFavoriteUseCase(productId),
+            getNotificationUseCase(productId)
+        ) { favorite, notification ->
+            _uiState.update {
+                it.copy(
+                    productInfo = productInfo,
+                    isFavorite = favorite != null,
+                    notificationEntity = if (alarmBuilder.isExistProductAlarm(productId)) {
+                        notification
+                    } else {
+                        null
                     }
-                }
-            }.launchIn(viewModelScope)
+                )
+            }
+        }.launchIn(viewModelScope)
     }
 
     fun clickFavorite(productInfo: ProductInfo?) = viewModelScope.launch {
@@ -60,6 +62,13 @@ class ProductDetailViewModel @Inject constructor(
                 productInfo = productInfo,
                 isFavorite = _uiState.value.isFavorite
             )
+        }
+    }
+
+    fun setNotification(notificationTime: Long) = viewModelScope.launch {
+        val productInfo = _uiState.value.productInfo
+        if (productInfo != null) {
+            setNotificationUseCase(productInfo, notificationTime)
         }
     }
 }

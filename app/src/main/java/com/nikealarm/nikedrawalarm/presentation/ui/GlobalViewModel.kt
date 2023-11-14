@@ -1,5 +1,8 @@
 package com.nikealarm.nikedrawalarm.presentation.ui
 
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nikealarm.nikedrawalarm.data.model.entity.NotificationEntity
@@ -19,23 +22,16 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class GlobalViewModel @Inject constructor(
-    private val getNotificationUseCase: GetNotificationUseCase,
-    private val setNotificationUseCase: SetNotificationUseCase
-) : ViewModel() {
+class GlobalViewModel @Inject constructor() : ViewModel() {
     // 데이터 전달 용
     private var product: Product? = null
     private var productInfo: ProductInfo? = null
 
-    private var _notificationEntity: MutableStateFlow<NotificationEntity?> =
-        MutableStateFlow(null) // AlarmAction 전용 데이터
-    val notificationEntity = _notificationEntity
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.Eagerly,
-            initialValue = _notificationEntity.value
-        )
-
+    // State
+    private var _notificationEntity: MutableState<NotificationEntity?> = mutableStateOf(null)
+    val notificationEntity: State<NotificationEntity?> = _notificationEntity
+    private val _isDialogOpen = mutableStateOf(false)
+    val isDialogOpen: State<Boolean> = _isDialogOpen
 
     fun sendProductData(_product: Product?) {
         product = _product
@@ -49,24 +45,11 @@ class GlobalViewModel @Inject constructor(
 
     fun getProductInfoData() = productInfo
 
-    fun getNotificationData(productId: String) {
-        getNotificationUseCase(productId).onEach { result ->
-            when (result) {
-                is Result.Success -> {
-                    _notificationEntity.update {
-                        result.data
-                    }
-                }
-
-                else -> {}
-            }
-        }.launchIn(viewModelScope)
+    fun dialogOpen(isOpen: Boolean) {
+        _isDialogOpen.value = isOpen
     }
 
-    fun setNotification(notificationTime: Long) = viewModelScope.launch {
-        val productInfo = productInfo
-        if (productInfo != null) {
-            setNotificationUseCase(productInfo, notificationTime)
-        }
+    fun setNotificationEntity(data: NotificationEntity?) {
+        _notificationEntity.value = data
     }
 }

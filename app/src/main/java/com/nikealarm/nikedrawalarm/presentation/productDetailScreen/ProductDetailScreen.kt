@@ -28,9 +28,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
-import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBackIos
 import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
@@ -42,16 +40,15 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import coil.compose.rememberImagePainter
-import com.nikealarm.nikedrawalarm.domain.model.Product
 import com.nikealarm.nikedrawalarm.domain.model.ProductInfo
 import com.nikealarm.nikedrawalarm.presentation.ui.BorderedBox
-import com.nikealarm.nikedrawalarm.presentation.ui.NikeTopAppBar
-import com.nikealarm.nikedrawalarm.presentation.ui.ProductInfoItem
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Black
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Gray
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.LightGray
@@ -244,7 +241,8 @@ fun Explains(
         Text(
             text = explain,
             style = Typography.h5.copy(fontWeight = FontWeight.Normal),
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
+            lineHeight = TextUnit(26f, type = TextUnitType.Sp)
         )
         Spacer(modifier = Modifier.height(24.dp))
         Divider(
@@ -332,7 +330,7 @@ fun ProductButton(
         ) {
             Text(
                 text = "자세히 보기",
-                style = Typography.h2,
+                style = Typography.h3,
                 color = White
             )
         }

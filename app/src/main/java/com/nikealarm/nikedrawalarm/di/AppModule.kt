@@ -3,6 +3,7 @@ package com.nikealarm.nikedrawalarm.di
 import android.content.Context
 import androidx.room.Room
 import com.nikealarm.nikedrawalarm.data.repository.database.ProductDatabase
+import com.nikealarm.nikedrawalarm.util.AlarmBuilder
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -17,6 +18,11 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
+
+    @Singleton
+    @Provides
+    fun provideAlarmBuilder(@ApplicationContext context: Context) =
+        AlarmBuilder(context)
 
     @Singleton
     @Provides

@@ -6,8 +6,8 @@ import androidx.room.PrimaryKey
 @Entity
 data class NotificationEntity(
     @PrimaryKey
-    val id: Int? = null,
     val productId: String,
+    val triggerTime: Long,
     val notificationDate: Long,
     val addedDate: Long
 )

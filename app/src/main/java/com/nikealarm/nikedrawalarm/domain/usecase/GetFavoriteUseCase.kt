@@ -10,5 +10,4 @@ class GetFavoriteUseCase @Inject constructor(
 
     operator fun invoke(productId: String) =
         repository.getFavoriteData(productId)
-            .asResult()
 }

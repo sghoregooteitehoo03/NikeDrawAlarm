@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">나이키 어시스턴트</string>
+    <string name="permission_explain">제품에 정확한 알림을 위해 설정에서 해당 어플에 알람 권한을 활성화 해주세요.</string>
+    <string name="set_notification_explain">제품에 알림정보를 받기 위한 푸쉬 알림 설정을 활성화 해주세요.</string>
 </resources>

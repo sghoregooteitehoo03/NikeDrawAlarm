@@ -115,10 +115,10 @@ class ExampleUnitTest {
     }
 
     @Test
-    fun funtionTest() {
-        val simpleformat = SimpleDateFormat("M. d. a hh:mm출시").format(System.currentTimeMillis())
-
-        print(simpleformat)
+    fun functionTest() {
+        val test = "cb711b04-0302-5b67-9e6a-15bb90543f1e"
+        print("hash: ${test.hashCode()}")
+        // ed14ef57-7d0f-5a6a-9a83-6b11151c7c67(-452069563)
     }
 
     private fun getDateToLong(date: String?): Long {
