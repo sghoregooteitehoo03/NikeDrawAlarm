@@ -14,15 +14,19 @@ class AlarmBuilder(private val context: Context) {
     // 알림 존재여부 확인
     fun isExistProductAlarm(productId: String): Boolean {
         val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
         } else {
-            PendingIntent.FLAG_UPDATE_CURRENT
+            PendingIntent.FLAG_NO_CREATE
+        }
+        val intent = Intent(context, AlarmReceiver::class.java).apply {
+            action = Constants.INTENT_ACTION_PRODUCT_NOTIFICATION
+            putExtra(Constants.INTENT_PRODUCT_ID, productId)
         }
 
         val alarmIntent = PendingIntent.getBroadcast(
             context,
             productId.hashCode(),
-            Intent(context, AlarmReceiver::class.java),
+            intent,
             flags
         )
 

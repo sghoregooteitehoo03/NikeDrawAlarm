@@ -1,5 +1,9 @@
 package com.nikealarm.nikedrawalarm.presentation.ui
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Context
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -27,10 +31,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navDeepLink
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.presentation.collectionDetailScreen.CollectionDetailRoute
 import com.nikealarm.nikedrawalarm.presentation.productDetailScreen.ProductDetailRoute
 import com.nikealarm.nikedrawalarm.presentation.productScreen.ProductRoute
+import com.nikealarm.nikedrawalarm.util.Constants
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Black
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.NikeDrawAssistant
 import dagger.hilt.android.AndroidEntryPoint
@@ -41,6 +48,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        createChannel() // Notification channel 생성
         setContent {
             NikeDrawAssistant {
                 val navController = rememberNavController()
@@ -140,7 +148,12 @@ class MainActivity : ComponentActivity() {
                                 onCreate = { gViewModel.sendProductData(null) }
                             )
                         }
-                        composable(route = UiScreen.ProductDetailScreen.route) { backStack ->
+                        composable(
+                            route = UiScreen.ProductDetailScreen.route,
+                            deepLinks = listOf(navDeepLink {
+                                uriPattern = Constants.PRODUCT_DETAIL_URI
+                            })
+                        ) { backStack ->
                             val isDialogOpen by gViewModel.isDialogOpen
                             ProductDetailRoute(
                                 sendProductInfo = gViewModel.getProductInfoData(),
@@ -164,6 +177,19 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             }
+        }
+    }
+
+    private fun createChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val name = "제품 출신 알림"
+            val importance = NotificationManager.IMPORTANCE_DEFAULT
+            val channel =
+                NotificationChannel(Constants.CHANNEL_ID_PRODUCT_NOTIFICATION, name, importance)
+
+            val notificationManager: NotificationManager =
+                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
         }
     }
 }

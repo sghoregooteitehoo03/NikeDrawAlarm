@@ -37,6 +37,9 @@ class ProductRepository @Inject constructor(
         )
     }.flow
 
+    suspend fun getProductData(productId: String) =
+        dao.getProductData(productId)
+
     fun getFavoriteData(productId: String) =
         dao.getFavoriteData(productId)
 

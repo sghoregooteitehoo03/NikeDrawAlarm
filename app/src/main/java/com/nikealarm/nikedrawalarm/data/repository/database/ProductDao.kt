@@ -12,6 +12,9 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface ProductDao {
 
+    @Query("SELECT * FROM ProductEntity WHERE :productId = productId")
+    suspend fun getProductData(productId: String): ProductEntity?
+
     @Query("SELECT * FROM FavoriteEntity WHERE :productId = productId")
     fun getFavoriteData(productId: String): Flow<FavoriteEntity?>
 
