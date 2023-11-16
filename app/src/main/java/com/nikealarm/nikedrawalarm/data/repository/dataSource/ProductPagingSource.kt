@@ -10,6 +10,8 @@ import com.nikealarm.nikedrawalarm.domain.model.Product
 import com.nikealarm.nikedrawalarm.domain.model.ProductCategory
 import com.nikealarm.nikedrawalarm.domain.model.ProductInfo
 import com.nikealarm.nikedrawalarm.domain.model.ProductState
+import com.nikealarm.nikedrawalarm.domain.model.getDateToLong
+import com.nikealarm.nikedrawalarm.domain.model.getShoesCategory
 import com.nikealarm.nikedrawalarm.util.Constants
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -30,9 +32,9 @@ class ProductPagingSource(
         return try {
             val key = params.key ?: 0
             val data = if (filteredCategory == ProductCategory.All) {
-                retrofitService.getFeedProductData(key)
+                retrofitService.getFeedProducts(key)
             } else {
-                retrofitService.getUpcomingProductData(key)
+                retrofitService.getUpcomingProducts(key)
             }
 
             if (data.objects.isEmpty())
@@ -125,38 +127,6 @@ class ProductPagingSource(
         } catch (e: Exception) {
             e.printStackTrace()
             LoadResult.Error(e)
-        }
-    }
-
-    private fun getDateToLong(date: String?): Long {
-        if (date == null) {
-            return 0L
-        }
-
-        val dateFormat = SimpleDateFormat(
-            "yyyy-MM-dd'T'hh:mm:ss.SSS'Z'",
-            Locale.KOREA
-        )
-
-        return (dateFormat.parse(date)?.time?.plus(32400000) ?: 0L)  // (+9 Hours) UTC -> KOREA
-    }
-
-    private fun getShoesCategory(
-        merchProduct: MerchProduct,
-        launchView: LaunchView?
-    ): ProductCategory {
-        return if (launchView != null) {
-            if (merchProduct.commerceEndDate == null && launchView.stopEntryDate != null) {
-                ProductCategory.Draw
-            } else {
-                if (merchProduct.status == ProductState.PRODUCT_STATUS_INACTIVE && merchProduct.commerceEndDate != null) {
-                    ProductCategory.SoldOut
-                } else {
-                    ProductCategory.Coming
-                }
-            }
-        } else {
-            ProductCategory.Feed
         }
     }
 }

@@ -5,6 +5,7 @@ import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -32,9 +33,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navDeepLink
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.presentation.collectionDetailScreen.CollectionDetailRoute
+import com.nikealarm.nikedrawalarm.presentation.productDetailScreen.LoadProductDetailRoute
 import com.nikealarm.nikedrawalarm.presentation.productDetailScreen.ProductDetailRoute
 import com.nikealarm.nikedrawalarm.presentation.productScreen.ProductRoute
 import com.nikealarm.nikedrawalarm.util.Constants
@@ -58,6 +58,7 @@ class MainActivity : ComponentActivity() {
                         val backStack = navController.currentBackStackEntryAsState()
                         val currentRoute = backStack.value?.destination?.route ?: ""
 
+                        Log.i("Check", "Route: ${currentRoute}")
                         TopAppBar(
                             elevation = 0.dp,
                         ) {
@@ -65,12 +66,16 @@ class MainActivity : ComponentActivity() {
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(start = 14.dp, end = 14.dp),
-                                title = if (currentRoute == UiScreen.CollectionDetailScreen.route
-                                    || currentRoute == UiScreen.ProductDetailScreen.route
-                                ) {
-                                    ""
-                                } else {
-                                    "Product"
+                                title = when (currentRoute) {
+                                    UiScreen.CollectionDetailScreen.route,
+                                    UiScreen.ProductDetailScreen.route,
+                                    UiScreen.LoadProductDetailScreen.route -> {
+                                        ""
+                                    }
+
+                                    else -> {
+                                        "Product"
+                                    }
                                 },
                                 navigationIcon = {
                                     if (currentRoute != UiScreen.ProductScreen.route) {
@@ -98,7 +103,7 @@ class MainActivity : ComponentActivity() {
                                             )
                                         }
 
-                                        UiScreen.ProductDetailScreen.route -> {
+                                        UiScreen.ProductDetailScreen.route, UiScreen.LoadProductDetailScreen.route -> {
                                             if (gViewModel.getProductInfoData()?.eventDate != 0L) {
                                                 val notificationEntity by remember { gViewModel.notificationEntity }
                                                 val icon =
@@ -145,14 +150,14 @@ class MainActivity : ComponentActivity() {
                                         navController.navigate(route = UiScreen.ProductDetailScreen.route)
                                     }
                                 },
-                                onCreate = { gViewModel.sendProductData(null) }
+                                onCreate = {
+                                    gViewModel.sendProductData(null)
+                                    gViewModel.setNotificationEntity(null)
+                                }
                             )
                         }
                         composable(
-                            route = UiScreen.ProductDetailScreen.route,
-                            deepLinks = listOf(navDeepLink {
-                                uriPattern = Constants.PRODUCT_DETAIL_URI
-                            })
+                            route = UiScreen.ProductDetailScreen.route
                         ) { backStack ->
                             val isDialogOpen by gViewModel.isDialogOpen
                             ProductDetailRoute(
@@ -162,6 +167,22 @@ class MainActivity : ComponentActivity() {
                                 onDialogButtonClick = { gViewModel.dialogOpen(false) },
                                 onNotificationChange = { gViewModel.setNotificationEntity(it) },
                                 onDispose = { gViewModel.sendProductInfoData(null) }
+                            )
+                        }
+                        composable(
+                            route = UiScreen.LoadProductDetailScreen.route,
+                            deepLinks = listOf(navDeepLink {
+                                uriPattern = Constants.PRODUCT_DETAIL_URI + "/{productId}"
+                            })
+                        ) { backStackEntry ->
+                            val isDialogOpen by gViewModel.isDialogOpen
+                            LoadProductDetailRoute(
+                                productId = backStackEntry.arguments?.getString("productId") ?: "",
+                                isDialogOpen = isDialogOpen,
+                                onDispose = { },
+                                onDismiss = { gViewModel.dialogOpen(false) },
+                                onNotificationChange = { gViewModel.setNotificationEntity(it) },
+                                onDialogButtonClick = { gViewModel.dialogOpen(false) }
                             )
                         }
                         composable(route = UiScreen.CollectionDetailScreen.route) {

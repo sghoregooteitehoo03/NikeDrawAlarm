@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.nikealarm.nikedrawalarm.domain.model.ProductInfo
 import com.nikealarm.nikedrawalarm.domain.usecase.GetFavoriteUseCase
 import com.nikealarm.nikedrawalarm.domain.usecase.GetNotificationUseCase
+import com.nikealarm.nikedrawalarm.domain.usecase.GetProductInfoUseCase
 import com.nikealarm.nikedrawalarm.domain.usecase.InsertFavoriteUseCase
 import com.nikealarm.nikedrawalarm.domain.usecase.SetNotificationUseCase
 import com.nikealarm.nikedrawalarm.util.AlarmBuilder
@@ -22,6 +23,7 @@ import javax.inject.Inject
 @HiltViewModel
 class ProductDetailViewModel @Inject constructor(
     private val alarmBuilder: AlarmBuilder,
+    private val getProductInfoUseCase: GetProductInfoUseCase,
     private val getFavoriteUseCase: GetFavoriteUseCase,
     private val getNotificationUseCase: GetNotificationUseCase,
     private val insertFavoriteUseCase: InsertFavoriteUseCase,
@@ -34,6 +36,11 @@ class ProductDetailViewModel @Inject constructor(
             started = SharingStarted.Eagerly,
             initialValue = _uiState.value
         )
+
+    fun loadProduct(productId: String) = viewModelScope.launch {
+        val productInfo = getProductInfoUseCase(productId)
+        initValue(productInfo)
+    }
 
     fun initValue(productInfo: ProductInfo?) {
         val productId = productInfo?.productId ?: ""
@@ -50,7 +57,8 @@ class ProductDetailViewModel @Inject constructor(
                         notification
                     } else {
                         null
-                    }
+                    },
+                    isLoading = false
                 )
             }
         }.launchIn(viewModelScope)

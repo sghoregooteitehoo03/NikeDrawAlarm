@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -25,6 +26,7 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
@@ -66,66 +68,73 @@ fun ProductDetailScreen(
 ) {
     Box(
         modifier = Modifier
-            .fillMaxWidth()
+            .fillMaxSize()
     ) {
-        val productInfo = state.productInfo
+        if (state.isLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier.align(Alignment.Center),
+                color = Color.Black
+            )
+        } else {
+            val productInfo = state.productInfo
 
-        Column(
-            modifier = Modifier
-                .verticalScroll(rememberScrollState())
-        ) {
-            ImagePager(
-                images = productInfo?.images ?: listOf(),
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            ProductInformation(
-                title = productInfo?.title ?: "",
-                subTitle = productInfo?.subTitle ?: "",
-                price = DecimalFormat("₩#,###").format(productInfo?.price ?: 0),
-                eventDate = productInfo?.eventDate ?: 0L,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 14.dp, end = 14.dp)
-            )
-            Spacer(modifier = Modifier.height(24.dp))
-            if ((productInfo?.explains ?: "").isNotEmpty()) {
-                Explains(
-                    explain = productInfo?.explains ?: "",
+                    .verticalScroll(rememberScrollState())
+            ) {
+                ImagePager(
+                    images = productInfo?.images ?: listOf(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                ProductInformation(
+                    title = productInfo?.title ?: "",
+                    subTitle = productInfo?.subTitle ?: "",
+                    price = DecimalFormat("₩#,###").format(productInfo?.price ?: 0),
+                    eventDate = productInfo?.eventDate ?: 0L,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(start = 14.dp, end = 14.dp)
                 )
                 Spacer(modifier = Modifier.height(24.dp))
-            }
-            MoreInfoList(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                listExplain = "사이즈 목록",
-                listScope = {
-                    item {
-                        Spacer(modifier = Modifier.width(14.dp))
-                    }
-                    items(productInfo?.sizes ?: listOf("")) { size ->
-                        ProductSizeItem(size = size)
-                        Spacer(modifier = Modifier.width(12.dp))
-                    }
-                    item {
-                        Spacer(modifier = Modifier.width(2.dp))
-                    }
+                if ((productInfo?.explains ?: "").isNotEmpty()) {
+                    Explains(
+                        explain = productInfo?.explains ?: "",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 14.dp, end = 14.dp)
+                    )
+                    Spacer(modifier = Modifier.height(24.dp))
                 }
+                MoreInfoList(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    listExplain = "사이즈 목록",
+                    listScope = {
+                        item {
+                            Spacer(modifier = Modifier.width(14.dp))
+                        }
+                        items(productInfo?.sizes ?: listOf("")) { size ->
+                            ProductSizeItem(size = size)
+                            Spacer(modifier = Modifier.width(12.dp))
+                        }
+                        item {
+                            Spacer(modifier = Modifier.width(2.dp))
+                        }
+                    }
+                )
+                Spacer(modifier = Modifier.height((24 + 54).dp))
+            }
+            ProductButton(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.BottomCenter),
+                isFavorite = state.isFavorite,
+                onFavoriteClick = { onFavoriteClick(productInfo) },
+                onLearnMoreClick = { onLearnMoreClick(productInfo?.url ?: "") }
             )
-            Spacer(modifier = Modifier.height((24 + 54).dp))
         }
-        ProductButton(
-            modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.BottomCenter),
-            isFavorite = state.isFavorite,
-            onFavoriteClick = { onFavoriteClick(productInfo) },
-            onLearnMoreClick = { onLearnMoreClick(productInfo?.url ?: "") }
-        )
     }
 }
 

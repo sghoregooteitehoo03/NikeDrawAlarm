@@ -8,5 +8,5 @@ class GetPagingProductsUseCase @Inject constructor(
     private val repository: ProductRepository
 ) {
     operator fun invoke(selectedCategory: ProductCategory) =
-        repository.getPagingProduct(selectedCategory)
+        repository.getPagingProducts(selectedCategory)
 }

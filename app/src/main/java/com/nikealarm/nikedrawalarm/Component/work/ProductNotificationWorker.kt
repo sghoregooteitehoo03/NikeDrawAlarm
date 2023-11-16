@@ -71,7 +71,7 @@ class ProductNotificationWorker @AssistedInject constructor(
         // Notification 클릭 시 시행할 동작
         val actionIntent = Intent(
             Intent.ACTION_VIEW,
-            Constants.PRODUCT_DETAIL_URI.toUri(),
+            (Constants.PRODUCT_DETAIL_URI + "/${productEntity.productId}").toUri(),
             applicationContext,
             MainActivity::class.java
         )

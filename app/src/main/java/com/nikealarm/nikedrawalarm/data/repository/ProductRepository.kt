@@ -1,6 +1,5 @@
 package com.nikealarm.nikedrawalarm.data.repository
 
-import android.app.PendingIntent
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import com.nikealarm.nikedrawalarm.data.model.entity.FavoriteEntity
@@ -10,22 +9,22 @@ import com.nikealarm.nikedrawalarm.data.repository.database.ProductDao
 import com.nikealarm.nikedrawalarm.data.retrofit.RetrofitService
 import com.nikealarm.nikedrawalarm.domain.model.ProductCategory
 import com.nikealarm.nikedrawalarm.domain.model.ProductInfo
+import com.nikealarm.nikedrawalarm.domain.model.getDateToLong
+import com.nikealarm.nikedrawalarm.domain.model.getShoesCategory
 import com.nikealarm.nikedrawalarm.util.AlarmBuilder
 import com.nikealarm.nikedrawalarm.util.Constants
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOf
 import retrofit2.Retrofit
 import javax.inject.Inject
 
-
+// TODO: 데이터베이스만 관리하는 Repository 만들어서 분리하기
 class ProductRepository @Inject constructor(
     private val alarmBuilder: AlarmBuilder,
     private val retrofitBuilder: Retrofit.Builder,
     private val dao: ProductDao
 ) {
 
-    fun getPagingProduct(selectedCategory: ProductCategory) = Pager(
+    fun getPagingProducts(selectedCategory: ProductCategory) = Pager(
         config = PagingConfig(
             pageSize = 50
         )
@@ -36,6 +35,39 @@ class ProductRepository @Inject constructor(
             selectedCategory
         )
     }.flow
+
+    suspend fun getProductInfo(productId: String): ProductInfo {
+        val retrofitService = getRetrofitService()
+        val productEntity = dao.getProductData(productId) ?: throw NullPointerException()
+        val slug = productEntity.url.substringAfter("t/")
+        val productData =
+            retrofitService.getProductInfo("seoSlugs%28{slug}%29".replace("{slug}", slug))
+
+        val productObject = productData.objects[0]
+        val explains: String =
+            productObject.publishedContent.nodes[0].properties.jsonBody?.content?.get(0)?.content?.filter {
+                !it.text.contains("SNKRS")
+            }?.get(0)?.text ?: ""
+
+        return ProductInfo(
+            productId = productId,
+            title = productEntity.title,
+            subTitle = productEntity.subTitle,
+            price = productEntity.price,
+            images = productObject.publishedContent.nodes[0].nodes!!.map { it.properties.squarishURL },
+            eventDate = productEntity.eventDate,
+            explains = explains,
+            sizes = productObject.productInfo[0].skus?.map {
+                it.countrySpecifications[0].localizedSize
+            } ?: listOf(),
+            url = productEntity.url,
+            category = when (productEntity.category) {
+                "Coming" -> ProductCategory.Coming
+                "Draw" -> ProductCategory.Draw
+                else -> ProductCategory.All
+            }
+        )
+    }
 
     suspend fun getProductData(productId: String) =
         dao.getProductData(productId)

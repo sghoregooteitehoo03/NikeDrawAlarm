@@ -2,15 +2,22 @@ package com.nikealarm.nikedrawalarm
 
 import com.nikealarm.nikedrawalarm.data.model.LaunchView
 import com.nikealarm.nikedrawalarm.data.model.MerchProduct
+import com.nikealarm.nikedrawalarm.data.retrofit.RetrofitService
 import com.nikealarm.nikedrawalarm.domain.model.ProductCategory
 import com.nikealarm.nikedrawalarm.domain.model.ProductState
+import com.nikealarm.nikedrawalarm.util.Constants
+import kotlinx.coroutines.runBlocking
+import okhttp3.OkHttpClient
 import org.junit.Test
 import org.junit.Assert.*
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import java.util.concurrent.TimeUnit
 
 /**
  * Example local unit test, which will execute on the development machine (host).
@@ -24,7 +31,25 @@ class ExampleUnitTest {
     }
 
     @Test
-    fun test() {
+    fun getProductTest() {
+        runBlocking {
+            val builder = Retrofit.Builder()
+                .baseUrl(Constants.NIKE_API_URL)
+                .client(OkHttpClient.Builder().apply {
+                    readTimeout(2, TimeUnit.MINUTES)
+                }.build())
+                .addConverterFactory(GsonConverterFactory.create())
+                .build()
+            val retrofit = builder.create(RetrofitService::class.java)
+
+//            air-force-1-low-chocolate
+            val data = retrofit.getProductInfo("seoSlugs%28air-force-1-low-chocolate%29")
+            print(data)
+        }
+    }
+
+    @Test
+    fun parsingTest() {
 //        runBlocking {
 //            val builder = Retrofit.Builder()
 //                .baseUrl(Contents.NIKE_API_URL)
@@ -116,9 +141,8 @@ class ExampleUnitTest {
 
     @Test
     fun functionTest() {
-        val test = "cb711b04-0302-5b67-9e6a-15bb90543f1e"
-        print("hash: ${test.hashCode()}")
-        // ed14ef57-7d0f-5a6a-9a83-6b11151c7c67(-452069563)
+        val test = "https://www.nike.com/kr/launch/t/air-force-1-low-chocolate"
+        println(test.substringAfter("t/"))
     }
 
     private fun getDateToLong(date: String?): Long {

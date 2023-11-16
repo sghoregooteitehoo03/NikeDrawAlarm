@@ -37,29 +37,74 @@ fun ProductDetailRoute(
         onDispose = onDispose
     )
 
-    if (state.productInfo != null) {
-        ProductDetailScreen(
-            state = state,
-            onFavoriteClick = viewModel::clickFavorite,
-            onLearnMoreClick = { url ->
-                openCustomTabs(context, url)
-            }
-        )
-
-        if (state.productInfo!!.eventDate != 0L) {
-            onNotificationChange(state.notificationEntity)
+    ProductDetailScreen(
+        state = state,
+        onFavoriteClick = viewModel::clickFavorite,
+        onLearnMoreClick = { url ->
+            openCustomTabs(context, url)
         }
+    )
 
-        if (isDialogOpen) {
-            SetNotificationDialog(
-                onDismissRequest = onDismiss,
-                onButtonClick = {
-                    viewModel.setNotification(it)
-                    onDialogButtonClick()
-                },
-                settingTime = state.notificationEntity?.notificationDate ?: 0L
+    if (!state.isLoading && state.productInfo!!.eventDate != 0L) {
+        onNotificationChange(state.notificationEntity)
+    }
+
+    if (isDialogOpen) {
+        SetNotificationDialog(
+            onDismissRequest = onDismiss,
+            onButtonClick = {
+                viewModel.setNotification(it)
+                onDialogButtonClick()
+            },
+            settingTime = state.notificationEntity?.notificationDate ?: 0L
+        )
+    }
+}
+
+@Composable
+fun LoadProductDetailRoute(
+    viewModel: ProductDetailViewModel = hiltViewModel(),
+    productId: String,
+    isDialogOpen: Boolean,
+    onDispose: () -> Unit,
+    onDismiss: () -> Unit,
+    onNotificationChange: (NotificationEntity?) -> Unit,
+    onDialogButtonClick: () -> Unit
+) {
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+
+    DisposableEffectWithLifeCycle(
+        onCreate = {
+            viewModel.loadProduct(productId)
+        },
+        onDispose = onDispose
+    )
+
+    ProductDetailScreen(
+        state = state,
+        onFavoriteClick = viewModel::clickFavorite,
+        onLearnMoreClick = { url ->
+            openCustomTabs(
+                context,
+                url
             )
         }
+    )
+
+    if (!state.isLoading && state.productInfo!!.eventDate != 0L) {
+        onNotificationChange(state.notificationEntity)
+    }
+
+    if (isDialogOpen) {
+        SetNotificationDialog(
+            onDismissRequest = onDismiss,
+            onButtonClick = {
+                viewModel.setNotification(it)
+                onDialogButtonClick()
+            },
+            settingTime = state.notificationEntity?.notificationDate ?: 0L
+        )
     }
 }
 
