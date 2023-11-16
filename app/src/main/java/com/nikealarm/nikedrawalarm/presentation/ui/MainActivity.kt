@@ -28,6 +28,7 @@ import androidx.compose.material.icons.filled.NotificationsNone
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -78,7 +79,8 @@ class MainActivity : ComponentActivity() {
                             NikeTopAppBar(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(start = 14.dp, end = 14.dp),
+                                    .padding(start = 14.dp, end = 14.dp)
+                                    .align(Alignment.CenterVertically),
                                 title = when (currentRoute) {
                                     UiScreen.CollectionDetailScreen.route,
                                     UiScreen.ProductDetailScreen.route,

@@ -24,7 +24,9 @@ class ProductRepository @Inject constructor(
     private val dao: ProductDao
 ) {
 
-    fun getPagingProducts(selectedCategory: ProductCategory) = Pager(
+    fun getPagingProducts(
+        isUpcoming: Boolean = false
+    ) = Pager(
         config = PagingConfig(
             pageSize = 50
         )
@@ -32,10 +34,11 @@ class ProductRepository @Inject constructor(
         val retrofitService = getRetrofitService()
         ProductPagingSource(
             retrofitService,
-            selectedCategory
+            isUpcoming
         )
     }.flow
 
+    // TODO: 컬렉션 제품 알림 설정시 못읽어오는 버그 수정
     suspend fun getProductInfo(productId: String): ProductInfo {
         val retrofitService = getRetrofitService()
         val productEntity = dao.getProductData(productId) ?: throw NullPointerException()

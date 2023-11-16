@@ -57,6 +57,7 @@ fun getDateToLong(date: String?): Long {
     return (dateFormat.parse(date)?.time?.plus(32400000) ?: 0L)  // (+9 Hours) UTC -> KOREA
 }
 
+// TODO: 상품 카테고리가 올바르게 설정되지 않는 버그 수정
 fun getShoesCategory(
     merchProduct: MerchProduct,
     launchView: LaunchView?

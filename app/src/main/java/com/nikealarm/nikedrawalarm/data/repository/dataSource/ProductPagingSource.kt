@@ -20,7 +20,7 @@ import java.util.Locale
 
 class ProductPagingSource(
     private val retrofitService: RetrofitService,
-    private val filteredCategory: ProductCategory
+    private val isUpcoming: Boolean
 ) : PagingSource<Int, Product>() {
     override fun getRefreshKey(state: PagingState<Int, Product>): Int? {
         return state.anchorPosition?.let {
@@ -31,10 +31,10 @@ class ProductPagingSource(
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Product> {
         return try {
             val key = params.key ?: 0
-            val data = if (filteredCategory == ProductCategory.All) {
-                retrofitService.getFeedProducts(key)
-            } else {
+            val data = if (isUpcoming) {
                 retrofitService.getUpcomingProducts(key)
+            } else {
+                retrofitService.getFeedProducts(key)
             }
 
             if (data.objects.isEmpty())
@@ -111,16 +111,8 @@ class ProductPagingSource(
                     )
                 }
 
-            val filteredList = if (filteredCategory != ProductCategory.All) {
-                productList.filter {
-                    it.productInfoList[0].category == filteredCategory
-                }
-            } else {
-                productList
-            }
-
             LoadResult.Page(
-                data = filteredList,
+                data = productList,
                 prevKey = null,
                 nextKey = key + 50
             )

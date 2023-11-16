@@ -1,5 +1,6 @@
 package com.nikealarm.nikedrawalarm.presentation.productScreen
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,10 +13,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -24,6 +29,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.paging.ItemSnapshotList
+import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.nikealarm.nikedrawalarm.domain.model.Product
 import com.nikealarm.nikedrawalarm.domain.model.ProductCategory
@@ -36,6 +43,7 @@ import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.LightGray
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.NikeDrawAssistant
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Shapes
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.White
+import kotlinx.coroutines.coroutineScope
 import me.onebone.toolbar.CollapsingToolbarScaffold
 import me.onebone.toolbar.ScrollStrategy
 import me.onebone.toolbar.rememberCollapsingToolbarScaffoldState
@@ -67,7 +75,9 @@ fun ProductScreen(
                         bottom = 12.dp
                     ),
                     selectedCategory = state.selectedCategory,
-                    onCategoryItemClick = onCategoryItemClick
+                    onCategoryItemClick = { category ->
+                        onCategoryItemClick(category)
+                    }
                 )
                 Divider(
                     color = LightGray,
@@ -80,7 +90,28 @@ fun ProductScreen(
             modifier = Modifier
                 .fillMaxSize()
         ) {
-            val products = state.products?.collectAsLazyPagingItems()
+            val products = when (state.selectedCategory) {
+                ProductCategory.All -> {
+                    state.products?.collectAsLazyPagingItems()
+                }
+
+                ProductCategory.Coming -> {
+                    state.comingProducts?.collectAsLazyPagingItems()
+                }
+
+                ProductCategory.Draw -> {
+                    state.drawProducts?.collectAsLazyPagingItems()
+                }
+
+                else -> {
+                    state.products?.collectAsLazyPagingItems()
+                }
+            }
+            val gridState = LazyGridState()
+
+            LaunchedEffect(key1 = state.selectedCategory) {
+                gridState.scrollToItem(0)
+            }
 
             products?.let {
                 LazyVerticalGrid(
@@ -90,9 +121,10 @@ fun ProductScreen(
                         top = 6.dp,
                         bottom = 6.dp
                     ),
-                    columns = GridCells.Fixed(2)
+                    columns = GridCells.Fixed(2),
+                    state = gridState
                 ) {
-                    items(it.itemCount) { index ->
+                    items(products.itemCount) { index ->
                         ProductItem(
                             product = it[index]!!,
                             modifier = Modifier.padding(4.dp),
