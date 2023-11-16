@@ -69,7 +69,7 @@ fun CollectionDetailScreen(
                 listExplain = "제품 (${state.product?.productInfoList?.size ?: 0})",
                 listScope = {
                     item {
-                        Spacer(modifier = Modifier.width(14.dp))
+                        Spacer(modifier = Modifier.width(10.dp))
                     }
                     items(state.product?.productInfoList ?: listOf()) { productInfo ->
                         ProductInfoItem(
@@ -80,9 +80,10 @@ fun CollectionDetailScreen(
                             thumbnailImage = productInfo.images[0],
                             onClick = { onProductItemClick(productInfo) }
                         )
+                        Spacer(modifier = Modifier.width(4.dp))
                     }
                     item {
-                        Spacer(modifier = Modifier.width(10.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
                     }
                 }
             )

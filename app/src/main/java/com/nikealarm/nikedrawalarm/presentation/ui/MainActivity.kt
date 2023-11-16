@@ -5,7 +5,6 @@ import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -16,8 +15,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.BottomNavigation
+import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.Icon
 import androidx.compose.material.Scaffold
+import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIos
@@ -27,24 +29,36 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navDeepLink
 import com.nikealarm.nikedrawalarm.presentation.collectionDetailScreen.CollectionDetailRoute
+import com.nikealarm.nikedrawalarm.presentation.favoriteScreen.FavoriteRoute
 import com.nikealarm.nikedrawalarm.presentation.productDetailScreen.LoadProductDetailRoute
 import com.nikealarm.nikedrawalarm.presentation.productDetailScreen.ProductDetailRoute
 import com.nikealarm.nikedrawalarm.presentation.productScreen.ProductRoute
+import com.nikealarm.nikedrawalarm.presentation.upcomingScreen.UpcomingRoute
 import com.nikealarm.nikedrawalarm.util.Constants
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Black
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.NikeDrawAssistant
+import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Typography
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     private val gViewModel by viewModels<GlobalViewModel>()
+    private val bottomScreenList = listOf(
+        UiScreen.ProductScreen,
+        UiScreen.UpcomingScreen,
+        UiScreen.FavoriteScreen
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,7 +72,6 @@ class MainActivity : ComponentActivity() {
                         val backStack = navController.currentBackStackEntryAsState()
                         val currentRoute = backStack.value?.destination?.route ?: ""
 
-                        Log.i("Check", "Route: ${currentRoute}")
                         TopAppBar(
                             elevation = 0.dp,
                         ) {
@@ -74,27 +87,36 @@ class MainActivity : ComponentActivity() {
                                     }
 
                                     else -> {
-                                        "Product"
+                                        currentRoute
                                     }
                                 },
                                 navigationIcon = {
-                                    if (currentRoute != UiScreen.ProductScreen.route) {
-                                        Row(modifier = it) {
-                                            Icon(
-                                                imageVector = Icons.Default.ArrowBackIos,
-                                                contentDescription = "뒤로가기",
-                                                modifier = Modifier
-                                                    .size(24.dp)
-                                                    .clickable { navController.navigateUp() },
-                                                tint = Black
-                                            )
-                                            Spacer(modifier = Modifier.width(14.dp))
+                                    when (currentRoute) {
+                                        UiScreen.ProductScreen.route,
+                                        UiScreen.UpcomingScreen.route,
+                                        UiScreen.FavoriteScreen.route -> {
+                                        }
+
+                                        else -> {
+                                            Row(modifier = it) {
+                                                Icon(
+                                                    imageVector = Icons.Default.ArrowBackIos,
+                                                    contentDescription = "뒤로가기",
+                                                    modifier = Modifier
+                                                        .size(24.dp)
+                                                        .clickable { navController.navigateUp() },
+                                                    tint = Black
+                                                )
+                                                Spacer(modifier = Modifier.width(14.dp))
+                                            }
                                         }
                                     }
                                 },
                                 actionIcon = {
                                     when (currentRoute) {
-                                        UiScreen.ProductScreen.route -> {
+                                        UiScreen.ProductScreen.route,
+                                        UiScreen.UpcomingScreen.route,
+                                        UiScreen.FavoriteScreen.route -> {
                                             Icon(
                                                 imageVector = Icons.Default.Settings,
                                                 contentDescription = "설정",
@@ -132,6 +154,61 @@ class MainActivity : ComponentActivity() {
                                 }
                             )
                         }
+                    },
+                    bottomBar = {
+                        val backStack by navController.currentBackStackEntryAsState()
+                        val currentDestination = backStack?.destination
+
+                        when (currentDestination?.route ?: "") {
+                            UiScreen.ProductScreen.route,
+                            UiScreen.UpcomingScreen.route,
+                            UiScreen.FavoriteScreen.route -> {
+                                BottomNavigation {
+                                    bottomScreenList.forEach { screen ->
+                                        val selected =
+                                            currentDestination?.hierarchy?.any { it.route == screen.route } == true
+
+                                        BottomNavigationItem(
+                                            selected = selected,
+                                            label = {
+                                                Text(
+                                                    text = screen.route,
+                                                    style = Typography.subtitle1.copy(
+                                                        fontWeight = if (selected) {
+                                                            FontWeight.Bold
+                                                        } else {
+                                                            FontWeight.Normal
+                                                        }
+                                                    )
+                                                )
+                                            },
+                                            onClick = {
+                                                navController.navigate(screen.route) {
+                                                    popUpTo(navController.graph.findStartDestination().id) {
+                                                        saveState = true
+                                                    }
+                                                    launchSingleTop = true
+                                                    restoreState = true
+                                                }
+                                            },
+                                            icon = {
+                                                val iconRes = if (selected) {
+                                                    screen.bottomSelectedIcon
+                                                } else {
+                                                    screen.bottomUnSelectedIcon
+                                                }
+
+                                                Icon(
+                                                    painterResource(id = iconRes),
+                                                    screen.route
+                                                )
+                                            })
+                                    }
+                                }
+                            }
+
+                            else -> {}
+                        }
                     }
                 ) {
                     NavHost(
@@ -155,6 +232,12 @@ class MainActivity : ComponentActivity() {
                                     gViewModel.setNotificationEntity(null)
                                 }
                             )
+                        }
+                        composable(route = UiScreen.UpcomingScreen.route) {
+                            UpcomingRoute()
+                        }
+                        composable(route = UiScreen.FavoriteScreen.route) {
+                            FavoriteRoute()
                         }
                         composable(
                             route = UiScreen.ProductDetailScreen.route
