@@ -36,7 +36,8 @@ class ProductViewModel @Inject constructor(
             it.copy(
                 products = getProductsUseCase(ProductCategory.All).cachedIn(viewModelScope),
                 comingProducts = getProductsUseCase(ProductCategory.Coming).cachedIn(viewModelScope),
-                drawProducts = getProductsUseCase(ProductCategory.Draw).cachedIn(viewModelScope),
+                drawProducts = getProductsUseCase(ProductCategory.Draw)
+                    .cachedIn(viewModelScope),
             )
         }
     }

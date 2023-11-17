@@ -107,11 +107,6 @@ fun ProductScreen(
                     state.products?.collectAsLazyPagingItems()
                 }
             }
-            val gridState = LazyGridState()
-
-            LaunchedEffect(key1 = state.selectedCategory) {
-                gridState.scrollToItem(0)
-            }
 
             products?.let {
                 LazyVerticalGrid(
@@ -121,8 +116,7 @@ fun ProductScreen(
                         top = 6.dp,
                         bottom = 6.dp
                     ),
-                    columns = GridCells.Fixed(2),
-                    state = gridState
+                    columns = GridCells.Fixed(2)
                 ) {
                     items(products.itemCount) { index ->
                         ProductItem(

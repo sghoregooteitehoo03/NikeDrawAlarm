@@ -236,7 +236,12 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         composable(route = UiScreen.UpcomingScreen.route) {
-                            UpcomingRoute()
+                            UpcomingRoute(
+                                onProductClick = { productInfo ->
+                                    gViewModel.sendProductInfoData(productInfo)
+                                    navController.navigate(route = UiScreen.ProductDetailScreen.route)
+                                }
+                            )
                         }
                         composable(route = UiScreen.FavoriteScreen.route) {
                             FavoriteRoute()

@@ -5,12 +5,11 @@ import androidx.paging.PagingConfig
 import com.nikealarm.nikedrawalarm.data.model.entity.FavoriteEntity
 import com.nikealarm.nikedrawalarm.data.model.entity.NotificationEntity
 import com.nikealarm.nikedrawalarm.data.repository.dataSource.ProductPagingSource
+import com.nikealarm.nikedrawalarm.data.repository.dataSource.UpcomingPagingSource
 import com.nikealarm.nikedrawalarm.data.repository.database.ProductDao
 import com.nikealarm.nikedrawalarm.data.retrofit.RetrofitService
 import com.nikealarm.nikedrawalarm.domain.model.ProductCategory
 import com.nikealarm.nikedrawalarm.domain.model.ProductInfo
-import com.nikealarm.nikedrawalarm.domain.model.getDateToLong
-import com.nikealarm.nikedrawalarm.domain.model.getShoesCategory
 import com.nikealarm.nikedrawalarm.util.AlarmBuilder
 import com.nikealarm.nikedrawalarm.util.Constants
 import kotlinx.coroutines.flow.Flow
@@ -24,9 +23,7 @@ class ProductRepository @Inject constructor(
     private val dao: ProductDao
 ) {
 
-    fun getPagingProducts(
-        isUpcoming: Boolean = false
-    ) = Pager(
+    fun getPagingProducts(isUpcoming: Boolean = false) = Pager(
         config = PagingConfig(
             pageSize = 50
         )
@@ -36,6 +33,13 @@ class ProductRepository @Inject constructor(
             retrofitService,
             isUpcoming
         )
+    }.flow
+
+    fun getPagingUpcoming() = Pager(
+        config = PagingConfig(pageSize = 50)
+    ) {
+        val retrofitService = getRetrofitService()
+        UpcomingPagingSource(retrofitService)
     }.flow
 
     // TODO: 컬렉션 제품 알림 설정시 못읽어오는 버그 수정

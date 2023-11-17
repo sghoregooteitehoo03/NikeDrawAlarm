@@ -2,7 +2,9 @@ package com.nikealarm.nikedrawalarm.domain.model
 
 import com.nikealarm.nikedrawalarm.data.model.LaunchView
 import com.nikealarm.nikedrawalarm.data.model.MerchProduct
+import com.nikealarm.nikedrawalarm.data.model.Objects
 import com.nikealarm.nikedrawalarm.data.model.entity.ProductEntity
+import com.nikealarm.nikedrawalarm.util.Constants
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -42,6 +44,52 @@ sealed class ProductCategory(val text: String = "") {
     object SoldOut : ProductCategory()
     object Coming : ProductCategory("Coming")
     object Draw : ProductCategory("Draw")
+}
+
+fun translateToProductInfoList(filterProduct: Objects): List<ProductInfo> {
+    return filterProduct
+        .publishedContent
+        .nodes
+        .filter { it.subType == "carousel" } // 제품들만 필터링
+        .mapIndexed { index, nodes ->
+            val explains: String =
+                nodes.properties.jsonBody?.content?.get(0)?.content?.filter {
+                    !it.text.contains("SNKRS")
+                }?.get(0)?.text ?: ""
+
+            try {
+                ProductInfo(
+                    productId = filterProduct.productInfo[index].merchProduct.id,
+                    title = nodes.properties.title,
+                    subTitle = nodes.properties.subtitle,
+                    price = filterProduct.productInfo[index].merchPrice.currentPrice,
+                    images = nodes.nodes!!.map { it.properties.squarishURL },
+                    eventDate = getDateToLong(filterProduct.productInfo[index].launchView?.startEntryDate),
+                    explains = explains,
+                    sizes = filterProduct.productInfo[index].skus?.map {
+                        it.countrySpecifications[0].localizedSize
+                    } ?: listOf(),
+                    url = Constants.NIKE_PRODUCT_URL + filterProduct.publishedContent.properties.seo.slug,
+                    category = getShoesCategory(
+                        filterProduct.productInfo[index].merchProduct,
+                        filterProduct.productInfo[index].launchView
+                    )
+                )
+            } catch (e: IndexOutOfBoundsException) {
+                ProductInfo(
+                    productId = "",
+                    title = nodes.properties.title,
+                    subTitle = nodes.properties.subtitle,
+                    price = -1,
+                    images = nodes.nodes!!.map { it.properties.squarishURL },
+                    eventDate = 0L,
+                    explains = explains,
+                    sizes = listOf(),
+                    url = Constants.NIKE_PRODUCT_URL + filterProduct.publishedContent.properties.seo.slug,
+                    category = ProductCategory.Feed
+                )
+            }
+        }
 }
 
 fun getDateToLong(date: String?): Long {
