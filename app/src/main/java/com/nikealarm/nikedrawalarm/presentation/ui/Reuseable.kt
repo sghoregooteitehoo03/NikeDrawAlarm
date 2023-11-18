@@ -182,7 +182,7 @@ fun NikeTopAppBar(
         )
         Text(
             text = title,
-            style = Typography.h1,
+            style = Typography.h2,
             color = MaterialTheme.colors.onPrimary,
             modifier = Modifier.constrainAs(titleText) {
                 start.linkTo(navigation.end)

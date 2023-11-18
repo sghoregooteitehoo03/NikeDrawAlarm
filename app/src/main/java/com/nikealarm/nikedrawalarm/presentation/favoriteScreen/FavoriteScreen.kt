@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.rememberImagePainter
 import com.nikealarm.nikedrawalarm.data.model.entity.LatestProductEntity
 import com.nikealarm.nikedrawalarm.data.model.entity.ProductEntity
+import com.nikealarm.nikedrawalarm.domain.model.JoinedProductCategory
 import com.nikealarm.nikedrawalarm.presentation.ui.ProductInfoItemRow
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.NikeDrawAssistant
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Shapes
@@ -41,7 +42,8 @@ import java.util.Locale
 @Composable
 fun FavoriteScreen(
     state: FavoriteUiState,
-    onProductClick: (ProductEntity) -> Unit
+    onProductClick: (ProductEntity) -> Unit,
+    onMoreClick: (JoinedProductCategory) -> Unit
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         when (state) {
@@ -55,16 +57,31 @@ fun FavoriteScreen(
                         title = "최근에 본 제품",
                         subTitle = "전체 보기",
                         content = {
+                            if (state.latestProducts.isEmpty()) {
+                                Text(
+                                    text = "최근에 본 제품이 없습니다.",
+                                    style = Typography.h5.copy(color = TextGray),
+                                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                                )
+                            }
                             LatestProductList(
                                 latestProducts = state.latestProducts,
                                 onProductClick = onProductClick
                             )
-                        }
+                        },
+                        onSubTitleClick = { onMoreClick(JoinedProductCategory.LatestProduct) }
                     )
                     ProductColumn(
                         title = "알림 설정한 제품",
                         subTitle = "전체 보기",
                         content = {
+                            if (state.notifyProducts.isEmpty()) {
+                                Text(
+                                    text = "알림 설정한 제품이 없습니다.",
+                                    style = Typography.h5.copy(color = TextGray),
+                                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                                )
+                            }
                             state.notifyProducts.forEach { notifyProduct ->
                                 ProductInfoItemRow(
                                     modifier = Modifier
@@ -78,7 +95,7 @@ fun FavoriteScreen(
                                     subTitle = notifyProduct.productEntity.subTitle,
                                     explain = SimpleDateFormat(
                                         if (notifyProduct.notificationEntity.notificationDate > 3600000L) {
-                                            "h시간 m분 전에 알림"
+                                            "h시간 전에 알림"
                                         } else {
                                             "m분 전에 알림"
                                         },
@@ -91,12 +108,20 @@ fun FavoriteScreen(
                                         )
                                 )
                             }
-                        }
+                        },
+                        onSubTitleClick = { onMoreClick(JoinedProductCategory.NotifyProduct) }
                     )
                     ProductColumn(
                         title = "좋아요 한 제품",
                         subTitle = "전체 보기",
                         content = {
+                            if (state.favoriteProducts.isEmpty()) {
+                                Text(
+                                    text = "좋아요 한 제품이 없습니다.",
+                                    style = Typography.h5.copy(color = TextGray),
+                                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                                )
+                            }
                             state.favoriteProducts.forEach { favoriteProduct ->
                                 ProductInfoItemRow(
                                     modifier = Modifier
@@ -118,7 +143,8 @@ fun FavoriteScreen(
                                     )
                                 )
                             }
-                        }
+                        },
+                        onSubTitleClick = { onMoreClick(JoinedProductCategory.FavoriteProduct) }
                     )
                 }
             }
@@ -134,8 +160,7 @@ fun ProductColumn(
     title: String,
     subTitle: String,
     content: @Composable () -> Unit,
-    onSubTitleClick: () -> Unit = {},
-    onProductClick: (ProductEntity) -> Unit = {}
+    onSubTitleClick: () -> Unit = {}
 ) {
     Column(modifier = modifier) {
         Box(
@@ -151,7 +176,9 @@ fun ProductColumn(
             Text(
                 text = subTitle,
                 style = Typography.subtitle1.copy(fontWeight = FontWeight.Medium, color = TextGray),
-                modifier = Modifier.align(Alignment.CenterEnd)
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .clickable { onSubTitleClick() }
             )
         }
         Spacer(modifier = Modifier.height(4.dp))

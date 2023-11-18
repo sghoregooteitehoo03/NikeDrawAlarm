@@ -1,4 +1,4 @@
-package com.nikealarm.nikedrawalarm.presentation.favoriteScreen
+package com.nikealarm.nikedrawalarm.presentation.favoriteMoreScreen
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -9,22 +9,20 @@ import com.nikealarm.nikedrawalarm.domain.model.JoinedProductCategory
 import com.nikealarm.nikedrawalarm.presentation.ui.DisposableEffectWithLifeCycle
 
 @Composable
-fun FavoriteRoute(
-    viewModel: FavoriteViewModel = hiltViewModel(),
+fun FavoriteMoreRoute(
+    viewModel: FavoriteMoreViewModel = hiltViewModel(),
+    sendCategory: JoinedProductCategory?,
     onProductClick: (ProductEntity) -> Unit,
-    onMoreClick: (JoinedProductCategory) -> Unit,
-    onCreate: () -> Unit
+    onDispose: () -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
     DisposableEffectWithLifeCycle(
-        onCreate = onCreate,
-        onDispose = { }
+        onCreate = { viewModel.initValue(sendCategory) },
+        onDispose = onDispose
     )
 
-    FavoriteScreen(
+    FavoriteMoreScreen(
         state = uiState,
-        onProductClick = onProductClick,
-        onMoreClick = onMoreClick
+        onProductClick = onProductClick
     )
 }

@@ -41,6 +41,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navDeepLink
 import com.nikealarm.nikedrawalarm.presentation.collectionDetailScreen.CollectionDetailRoute
+import com.nikealarm.nikedrawalarm.presentation.favoriteMoreScreen.FavoriteMoreRoute
 import com.nikealarm.nikedrawalarm.presentation.favoriteScreen.FavoriteRoute
 import com.nikealarm.nikedrawalarm.presentation.productDetailScreen.LoadProductDetailRoute
 import com.nikealarm.nikedrawalarm.presentation.productDetailScreen.ProductDetailRoute
@@ -52,6 +53,7 @@ import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.NikeDrawAssistant
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Typography
 import dagger.hilt.android.AndroidEntryPoint
 
+// TODO: Navigation 관리하는 Class 구현
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     private val gViewModel by viewModels<GlobalViewModel>()
@@ -82,14 +84,19 @@ class MainActivity : ComponentActivity() {
                                     .padding(start = 14.dp, end = 14.dp)
                                     .align(Alignment.CenterVertically),
                                 title = when (currentRoute) {
-                                    UiScreen.CollectionDetailScreen.route,
-                                    UiScreen.ProductDetailScreen.route,
-                                    UiScreen.LoadProductDetailScreen.route -> {
-                                        ""
+                                    UiScreen.ProductScreen.route,
+                                    UiScreen.UpcomingScreen.route,
+                                    UiScreen.FavoriteScreen.route -> {
+                                        currentRoute
+                                    }
+
+                                    UiScreen.FavoriteMoreScreen.route -> {
+                                        gViewModel.getJoinedProductCategory()
+                                            ?.text ?: ""
                                     }
 
                                     else -> {
-                                        currentRoute
+                                        ""
                                     }
                                 },
                                 navigationIcon = {
@@ -230,8 +237,7 @@ class MainActivity : ComponentActivity() {
                                     }
                                 },
                                 onCreate = {
-                                    gViewModel.sendProductData(null)
-                                    gViewModel.setNotificationEntity(null)
+                                    gViewModel.clearData()
                                 }
                             )
                         }
@@ -249,7 +255,12 @@ class MainActivity : ComponentActivity() {
                                     val route =
                                         UiScreenName.LOAD_PRODUCT_DETAIL_SCREEN + "/${productEntity.productId}"
                                     navController.navigate(route = route)
-                                }
+                                },
+                                onMoreClick = { joinedProductCategory ->
+                                    gViewModel.sendJoinedProductCategory(joinedProductCategory)
+                                    navController.navigate(UiScreen.FavoriteMoreScreen.route)
+                                },
+                                onCreate = { gViewModel.clearData() }
                             )
                         }
                         composable(
@@ -291,6 +302,17 @@ class MainActivity : ComponentActivity() {
                                 onDispose = { }
                             )
                         }
+                        composable(route = UiScreen.FavoriteMoreScreen.route) {
+                            FavoriteMoreRoute(
+                                sendCategory = gViewModel.getJoinedProductCategory(),
+                                onProductClick = { productEntity ->
+                                    val route =
+                                        UiScreenName.LOAD_PRODUCT_DETAIL_SCREEN + "/${productEntity.productId}"
+                                    navController.navigate(route = route)
+                                },
+                                onDispose = { }
+                            )
+                        }
                     }
                 }
             }
@@ -299,7 +321,7 @@ class MainActivity : ComponentActivity() {
 
     private fun createChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name = "제품 출신 알림"
+            val name = "제품 출시 알림"
             val importance = NotificationManager.IMPORTANCE_DEFAULT
             val channel =
                 NotificationChannel(Constants.CHANNEL_ID_PRODUCT_NOTIFICATION, name, importance)

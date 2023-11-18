@@ -39,6 +39,17 @@ interface ProductDao {
     @Query(
         "SELECT * " +
                 "FROM ProductEntity AS product " +
+                "INNER JOIN LatestEntity AS latest " +
+                "ON product.Id == latest.productId " +
+                "ORDER BY latestDate DESC " +
+                "LIMIT :limit " +
+                "OFFSET :offset"
+    )
+    suspend fun getLatestProductsPageData(limit: Int, offset: Int): List<LatestProductEntity>
+
+    @Query(
+        "SELECT * " +
+                "FROM ProductEntity AS product " +
                 "INNER JOIN NotificationEntity AS notification " +
                 "ON product.Id == notification.productId " +
                 "ORDER BY product.eventDate ASC " +
@@ -49,12 +60,34 @@ interface ProductDao {
     @Query(
         "SELECT * " +
                 "FROM ProductEntity AS product " +
+                "INNER JOIN NotificationEntity AS notification " +
+                "ON product.Id == notification.productId " +
+                "ORDER BY product.eventDate ASC " +
+                "LIMIT :limit " +
+                "OFFSET :offset"
+    )
+    suspend fun getNotifyProductsPageData(limit: Int, offset: Int): List<NotifyProductEntity>
+
+    @Query(
+        "SELECT * " +
+                "FROM ProductEntity AS product " +
                 "INNER JOIN FavoriteEntity AS favorite " +
                 "ON product.Id == favorite.productId " +
                 "ORDER BY favorite.favoriteDate DESC " +
                 "LIMIT :limit"
     )
     fun getFavoriteProductsData(limit: Int): Flow<List<FavoriteProductEntity>>
+
+    @Query(
+        "SELECT * " +
+                "FROM ProductEntity AS product " +
+                "INNER JOIN FavoriteEntity AS favorite " +
+                "ON product.Id == favorite.productId " +
+                "ORDER BY favorite.favoriteDate DESC " +
+                "LIMIT :limit " +
+                "OFFSET :offset"
+    )
+    suspend fun getFavoriteProductsPageData(limit: Int, offset: Int): List<FavoriteProductEntity>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertProductData(product: ProductEntity)

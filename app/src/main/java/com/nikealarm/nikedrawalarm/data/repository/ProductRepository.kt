@@ -5,15 +5,16 @@ import androidx.paging.PagingConfig
 import com.nikealarm.nikedrawalarm.data.model.entity.FavoriteEntity
 import com.nikealarm.nikedrawalarm.data.model.entity.LatestEntity
 import com.nikealarm.nikedrawalarm.data.model.entity.NotificationEntity
+import com.nikealarm.nikedrawalarm.data.repository.dataSource.JoinedProductPagingSource
 import com.nikealarm.nikedrawalarm.data.repository.dataSource.ProductPagingSource
 import com.nikealarm.nikedrawalarm.data.repository.dataSource.UpcomingPagingSource
 import com.nikealarm.nikedrawalarm.data.repository.database.ProductDao
 import com.nikealarm.nikedrawalarm.data.retrofit.RetrofitService
+import com.nikealarm.nikedrawalarm.domain.model.JoinedProductCategory
 import com.nikealarm.nikedrawalarm.domain.model.ProductCategory
 import com.nikealarm.nikedrawalarm.domain.model.ProductInfo
 import com.nikealarm.nikedrawalarm.util.AlarmBuilder
 import com.nikealarm.nikedrawalarm.util.Constants
-import kotlinx.coroutines.flow.Flow
 import retrofit2.Retrofit
 import javax.inject.Inject
 
@@ -25,9 +26,7 @@ class ProductRepository @Inject constructor(
 ) {
 
     fun getPagingProducts(isUpcoming: Boolean = false) = Pager(
-        config = PagingConfig(
-            pageSize = 50
-        )
+        config = PagingConfig(pageSize = 50)
     ) {
         val retrofitService = getRetrofitService()
         ProductPagingSource(
@@ -41,6 +40,12 @@ class ProductRepository @Inject constructor(
     ) {
         val retrofitService = getRetrofitService()
         UpcomingPagingSource(retrofitService)
+    }.flow
+
+    fun getPagingJoinedProduct(joinedCategory: JoinedProductCategory) = Pager(
+        config = PagingConfig(20)
+    ) {
+        JoinedProductPagingSource(dao, joinedCategory)
     }.flow
 
     // TODO: 컬렉션 제품 알림 설정시 못읽어오는 버그 수정
@@ -83,9 +88,8 @@ class ProductRepository @Inject constructor(
     fun getFavoriteData(productId: String) =
         dao.getFavoriteData(productId)
 
-    fun getNotificationData(productId: String): Flow<NotificationEntity?> {
-        return dao.getNotificationData(productId = productId)
-    }
+    fun getNotificationData(productId: String) =
+        dao.getNotificationData(productId = productId)
 
     fun getLatestProductsData(limit: Int) =
         dao.getLatestProductsData(limit)

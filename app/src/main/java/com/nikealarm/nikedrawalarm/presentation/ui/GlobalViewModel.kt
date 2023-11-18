@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nikealarm.nikedrawalarm.data.model.entity.NotificationEntity
+import com.nikealarm.nikedrawalarm.domain.model.JoinedProductCategory
 import com.nikealarm.nikedrawalarm.domain.model.Product
 import com.nikealarm.nikedrawalarm.domain.model.ProductInfo
 import com.nikealarm.nikedrawalarm.domain.usecase.GetNotificationUseCase
@@ -26,12 +27,7 @@ class GlobalViewModel @Inject constructor() : ViewModel() {
     // 데이터 전달 용
     private var product: Product? = null
     private var productInfo: ProductInfo? = null
-
-    // State
-    private var _notificationEntity: MutableState<NotificationEntity?> = mutableStateOf(null)
-    val notificationEntity: State<NotificationEntity?> = _notificationEntity
-    private val _isDialogOpen = mutableStateOf(false)
-    val isDialogOpen: State<Boolean> = _isDialogOpen
+    private var joinedProductCategory: JoinedProductCategory? = null
 
     fun sendProductData(_product: Product?) {
         product = _product
@@ -41,9 +37,27 @@ class GlobalViewModel @Inject constructor() : ViewModel() {
         productInfo = _productInfo
     }
 
+    fun sendJoinedProductCategory(_joinedProductCategory: JoinedProductCategory?) {
+        joinedProductCategory = _joinedProductCategory
+    }
+
     fun getProductData() = product
 
     fun getProductInfoData() = productInfo
+
+    fun getJoinedProductCategory() = joinedProductCategory
+
+    fun clearData() {
+        product = null
+        productInfo = null
+        joinedProductCategory = null
+    }
+
+    // State
+    private var _notificationEntity: MutableState<NotificationEntity?> = mutableStateOf(null)
+    val notificationEntity: State<NotificationEntity?> = _notificationEntity
+    private val _isDialogOpen = mutableStateOf(false)
+    val isDialogOpen: State<Boolean> = _isDialogOpen
 
     fun dialogOpen(isOpen: Boolean) {
         _isDialogOpen.value = isOpen
