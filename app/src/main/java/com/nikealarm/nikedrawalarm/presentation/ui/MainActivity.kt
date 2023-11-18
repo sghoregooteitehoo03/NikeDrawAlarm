@@ -244,7 +244,13 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         composable(route = UiScreen.FavoriteScreen.route) {
-                            FavoriteRoute()
+                            FavoriteRoute(
+                                onProductClick = { productEntity ->
+                                    val route =
+                                        UiScreenName.LOAD_PRODUCT_DETAIL_SCREEN + "/${productEntity.productId}"
+                                    navController.navigate(route = route)
+                                }
+                            )
                         }
                         composable(
                             route = UiScreen.ProductDetailScreen.route

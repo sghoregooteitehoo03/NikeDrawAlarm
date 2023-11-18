@@ -1,6 +1,5 @@
 package com.nikealarm.nikedrawalarm.presentation.ui
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -197,18 +196,53 @@ fun NikeTopAppBar(
             bottom.linkTo(parent.bottom)
         })
     }
-//    Row(
-//        modifier = modifier,
-//        verticalAlignment = Alignment.CenterVertically
-//    ) {
-//        navigationIcon()
-//        Text(
-//            text = title,
-//            style = Typography.h1,
-//            color = MaterialTheme.colors.onPrimary
-//        )
-//        actionIcon()
-//    }
+}
+
+@Composable
+fun ProductInfoItemRow(
+    modifier: Modifier = Modifier,
+    thumbnailImage: String,
+    title: String,
+    subTitle: String,
+    explain: String
+) {
+    Row(
+        modifier = modifier
+    ) {
+        Image(
+            painter = rememberImagePainter(data = thumbnailImage),
+            contentDescription = title,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .size(80.dp)
+                .clip(Shapes.large)
+        )
+        Spacer(modifier = Modifier.width(12.dp))
+        Box(modifier = Modifier.height(80.dp)) {
+            Column(modifier = Modifier.align(Alignment.TopStart)) {
+                Text(
+                    text = title,
+                    style = Typography.h5,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = subTitle,
+                    style = Typography.body1,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+            Text(
+                text = explain,
+                style = Typography.body1.copy(fontWeight = FontWeight.ExtraBold),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.align(Alignment.BottomStart)
+            )
+        }
+    }
 }
 
 @Composable

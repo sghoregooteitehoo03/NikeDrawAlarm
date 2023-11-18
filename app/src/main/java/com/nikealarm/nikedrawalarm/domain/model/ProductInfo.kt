@@ -40,7 +40,7 @@ object ProductState {
 
 sealed class ProductCategory(val text: String = "") {
     object All : ProductCategory("All")
-    object Feed : ProductCategory()
+    object Feed : ProductCategory("Feed")
     object SoldOut : ProductCategory()
     object Coming : ProductCategory("Coming")
     object Draw : ProductCategory("Draw")

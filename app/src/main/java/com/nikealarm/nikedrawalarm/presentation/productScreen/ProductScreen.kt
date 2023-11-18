@@ -50,7 +50,7 @@ import me.onebone.toolbar.rememberCollapsingToolbarScaffoldState
 import java.text.DecimalFormat
 
 // TODO:
-//  . 올라가기 버튼
+//  . 리스트 짤리는 버그 수정
 //  . Shimmer
 
 @Composable

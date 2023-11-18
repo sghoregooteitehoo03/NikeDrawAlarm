@@ -3,6 +3,7 @@ package com.nikealarm.nikedrawalarm.data.repository
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import com.nikealarm.nikedrawalarm.data.model.entity.FavoriteEntity
+import com.nikealarm.nikedrawalarm.data.model.entity.LatestEntity
 import com.nikealarm.nikedrawalarm.data.model.entity.NotificationEntity
 import com.nikealarm.nikedrawalarm.data.repository.dataSource.ProductPagingSource
 import com.nikealarm.nikedrawalarm.data.repository.dataSource.UpcomingPagingSource
@@ -86,6 +87,15 @@ class ProductRepository @Inject constructor(
         return dao.getNotificationData(productId = productId)
     }
 
+    fun getLatestProductsData(limit: Int) =
+        dao.getLatestProductsData(limit)
+
+    fun getNotifyProductsData(limit: Int) =
+        dao.getNotifyProductsData(limit)
+
+    fun getFavoriteProductsData(limit: Int) =
+        dao.getFavoriteProductsData(limit)
+
     suspend fun insertFavoriteData(productInfo: ProductInfo) {
         val productEntity = productInfo.getProductEntity()
         val favoriteEntity = FavoriteEntity(
@@ -137,6 +147,15 @@ class ProductRepository @Inject constructor(
 
         dao.insertProductData(productEntity)
         dao.insertNotificationData(notificationEntity)
+    }
+
+    suspend fun insertLatestData(productInfo: ProductInfo) {
+        val productEntity = productInfo.getProductEntity()
+        val latestEntity =
+            LatestEntity(productId = productInfo.productId, latestDate = System.currentTimeMillis())
+
+        dao.insertProductData(productEntity)
+        dao.insertLatestData(latestEntity)
     }
 
     suspend fun deleteFavoriteData(productId: String) {

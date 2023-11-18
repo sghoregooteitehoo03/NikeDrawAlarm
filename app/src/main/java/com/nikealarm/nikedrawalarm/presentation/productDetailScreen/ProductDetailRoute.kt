@@ -14,9 +14,6 @@ import com.nikealarm.nikedrawalarm.domain.model.ProductInfo
 import com.nikealarm.nikedrawalarm.presentation.setNotificationScreen.SetNotificationDialog
 import com.nikealarm.nikedrawalarm.presentation.ui.DisposableEffectWithLifeCycle
 
-// TODO:
-//  . 최근 방문 기능
-
 @Composable
 fun ProductDetailRoute(
     viewModel: ProductDetailViewModel = hiltViewModel(),
