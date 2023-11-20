@@ -24,6 +24,7 @@ import com.squareup.picasso.Picasso
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.first
+import java.net.URLEncoder
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -71,7 +72,9 @@ class ProductNotificationWorker @AssistedInject constructor(
         // Notification 클릭 시 시행할 동작
         val actionIntent = Intent(
             Intent.ACTION_VIEW,
-            (Constants.PRODUCT_DETAIL_URI + "/${productEntity.productId}").toUri(),
+            (Constants.PRODUCT_DETAIL_URI + "/${productEntity.productId}/${
+                productEntity.url.substringAfter("t/")
+            }").toUri(),
             applicationContext,
             MainActivity::class.java
         )

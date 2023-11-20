@@ -2,6 +2,7 @@ package com.nikealarm.nikedrawalarm.presentation.productDetailScreen
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.nikealarm.nikedrawalarm.data.model.entity.NotificationEntity
 import com.nikealarm.nikedrawalarm.domain.model.ProductInfo
 import com.nikealarm.nikedrawalarm.domain.usecase.GetFavoriteUseCase
 import com.nikealarm.nikedrawalarm.domain.usecase.GetNotificationUseCase
@@ -23,7 +24,7 @@ import javax.inject.Inject
 @HiltViewModel
 class ProductDetailViewModel @Inject constructor(
     private val alarmBuilder: AlarmBuilder,
-    private val getProductInfoUseCase: GetProductInfoUseCase,
+    private val getProductUseCase: GetProductInfoUseCase,
     private val getFavoriteUseCase: GetFavoriteUseCase,
     private val getNotificationUseCase: GetNotificationUseCase,
     private val insertFavoriteUseCase: InsertFavoriteUseCase,
@@ -38,14 +39,15 @@ class ProductDetailViewModel @Inject constructor(
             initialValue = _uiState.value
         )
 
-    // TODO: 컬렉션 제품 로드 시 오류발생
-    fun loadProduct(productId: String) = viewModelScope.launch {
-        val productInfo = getProductInfoUseCase(productId)
-        initValue(productInfo)
+    fun loadProduct(productId: String, slug: String) = viewModelScope.launch {
+        if (_uiState.value.productInfo == null) {
+            val productInfo = getProductUseCase(productId, slug)
+            initValue(productInfo)
+        }
     }
 
     fun initValue(productInfo: ProductInfo?) {
-        if (productInfo != null) {
+        if (_uiState.value.productInfo == null && productInfo != null) {
             val productId = productInfo.productId
 
             viewModelScope.launch {
@@ -54,15 +56,23 @@ class ProductDetailViewModel @Inject constructor(
                     getFavoriteUseCase(productId),
                     getNotificationUseCase(productId)
                 ) { favorite, notification ->
+                    val notificationEntity = if (productInfo.eventDate != 0L) {
+                        if (alarmBuilder.isExistProductAlarm(productId)
+                            && notification != null
+                        ) {
+                            notification
+                        } else {
+                            NotificationEntity(productId, 0L, 0L, 0L)
+                        }
+                    } else {
+                        null
+                    }
+
                     _uiState.update {
                         it.copy(
                             productInfo = productInfo,
                             isFavorite = favorite != null,
-                            notificationEntity = if (alarmBuilder.isExistProductAlarm(productId)) {
-                                notification
-                            } else {
-                                null
-                            },
+                            notificationEntity = notificationEntity,
                             isLoading = false
                         )
                     }

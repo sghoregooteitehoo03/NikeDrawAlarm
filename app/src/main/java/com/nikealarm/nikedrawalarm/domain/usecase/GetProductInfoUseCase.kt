@@ -7,5 +7,6 @@ class GetProductInfoUseCase @Inject constructor(
     private val repository: ProductRepository
 ) {
     // TODO: 나중에 flow로 바꾸기
-    suspend operator fun invoke(productId: String) = repository.getProductInfo(productId)
+    suspend operator fun invoke(productId: String, slug: String) =
+        repository.getProductInfo(productId, slug)
 }

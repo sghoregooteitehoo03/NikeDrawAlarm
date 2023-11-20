@@ -20,10 +20,12 @@ class CollectionDetailViewModel @Inject constructor() : ViewModel() {
     )
 
     fun initValue(product: Product?) {
-        _state.update {
-            it.copy(
-                product = product
-            )
+        if (_state.value.product == null) {
+            _state.update {
+                it.copy(
+                    product = product
+                )
+            }
         }
     }
 }

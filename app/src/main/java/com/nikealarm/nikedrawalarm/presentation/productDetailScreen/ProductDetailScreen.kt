@@ -49,6 +49,7 @@ import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import coil.compose.rememberImagePainter
+import com.nikealarm.nikedrawalarm.data.model.entity.NotificationEntity
 import com.nikealarm.nikedrawalarm.domain.model.ProductInfo
 import com.nikealarm.nikedrawalarm.presentation.ui.BorderedBox
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Black
@@ -60,9 +61,11 @@ import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.util.Locale
 
+// TODO: 알림 설정 시 Snack Bar 표시
 @Composable
 fun ProductDetailScreen(
     state: ProductDetailUiState,
+    onNotificationChange: (NotificationEntity?) -> Unit,
     onFavoriteClick: (ProductInfo?) -> Unit,
     onLearnMoreClick: (String) -> Unit
 ) {
@@ -76,6 +79,7 @@ fun ProductDetailScreen(
                 color = Color.Black
             )
         } else {
+            onNotificationChange(state.notificationEntity)
             val productInfo = state.productInfo
 
             Column(

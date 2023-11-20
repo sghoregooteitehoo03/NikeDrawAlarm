@@ -135,10 +135,10 @@ class MainActivity : ComponentActivity() {
                                         }
 
                                         UiScreen.ProductDetailScreen.route, UiScreen.LoadProductDetailScreen.route -> {
-                                            if (gViewModel.getProductInfoData()?.eventDate != 0L) {
-                                                val notificationEntity by remember { gViewModel.notificationEntity }
+                                            val notificationEntity by gViewModel.notificationEntity
+                                            if (notificationEntity != null) {
                                                 val icon =
-                                                    if (notificationEntity != null) {
+                                                    if (notificationEntity!!.notificationDate != 0L) {
                                                         Icons.Default.Notifications
                                                     } else {
                                                         Icons.Default.NotificationsNone
@@ -237,7 +237,7 @@ class MainActivity : ComponentActivity() {
                                     }
                                 },
                                 onCreate = {
-                                    gViewModel.clearData()
+//                                    gViewModel.clearData()
                                 }
                             )
                         }
@@ -253,7 +253,10 @@ class MainActivity : ComponentActivity() {
                             FavoriteRoute(
                                 onProductClick = { productEntity ->
                                     val route =
-                                        UiScreenName.LOAD_PRODUCT_DETAIL_SCREEN + "/${productEntity.productId}"
+                                        UiScreenName.LOAD_PRODUCT_DETAIL_SCREEN +
+                                                "?id=${productEntity.productId}&slug=${
+                                                    productEntity.url.substringAfter("t/")
+                                                }"
                                     navController.navigate(route = route)
                                 },
                                 onMoreClick = { joinedProductCategory ->
@@ -265,7 +268,7 @@ class MainActivity : ComponentActivity() {
                         }
                         composable(
                             route = UiScreen.ProductDetailScreen.route
-                        ) { backStack ->
+                        ) {
                             val isDialogOpen by gViewModel.isDialogOpen
                             ProductDetailRoute(
                                 sendProductInfo = gViewModel.getProductInfoData(),
@@ -279,16 +282,21 @@ class MainActivity : ComponentActivity() {
                         composable(
                             route = UiScreen.LoadProductDetailScreen.route,
                             deepLinks = listOf(navDeepLink {
-                                uriPattern = Constants.PRODUCT_DETAIL_URI + "/{productId}"
+                                uriPattern =
+                                    Constants.PRODUCT_DETAIL_URI + "/{productId}/{productSlug}"
                             })
                         ) { backStackEntry ->
                             val isDialogOpen by gViewModel.isDialogOpen
                             LoadProductDetailRoute(
                                 productId = backStackEntry.arguments?.getString("productId") ?: "",
+                                slug = backStackEntry.arguments?.getString("productSlug")
+                                    ?: "",
                                 isDialogOpen = isDialogOpen,
-                                onDispose = { },
+                                onDispose = { gViewModel.sendProductInfoData(null) },
                                 onDismiss = { gViewModel.dialogOpen(false) },
-                                onNotificationChange = { gViewModel.setNotificationEntity(it) },
+                                onNotificationChange = { notification ->
+                                    gViewModel.setNotificationEntity(notification)
+                                },
                                 onDialogButtonClick = { gViewModel.dialogOpen(false) }
                             )
                         }
@@ -299,7 +307,7 @@ class MainActivity : ComponentActivity() {
                                     gViewModel.sendProductInfoData(productInfo)
                                     navController.navigate(route = UiScreen.ProductDetailScreen.route)
                                 },
-                                onDispose = { }
+                                onDispose = { gViewModel.sendProductData(null) }
                             )
                         }
                         composable(route = UiScreen.FavoriteMoreScreen.route) {
@@ -307,7 +315,10 @@ class MainActivity : ComponentActivity() {
                                 sendCategory = gViewModel.getJoinedProductCategory(),
                                 onProductClick = { productEntity ->
                                     val route =
-                                        UiScreenName.LOAD_PRODUCT_DETAIL_SCREEN + "/${productEntity.productId}"
+                                        UiScreenName.LOAD_PRODUCT_DETAIL_SCREEN +
+                                                "?id=${productEntity.productId}&slug=${
+                                                    productEntity.url.substringAfter("t/")
+                                                }"
                                     navController.navigate(route = route)
                                 },
                                 onDispose = { }

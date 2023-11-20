@@ -30,7 +30,7 @@ sealed class UiScreen(
     data object ProductDetailScreen : UiScreen(route = UiScreenName.PRODUCT_DETAIL_SCREEN)
 
     data object LoadProductDetailScreen :
-        UiScreen(route = UiScreenName.LOAD_PRODUCT_DETAIL_SCREEN + "/{productId}")
+        UiScreen(route = UiScreenName.LOAD_PRODUCT_DETAIL_SCREEN + "?id={productId}&slug={productSlug}")
 
     data object CollectionDetailScreen : UiScreen(route = UiScreenName.COLLECTION_DETAIL_SCREEN)
 }

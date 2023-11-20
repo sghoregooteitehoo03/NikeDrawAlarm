@@ -11,8 +11,8 @@ import com.nikealarm.nikedrawalarm.data.repository.dataSource.UpcomingPagingSour
 import com.nikealarm.nikedrawalarm.data.repository.database.ProductDao
 import com.nikealarm.nikedrawalarm.data.retrofit.RetrofitService
 import com.nikealarm.nikedrawalarm.domain.model.JoinedProductCategory
-import com.nikealarm.nikedrawalarm.domain.model.ProductCategory
 import com.nikealarm.nikedrawalarm.domain.model.ProductInfo
+import com.nikealarm.nikedrawalarm.domain.model.translateToProductInfoList
 import com.nikealarm.nikedrawalarm.util.AlarmBuilder
 import com.nikealarm.nikedrawalarm.util.Constants
 import retrofit2.Retrofit
@@ -48,38 +48,15 @@ class ProductRepository @Inject constructor(
         JoinedProductPagingSource(dao, joinedCategory)
     }.flow
 
-    // TODO: 컬렉션 제품 알림 설정시 못읽어오는 버그 수정
-    suspend fun getProductInfo(productId: String): ProductInfo {
+    suspend fun getProductInfo(productId: String, slug: String): ProductInfo {
         val retrofitService = getRetrofitService()
-        val productEntity = dao.getProductData(productId) ?: throw NullPointerException()
-        val slug = productEntity.url.substringAfter("t/")
         val productData =
             retrofitService.getProductInfo("seoSlugs%28{slug}%29".replace("{slug}", slug))
 
         val productObject = productData.objects[0]
-        val explains: String =
-            productObject.publishedContent.nodes[0].properties.jsonBody?.content?.get(0)?.content?.filter {
-                !it.text.contains("SNKRS")
-            }?.get(0)?.text ?: ""
+        val productInfoList = translateToProductInfoList(productObject)
 
-        return ProductInfo(
-            productId = productId,
-            title = productEntity.title,
-            subTitle = productEntity.subTitle,
-            price = productEntity.price,
-            images = productObject.publishedContent.nodes[0].nodes!!.map { it.properties.squarishURL },
-            eventDate = productEntity.eventDate,
-            explains = explains,
-            sizes = productObject.productInfo[0].skus?.map {
-                it.countrySpecifications[0].localizedSize
-            } ?: listOf(),
-            url = productEntity.url,
-            category = when (productEntity.category) {
-                "Coming" -> ProductCategory.Coming
-                "Draw" -> ProductCategory.Draw
-                else -> ProductCategory.All
-            }
-        )
+        return productInfoList.filter { it.productId == productId }[0]
     }
 
     suspend fun getProductData(productId: String) =

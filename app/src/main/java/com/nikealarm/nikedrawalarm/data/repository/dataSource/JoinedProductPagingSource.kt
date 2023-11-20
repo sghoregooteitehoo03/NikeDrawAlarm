@@ -38,7 +38,7 @@ class JoinedProductPagingSource(
                         JoinedProduct(
                             productEntity = it.productEntity,
                             explains = SimpleDateFormat(
-                                if (it.notificationEntity.notificationDate > 3600000L) {
+                                if (it.notificationEntity.notificationDate >= 3600000L) {
                                     "출시 h시간 전에 알림"
                                 } else {
                                     "출시 m분 전에 알림"

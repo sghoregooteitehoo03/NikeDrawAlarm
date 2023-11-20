@@ -13,7 +13,7 @@ class FavoriteViewModel @Inject constructor(
     private val getCombineProductsUseCase: GetCombineProductsUseCase
 ) : ViewModel() {
     val uiState = getCombineProductsUseCase(
-        latestLimit = 5,
+        latestLimit = 8,
         notifyLimit = 3,
         favoriteLimit = 3,
         transform = { latest, notify, favorite ->

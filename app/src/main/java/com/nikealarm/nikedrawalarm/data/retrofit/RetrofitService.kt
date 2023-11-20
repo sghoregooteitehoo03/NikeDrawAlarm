@@ -2,7 +2,6 @@ package com.nikealarm.nikedrawalarm.data.retrofit
 
 import com.nikealarm.nikedrawalarm.data.model.ProductDTO
 import retrofit2.http.GET
-import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface RetrofitService {
