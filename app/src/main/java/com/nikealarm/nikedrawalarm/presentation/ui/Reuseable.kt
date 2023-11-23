@@ -33,7 +33,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -44,6 +46,7 @@ import coil.compose.rememberImagePainter
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Black
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Gray
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.LightGray
+import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.NikeDrawAssistant
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Shapes
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Typography
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.White
@@ -270,9 +273,24 @@ fun DialogFormat(
                 )
                 Divider(thickness = 2.dp, color = LightGray)
                 content()
-                NotificationDialogButton(
+                DialogButton(
                     text = buttonText,
-                    onClick = onAllowClick
+                    onClick = onAllowClick,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(
+                            Shapes.medium.copy(
+                                topStart = CornerSize(0.dp),
+                                topEnd = CornerSize(0.dp)
+                            )
+                        )
+                        .background(
+                            color = Black,
+                            shape = Shapes.medium.copy(
+                                topStart = CornerSize(0.dp),
+                                topEnd = CornerSize(0.dp)
+                            )
+                        )
                 )
             }
         }
@@ -280,36 +298,143 @@ fun DialogFormat(
 }
 
 @Composable
-fun NotificationDialogButton(
+fun DialogWithCancelFormat(
+    modifier: Modifier,
+    title: String,
+    content: @Composable () -> Unit,
+    onDismissRequest: () -> Unit,
+    allowText: String,
+    cancelText: String,
+    onAllowClick: () -> Unit = {},
+    onCancelClick: () -> Unit = {}
+) {
+    Dialog(onDismissRequest = onDismissRequest) {
+        Surface(
+            modifier = modifier.clip(Shapes.medium),
+            color = Color.White
+        ) {
+            Column(
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = title,
+                    style = Typography.h4,
+                    modifier = Modifier.padding(top = 14.dp, bottom = 14.dp)
+                )
+                Divider(thickness = 2.dp, color = LightGray)
+                content()
+                Row {
+                    DialogButton(
+                        text = cancelText,
+                        onClick = onCancelClick,
+                        textColor = Black,
+                        modifier = Modifier
+                            .fillMaxWidth(0.5f)
+                            .clip(
+                                Shapes.medium.copy(
+                                    topStart = CornerSize(0.dp),
+                                    topEnd = CornerSize(0.dp),
+                                    bottomEnd = CornerSize(0.dp)
+                                )
+                            )
+                            .background(
+                                color = LightGray,
+                                shape = Shapes.medium.copy(
+                                    topStart = CornerSize(0.dp),
+                                    topEnd = CornerSize(0.dp),
+                                    bottomEnd = CornerSize(0.dp)
+                                )
+                            )
+                    )
+                    DialogButton(
+                        text = allowText,
+                        onClick = onAllowClick,
+                        modifier = Modifier
+                            .fillMaxWidth(1f)
+                            .clip(
+                                Shapes.medium.copy(
+                                    topStart = CornerSize(0.dp),
+                                    topEnd = CornerSize(0.dp),
+                                    bottomStart = CornerSize(0.dp)
+                                )
+                            )
+                            .background(
+                                color = Black,
+                                shape = Shapes.medium.copy(
+                                    topStart = CornerSize(0.dp),
+                                    topEnd = CornerSize(0.dp),
+                                    bottomStart = CornerSize(0.dp)
+                                )
+                            )
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun DialogButton(
     modifier: Modifier = Modifier,
     text: String,
+    textColor: Color = Color.White,
     onClick: () -> Unit
 ) {
     Box(
         modifier = modifier
-            .fillMaxWidth()
-            .clip(
-                Shapes.medium.copy(
-                    topStart = CornerSize(0.dp),
-                    topEnd = CornerSize(0.dp)
-                )
-            )
-            .background(
-                color = Black,
-                shape = Shapes.medium.copy(
-                    topStart = CornerSize(0.dp),
-                    topEnd = CornerSize(0.dp)
-                )
-            )
             .clickable { onClick() },
         contentAlignment = Alignment.Center
     ) {
         Text(
             text = text,
             style = Typography.h5,
-            color = White,
+            color = textColor,
             modifier = Modifier
                 .padding(top = 14.dp, bottom = 14.dp)
+        )
+    }
+}
+
+@Preview
+@Composable
+fun DialogFormatPreview() {
+    NikeDrawAssistant {
+        DialogFormat(
+            modifier = Modifier.fillMaxWidth(),
+            title = "알림 설정",
+            content = {
+                Text(
+                    text = "알림 설정이 꺼져있습니다. 알림을 활성화 하여 제품 출시 전 알림을 받아보세요!",
+                    modifier = Modifier
+                        .padding(start = 14.dp, end = 14.dp, top = 48.dp, bottom = 48.dp),
+                    textAlign = TextAlign.Center
+                )
+            },
+            onDismissRequest = { },
+            buttonText = "이동"
+        )
+    }
+}
+
+@Preview
+@Composable
+fun DialogWithCancelFormatPreview() {
+    NikeDrawAssistant {
+        DialogWithCancelFormat(
+            modifier = Modifier.fillMaxWidth(),
+            title = "목록 초기화",
+            allowText = "초기화",
+            cancelText = "취소",
+            content = {
+                Text(
+                    text = "최근에 본 제품 목록들을 초기화 하시겠습니까?",
+                    modifier = Modifier
+                        .padding(start = 14.dp, end = 14.dp, top = 48.dp, bottom = 48.dp),
+                    textAlign = TextAlign.Center
+                )
+            },
+            onDismissRequest = { },
         )
     }
 }

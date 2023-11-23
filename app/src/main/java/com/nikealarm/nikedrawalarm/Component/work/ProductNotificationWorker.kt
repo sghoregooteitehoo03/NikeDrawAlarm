@@ -17,14 +17,13 @@ import androidx.work.WorkerParameters
 import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.data.model.entity.NotificationEntity
 import com.nikealarm.nikedrawalarm.data.model.entity.ProductEntity
-import com.nikealarm.nikedrawalarm.data.repository.ProductRepository
+import com.nikealarm.nikedrawalarm.data.repository.ProductDatabaseRepository
 import com.nikealarm.nikedrawalarm.presentation.ui.MainActivity
 import com.nikealarm.nikedrawalarm.util.Constants
 import com.squareup.picasso.Picasso
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.first
-import java.net.URLEncoder
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -32,17 +31,17 @@ import java.util.Locale
 class ProductNotificationWorker @AssistedInject constructor(
     @Assisted appContext: Context,
     @Assisted workerParams: WorkerParameters,
-    private val repository: ProductRepository
+    private val databaseRepository: ProductDatabaseRepository
 ) : CoroutineWorker(appContext, workerParams) {
 
     override suspend fun doWork(): Result {
         val productId = inputData.getString(Constants.INTENT_PRODUCT_ID) ?: return Result.failure()
-        val productEntity = repository.getProductData(productId) ?: return Result.failure()
+        val productEntity = databaseRepository.getProductData(productId) ?: return Result.failure()
         val notificationEntity =
-            repository.getNotificationData(productId).first() ?: return Result.failure()
+            databaseRepository.getNotificationData(productId).first() ?: return Result.failure()
 
         setNotification(productEntity, notificationEntity) // 알림 생성
-        repository.deleteNotificationData(productId) // 알림 생성 끝나면 데이터베이스에서 지움
+        databaseRepository.deleteNotificationData(productId) // 알림 생성 끝나면 데이터베이스에서 지움
         return Result.success()
     }
 

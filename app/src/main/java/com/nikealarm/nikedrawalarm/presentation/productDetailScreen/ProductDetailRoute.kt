@@ -13,13 +13,14 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nikealarm.nikedrawalarm.data.model.entity.NotificationEntity
 import com.nikealarm.nikedrawalarm.domain.model.ProductInfo
 import com.nikealarm.nikedrawalarm.presentation.setNotificationScreen.SetNotificationDialog
+import com.nikealarm.nikedrawalarm.presentation.ui.DialogScreen
 import com.nikealarm.nikedrawalarm.presentation.ui.DisposableEffectWithLifeCycle
 
 @Composable
 fun ProductDetailRoute(
     viewModel: ProductDetailViewModel = hiltViewModel(),
     sendProductInfo: ProductInfo?,
-    isDialogOpen: Boolean,
+    dialogScreen: DialogScreen,
     onDismiss: () -> Unit,
     onNotificationChange: (NotificationEntity?) -> Unit,
     onDialogButtonClick: () -> Unit,
@@ -48,15 +49,19 @@ fun ProductDetailRoute(
         onNotificationChange(state.notificationEntity)
     }
 
-    if (isDialogOpen) {
-        SetNotificationDialog(
-            onDismissRequest = onDismiss,
-            onButtonClick = {
-                viewModel.setNotification(it)
-                onDialogButtonClick()
-            },
-            settingTime = state.notificationEntity?.notificationDate ?: 0L
-        )
+    when (dialogScreen) {
+        DialogScreen.DialogSetNotify -> {
+            SetNotificationDialog(
+                onDismissRequest = onDismiss,
+                onButtonClick = {
+                    viewModel.setNotification(it)
+                    onDismiss()
+                },
+                settingTime = state.notificationEntity?.notificationDate ?: 0L
+            )
+        }
+
+        else -> {}
     }
 }
 
@@ -65,7 +70,7 @@ fun LoadProductDetailRoute(
     viewModel: ProductDetailViewModel = hiltViewModel(),
     productId: String,
     slug: String,
-    isDialogOpen: Boolean,
+    dialogScreen: DialogScreen,
     onDismiss: () -> Unit,
     onNotificationChange: (NotificationEntity?) -> Unit,
     onDialogButtonClick: () -> Unit,
@@ -93,15 +98,19 @@ fun LoadProductDetailRoute(
         }
     )
 
-    if (isDialogOpen) {
-        SetNotificationDialog(
-            onDismissRequest = onDismiss,
-            onButtonClick = {
-                viewModel.setNotification(it)
-                onDialogButtonClick()
-            },
-            settingTime = state.notificationEntity?.notificationDate ?: 0L
-        )
+    when (dialogScreen) {
+        DialogScreen.DialogSetNotify -> {
+            SetNotificationDialog(
+                onDismissRequest = onDismiss,
+                onButtonClick = {
+                    viewModel.setNotification(it)
+                    onDismiss()
+                },
+                settingTime = state.notificationEntity?.notificationDate ?: 0L
+            )
+        }
+
+        else -> {}
     }
 }
 

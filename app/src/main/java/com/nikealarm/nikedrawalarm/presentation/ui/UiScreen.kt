@@ -25,6 +25,8 @@ sealed class UiScreen(
         bottomUnSelectedIcon = R.drawable.favorite_border
     )
 
+    data object SettingScreen : UiScreen(route = UiScreenName.SETTING_SCREEN)
+
     data object FavoriteMoreScreen : UiScreen(route = UiScreenName.FAVORITE_MORE_SCREEN)
 
     data object ProductDetailScreen : UiScreen(route = UiScreenName.PRODUCT_DETAIL_SCREEN)
@@ -39,6 +41,7 @@ object UiScreenName {
     const val PRODUCT_SCREEN = "Product"
     const val UPCOMING_SCREEN = "Upcoming"
     const val FAVORITE_SCREEN = "Favorite"
+    const val SETTING_SCREEN = "Setting"
     const val FAVORITE_MORE_SCREEN = "FavoriteMore"
     const val PRODUCT_DETAIL_SCREEN = "ProductDatail"
     const val LOAD_PRODUCT_DETAIL_SCREEN = "LoadProductDetail"

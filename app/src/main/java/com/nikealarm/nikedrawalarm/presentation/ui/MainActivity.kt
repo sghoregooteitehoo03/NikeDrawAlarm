@@ -3,6 +3,8 @@ package com.nikealarm.nikedrawalarm.presentation.ui
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -33,6 +35,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.preferencesDataStore
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
@@ -40,12 +44,14 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navDeepLink
+import androidx.work.impl.model.Preference
 import com.nikealarm.nikedrawalarm.presentation.collectionDetailScreen.CollectionDetailRoute
 import com.nikealarm.nikedrawalarm.presentation.favoriteMoreScreen.FavoriteMoreRoute
 import com.nikealarm.nikedrawalarm.presentation.favoriteScreen.FavoriteRoute
 import com.nikealarm.nikedrawalarm.presentation.productDetailScreen.LoadProductDetailRoute
 import com.nikealarm.nikedrawalarm.presentation.productDetailScreen.ProductDetailRoute
 import com.nikealarm.nikedrawalarm.presentation.productScreen.ProductRoute
+import com.nikealarm.nikedrawalarm.presentation.settingScreen.SettingRoute
 import com.nikealarm.nikedrawalarm.presentation.upcomingScreen.UpcomingRoute
 import com.nikealarm.nikedrawalarm.util.Constants
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Black
@@ -86,7 +92,8 @@ class MainActivity : ComponentActivity() {
                                 title = when (currentRoute) {
                                     UiScreen.ProductScreen.route,
                                     UiScreen.UpcomingScreen.route,
-                                    UiScreen.FavoriteScreen.route -> {
+                                    UiScreen.FavoriteScreen.route,
+                                    UiScreen.SettingScreen.route -> {
                                         currentRoute
                                     }
 
@@ -129,8 +136,12 @@ class MainActivity : ComponentActivity() {
                                             Icon(
                                                 imageVector = Icons.Default.Settings,
                                                 contentDescription = "설정",
-                                                modifier = it.size(24.dp),
-                                                tint = Black
+                                                tint = Black,
+                                                modifier = it
+                                                    .size(24.dp)
+                                                    .clickable {
+                                                        navController.navigate(route = UiScreen.SettingScreen.route)
+                                                    },
                                             )
                                         }
 
@@ -151,7 +162,7 @@ class MainActivity : ComponentActivity() {
                                                         .size(24.dp)
                                                         .clickable {
                                                             // TODO: 설정 화면 구현 후 수정
-                                                            gViewModel.dialogOpen(true)
+                                                            gViewModel.dialogOpen(DialogScreen.DialogSetNotify)
                                                         },
                                                     tint = Black
                                                 )
@@ -266,15 +277,39 @@ class MainActivity : ComponentActivity() {
                                 onCreate = { gViewModel.clearData() }
                             )
                         }
+                        composable(route = UiScreen.SettingScreen.route) {
+                            val dialogScreen by gViewModel.dialogScreen
+
+                            SettingRoute(
+                                dialogScreen = dialogScreen,
+                                openDialog = { _dialogScreen ->
+                                    gViewModel.dialogOpen(_dialogScreen)
+                                },
+                                onContactEmailClick = {
+                                    // 이메일로 바로 이동
+                                    val intent = Intent(Intent.ACTION_SENDTO).apply {
+                                        val email = arrayOf(Constants.DEVELOPER_EMAIL)
+                                        data = Uri.parse("mailto:")
+                                        putExtra(Intent.EXTRA_EMAIL, email)
+                                    }
+
+                                    if (intent.resolveActivity(applicationContext.packageManager) != null) {
+                                        startActivity(intent)
+                                    }
+                                },
+                                onDismiss = { gViewModel.dialogOpen(DialogScreen.DialogDismiss) }
+                            )
+                        }
                         composable(
                             route = UiScreen.ProductDetailScreen.route
                         ) {
-                            val isDialogOpen by gViewModel.isDialogOpen
+                            val dialogScreen by gViewModel.dialogScreen
+
                             ProductDetailRoute(
                                 sendProductInfo = gViewModel.getProductInfoData(),
-                                isDialogOpen = isDialogOpen,
-                                onDismiss = { gViewModel.dialogOpen(false) },
-                                onDialogButtonClick = { gViewModel.dialogOpen(false) },
+                                dialogScreen = dialogScreen,
+                                onDismiss = { gViewModel.dialogOpen(DialogScreen.DialogDismiss) },
+                                onDialogButtonClick = { },
                                 onNotificationChange = { gViewModel.setNotificationEntity(it) },
                                 onDispose = { gViewModel.sendProductInfoData(null) }
                             )
@@ -286,18 +321,19 @@ class MainActivity : ComponentActivity() {
                                     Constants.PRODUCT_DETAIL_URI + "/{productId}/{productSlug}"
                             })
                         ) { backStackEntry ->
-                            val isDialogOpen by gViewModel.isDialogOpen
+                            val dialogScreen by gViewModel.dialogScreen
+
                             LoadProductDetailRoute(
                                 productId = backStackEntry.arguments?.getString("productId") ?: "",
                                 slug = backStackEntry.arguments?.getString("productSlug")
                                     ?: "",
-                                isDialogOpen = isDialogOpen,
+                                dialogScreen = dialogScreen,
                                 onDispose = { gViewModel.sendProductInfoData(null) },
-                                onDismiss = { gViewModel.dialogOpen(false) },
+                                onDismiss = { gViewModel.dialogOpen(DialogScreen.DialogDismiss) },
                                 onNotificationChange = { notification ->
                                     gViewModel.setNotificationEntity(notification)
                                 },
-                                onDialogButtonClick = { gViewModel.dialogOpen(false) }
+                                onDialogButtonClick = { }
                             )
                         }
                         composable(route = UiScreen.CollectionDetailScreen.route) {

@@ -26,6 +26,9 @@ interface ProductDao {
     @Query("SELECT * FROM NotificationEntity WHERE :productId = productId")
     fun getNotificationData(productId: String): Flow<NotificationEntity?>
 
+    @Query("SELECT * FROM NotificationEntity")
+    suspend fun getNotificationsData(): List<NotificationEntity>
+
     @Query(
         "SELECT * " +
                 "FROM ProductEntity AS product " +
@@ -89,6 +92,7 @@ interface ProductDao {
     )
     suspend fun getFavoriteProductsPageData(limit: Int, offset: Int): List<FavoriteProductEntity>
 
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertProductData(product: ProductEntity)
 
@@ -101,9 +105,19 @@ interface ProductDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertNotificationData(notificate: NotificationEntity)
 
+
     @Query("DELETE FROM NotificationEntity WHERE :productId = productId")
     suspend fun deleteNotificationData(productId: String)
 
     @Query("DELETE FROM FavoriteEntity WHERE :productId = productId")
     suspend fun deleteFavoriteData(productId: String)
+
+    @Query("DELETE FROM LatestEntity")
+    suspend fun clearLatestData()
+
+    @Query("DELETE FROM NotificationEntity")
+    suspend fun clearNotificationData()
+
+    @Query("DELETE FROM FavoriteEntity")
+    suspend fun clearFavoriteData()
 }

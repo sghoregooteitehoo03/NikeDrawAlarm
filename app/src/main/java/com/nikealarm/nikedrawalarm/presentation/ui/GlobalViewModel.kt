@@ -45,11 +45,13 @@ class GlobalViewModel @Inject constructor() : ViewModel() {
     // State
     private var _notificationEntity: MutableState<NotificationEntity?> = mutableStateOf(null)
     val notificationEntity: State<NotificationEntity?> = _notificationEntity
-    private val _isDialogOpen = mutableStateOf(false)
-    val isDialogOpen: State<Boolean> = _isDialogOpen
 
-    fun dialogOpen(isOpen: Boolean) {
-        _isDialogOpen.value = isOpen
+    private val _dialogScreen: MutableState<DialogScreen> =
+        mutableStateOf(DialogScreen.DialogDismiss)
+    val dialogScreen: State<DialogScreen> = _dialogScreen
+
+    fun dialogOpen(dialog: DialogScreen) {
+        _dialogScreen.value = dialog
     }
 
     fun setNotificationEntity(data: NotificationEntity?) {

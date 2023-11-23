@@ -18,7 +18,7 @@ class SetNotificationUseCase @Inject constructor(
                 notificationTime
             )
         } else { // 유저가 알림설정에서 설정 안함을 눌렀을 경우
-            repository.cancelNotificationProduct(productInfo)
+            repository.cancelNotificationProduct(productInfo.productId)
         }
     }
 }

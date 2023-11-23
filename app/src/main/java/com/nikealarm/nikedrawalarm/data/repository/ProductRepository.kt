@@ -2,15 +2,9 @@ package com.nikealarm.nikedrawalarm.data.repository
 
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
-import com.nikealarm.nikedrawalarm.data.model.entity.FavoriteEntity
-import com.nikealarm.nikedrawalarm.data.model.entity.LatestEntity
-import com.nikealarm.nikedrawalarm.data.model.entity.NotificationEntity
-import com.nikealarm.nikedrawalarm.data.repository.dataSource.JoinedProductPagingSource
 import com.nikealarm.nikedrawalarm.data.repository.dataSource.ProductPagingSource
 import com.nikealarm.nikedrawalarm.data.repository.dataSource.UpcomingPagingSource
-import com.nikealarm.nikedrawalarm.data.repository.database.ProductDao
 import com.nikealarm.nikedrawalarm.data.retrofit.RetrofitService
-import com.nikealarm.nikedrawalarm.domain.model.JoinedProductCategory
 import com.nikealarm.nikedrawalarm.domain.model.ProductInfo
 import com.nikealarm.nikedrawalarm.domain.model.translateToProductInfoList
 import com.nikealarm.nikedrawalarm.util.AlarmBuilder
@@ -18,11 +12,10 @@ import com.nikealarm.nikedrawalarm.util.Constants
 import retrofit2.Retrofit
 import javax.inject.Inject
 
-// TODO: 데이터베이스만 관리하는 Repository 만들어서 분리하기
 class ProductRepository @Inject constructor(
     private val alarmBuilder: AlarmBuilder,
     private val retrofitBuilder: Retrofit.Builder,
-    private val dao: ProductDao
+    private val databaseRepository: ProductDatabaseRepository
 ) {
 
     fun getPagingProducts(isUpcoming: Boolean = false) = Pager(
@@ -42,12 +35,6 @@ class ProductRepository @Inject constructor(
         UpcomingPagingSource(retrofitService)
     }.flow
 
-    fun getPagingJoinedProduct(joinedCategory: JoinedProductCategory) = Pager(
-        config = PagingConfig(20)
-    ) {
-        JoinedProductPagingSource(dao, joinedCategory)
-    }.flow
-
     suspend fun getProductInfo(productId: String, slug: String): ProductInfo {
         val retrofitService = getRetrofitService()
         val productData =
@@ -57,35 +44,6 @@ class ProductRepository @Inject constructor(
         val productInfoList = translateToProductInfoList(productObject)
 
         return productInfoList.filter { it.productId == productId }[0]
-    }
-
-    suspend fun getProductData(productId: String) =
-        dao.getProductData(productId)
-
-    fun getFavoriteData(productId: String) =
-        dao.getFavoriteData(productId)
-
-    fun getNotificationData(productId: String) =
-        dao.getNotificationData(productId = productId)
-
-    fun getLatestProductsData(limit: Int) =
-        dao.getLatestProductsData(limit)
-
-    fun getNotifyProductsData(limit: Int) =
-        dao.getNotifyProductsData(limit)
-
-    fun getFavoriteProductsData(limit: Int) =
-        dao.getFavoriteProductsData(limit)
-
-    suspend fun insertFavoriteData(productInfo: ProductInfo) {
-        val productEntity = productInfo.getProductEntity()
-        val favoriteEntity = FavoriteEntity(
-            productId = productInfo.productId,
-            favoriteDate = System.currentTimeMillis()
-        )
-
-        dao.insertProductData(productEntity)
-        dao.insertFavoriteData(favoriteEntity)
     }
 
     // 알림 설정
@@ -99,7 +57,7 @@ class ProductRepository @Inject constructor(
             triggerTime = triggerTime,
             productId = productInfo.productId
         )
-        insertNotificationData(
+        databaseRepository.insertNotificationData(
             productInfo = productInfo,
             triggerTime = triggerTime,
             notificationTime = notificationTime
@@ -107,44 +65,17 @@ class ProductRepository @Inject constructor(
     }
 
     suspend fun cancelNotificationProduct(
-        productInfo: ProductInfo
+        productId: String
     ) {
-        alarmBuilder.cancelProductAlarm(productInfo.productId)
-        deleteNotificationData(productInfo.productId)
+        alarmBuilder.cancelProductAlarm(productId)
+        databaseRepository.deleteNotificationData(productId)
     }
 
-    suspend fun insertNotificationData(
-        productInfo: ProductInfo,
-        triggerTime: Long,
-        notificationTime: Long
-    ) {
-        val productEntity = productInfo.getProductEntity()
-        val notificationEntity = NotificationEntity(
-            productId = productInfo.productId,
-            triggerTime = triggerTime,
-            notificationDate = notificationTime,
-            addedDate = System.currentTimeMillis()
-        )
-
-        dao.insertProductData(productEntity)
-        dao.insertNotificationData(notificationEntity)
-    }
-
-    suspend fun insertLatestData(productInfo: ProductInfo) {
-        val productEntity = productInfo.getProductEntity()
-        val latestEntity =
-            LatestEntity(productId = productInfo.productId, latestDate = System.currentTimeMillis())
-
-        dao.insertProductData(productEntity)
-        dao.insertLatestData(latestEntity)
-    }
-
-    suspend fun deleteFavoriteData(productId: String) {
-        dao.deleteFavoriteData(productId)
-    }
-
-    suspend fun deleteNotificationData(productId: String) {
-        dao.deleteNotificationData(productId)
+    suspend fun clearNotification() {
+        val notificationEntities = databaseRepository.getNotificationsData()
+        notificationEntities.forEach { entity ->
+            cancelNotificationProduct(entity.productId)
+        }
     }
 
     private fun getRetrofitService() =
