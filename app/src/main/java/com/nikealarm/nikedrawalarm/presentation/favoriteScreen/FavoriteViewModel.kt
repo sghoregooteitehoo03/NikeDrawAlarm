@@ -16,7 +16,7 @@ class FavoriteViewModel @Inject constructor(
         latestLimit = 8,
         notifyLimit = 3,
         favoriteLimit = 3,
-        transform = { latest, notify, favorite ->
+        transform = { _, latest, notify, favorite ->
             FavoriteUiState.Success(
                 latestProducts = latest,
                 notifyProducts = notify,

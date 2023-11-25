@@ -7,5 +7,6 @@ data class ProductDetailUiState(
     val productInfo: ProductInfo? = null,
     val isFavorite: Boolean = false,
     val notificationEntity: NotificationEntity? = null,
-    val isLoading: Boolean = true
+    val isLoading: Boolean = true,
+    val isAllowNotify: Boolean = false
 )

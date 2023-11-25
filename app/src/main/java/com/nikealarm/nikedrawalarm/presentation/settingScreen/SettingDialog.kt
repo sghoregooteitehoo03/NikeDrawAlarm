@@ -12,10 +12,11 @@ import com.nikealarm.nikedrawalarm.presentation.ui.DialogWithCancelFormat
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Typography
 
 @Composable
-fun SetPermissionsDialog(
+fun InformationDialog(
     modifier: Modifier = Modifier,
     title: String,
     explain: String,
+    buttonText: String,
     onDismissRequest: () -> Unit,
     onAllowClick: () -> Unit
 ) {
@@ -36,7 +37,7 @@ fun SetPermissionsDialog(
             )
         },
         onDismissRequest = onDismissRequest,
-        buttonText = "확인",
+        buttonText = buttonText,
         onAllowClick = onAllowClick
     )
 }

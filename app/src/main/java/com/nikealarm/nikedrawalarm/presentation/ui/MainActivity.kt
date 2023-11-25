@@ -161,8 +161,7 @@ class MainActivity : ComponentActivity() {
                                                     modifier = it
                                                         .size(24.dp)
                                                         .clickable {
-                                                            // TODO: 설정 화면 구현 후 수정
-                                                            gViewModel.dialogOpen(DialogScreen.DialogSetNotify)
+                                                            gViewModel.setActionEvent(ActionEvent.ActionNotification)
                                                         },
                                                     tint = Black
                                                 )
@@ -247,12 +246,11 @@ class MainActivity : ComponentActivity() {
                                         navController.navigate(route = UiScreen.ProductDetailScreen.route)
                                     }
                                 },
-                                onCreate = {
-//                                    gViewModel.clearData()
-                                }
+                                onCreate = { gViewModel.clearData() }
                             )
                         }
                         composable(route = UiScreen.UpcomingScreen.route) {
+                            // TODO: 나중에 clearData() 추가하기
                             UpcomingRoute(
                                 onProductClick = { productInfo ->
                                     gViewModel.sendProductInfoData(productInfo)
@@ -308,8 +306,19 @@ class MainActivity : ComponentActivity() {
                             ProductDetailRoute(
                                 sendProductInfo = gViewModel.getProductInfoData(),
                                 dialogScreen = dialogScreen,
+                                actionEvent = gViewModel.event,
+                                openDialog = { gViewModel.dialogOpen(it) },
                                 onDismiss = { gViewModel.dialogOpen(DialogScreen.DialogDismiss) },
-                                onDialogButtonClick = { },
+                                onDialogButtonClick = {
+                                    when (dialogScreen) {
+                                        DialogScreen.DialogAllowNotify -> {
+                                            navController.navigate(route = UiScreen.SettingScreen.route)
+                                            gViewModel.dialogOpen(DialogScreen.DialogDismiss)
+                                        }
+
+                                        else -> {}
+                                    }
+                                },
                                 onNotificationChange = { gViewModel.setNotificationEntity(it) },
                                 onDispose = { gViewModel.sendProductInfoData(null) }
                             )
@@ -327,13 +336,24 @@ class MainActivity : ComponentActivity() {
                                 productId = backStackEntry.arguments?.getString("productId") ?: "",
                                 slug = backStackEntry.arguments?.getString("productSlug")
                                     ?: "",
+                                actionEvent = gViewModel.event,
                                 dialogScreen = dialogScreen,
+                                openDialog = { gViewModel.dialogOpen(it) },
                                 onDispose = { gViewModel.sendProductInfoData(null) },
                                 onDismiss = { gViewModel.dialogOpen(DialogScreen.DialogDismiss) },
                                 onNotificationChange = { notification ->
                                     gViewModel.setNotificationEntity(notification)
                                 },
-                                onDialogButtonClick = { }
+                                onDialogButtonClick = {
+                                    when (dialogScreen) {
+                                        DialogScreen.DialogAllowNotify -> {
+                                            navController.navigate(route = UiScreen.SettingScreen.route)
+                                            gViewModel.dialogOpen(DialogScreen.DialogDismiss)
+                                        }
+
+                                        else -> {}
+                                    }
+                                }
                             )
                         }
                         composable(route = UiScreen.CollectionDetailScreen.route) {

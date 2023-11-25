@@ -9,16 +9,18 @@ import kotlinx.coroutines.flow.combine
 import javax.inject.Inject
 
 class GetCombineProductsUseCase @Inject constructor(
-    private val repository: ProductDatabaseRepository
+    private val repository: ProductDatabaseRepository,
+    private val getAllowNotifyUseCase: GetAllowNotifyUseCase
 ) {
 
     operator fun invoke(
         latestLimit: Int,
         notifyLimit: Int,
         favoriteLimit: Int,
-        transform: suspend (List<LatestProductEntity>, List<NotifyProductEntity>, List<FavoriteProductEntity>) -> FavoriteUiState.Success
+        transform: suspend (Boolean, List<LatestProductEntity>, List<NotifyProductEntity>, List<FavoriteProductEntity>) -> FavoriteUiState.Success
     ) =
         combine(
+            getAllowNotifyUseCase(),
             repository.getLatestProductsData(latestLimit),
             repository.getNotifyProductsData(notifyLimit),
             repository.getFavoriteProductsData(favoriteLimit),

@@ -4,23 +4,34 @@ import android.content.Context
 import android.util.Log
 import android.widget.Toast
 import androidx.browser.customtabs.CustomTabsIntent
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.data.model.entity.NotificationEntity
 import com.nikealarm.nikedrawalarm.domain.model.ProductInfo
 import com.nikealarm.nikedrawalarm.presentation.setNotificationScreen.SetNotificationDialog
+import com.nikealarm.nikedrawalarm.presentation.settingScreen.InformationDialog
+import com.nikealarm.nikedrawalarm.presentation.ui.ActionEvent
 import com.nikealarm.nikedrawalarm.presentation.ui.DialogScreen
 import com.nikealarm.nikedrawalarm.presentation.ui.DisposableEffectWithLifeCycle
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun ProductDetailRoute(
     viewModel: ProductDetailViewModel = hiltViewModel(),
     sendProductInfo: ProductInfo?,
+    actionEvent: SharedFlow<ActionEvent>,
     dialogScreen: DialogScreen,
+    openDialog: (DialogScreen) -> Unit,
     onDismiss: () -> Unit,
     onNotificationChange: (NotificationEntity?) -> Unit,
     onDialogButtonClick: () -> Unit,
@@ -29,35 +40,62 @@ fun ProductDetailRoute(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
+    LaunchedEffect(key1 = actionEvent) {
+        actionEvent.collectLatest { event ->
+            when (event) {
+                is ActionEvent.ActionNotification -> {
+                    if (state.isAllowNotify) {
+                        openDialog(DialogScreen.DialogSetNotify)
+                    } else {
+                        openDialog(DialogScreen.DialogAllowNotify)
+                    }
+                }
+            }
+        }
+    }
+
     DisposableEffectWithLifeCycle(
         onCreate = {
-            viewModel.initValue(sendProductInfo)
+            viewModel.initValue(
+                sendProductInfo,
+                onNotificationChange
+            )
         },
         onDispose = onDispose
     )
 
     ProductDetailScreen(
         state = state,
-        onNotificationChange = onNotificationChange,
         onFavoriteClick = viewModel::clickFavorite,
         onLearnMoreClick = { url ->
             openCustomTabs(context, url)
         }
     )
 
-    if (!state.isLoading) {
-        onNotificationChange(state.notificationEntity)
-    }
-
     when (dialogScreen) {
         DialogScreen.DialogSetNotify -> {
             SetNotificationDialog(
                 onDismissRequest = onDismiss,
                 onButtonClick = {
-                    viewModel.setNotification(it)
+                    viewModel.setNotification(
+                        notificationTime = it,
+                        isNotAllowNotify = {
+                            openDialog(DialogScreen.DialogSetNotify)
+                        })
                     onDismiss()
                 },
                 settingTime = state.notificationEntity?.notificationDate ?: 0L
+            )
+        }
+
+        DialogScreen.DialogAllowNotify -> {
+            InformationDialog(
+                modifier = Modifier.fillMaxWidth(),
+                title = "알림 설정",
+                explain = stringResource(id = R.string.allow_notification_explain),
+                buttonText = "이동",
+                onDismissRequest = onDismiss,
+                onAllowClick = onDialogButtonClick
             )
         }
 
@@ -70,6 +108,8 @@ fun LoadProductDetailRoute(
     viewModel: ProductDetailViewModel = hiltViewModel(),
     productId: String,
     slug: String,
+    actionEvent: SharedFlow<ActionEvent>,
+    openDialog: (DialogScreen) -> Unit,
     dialogScreen: DialogScreen,
     onDismiss: () -> Unit,
     onNotificationChange: (NotificationEntity?) -> Unit,
@@ -81,14 +121,31 @@ fun LoadProductDetailRoute(
 
     DisposableEffectWithLifeCycle(
         onCreate = {
-            viewModel.loadProduct(productId, slug)
+            viewModel.loadProduct(
+                productId,
+                slug,
+                onNotificationChange
+            )
         },
         onDispose = onDispose
     )
 
+    LaunchedEffect(key1 = actionEvent) {
+        actionEvent.collectLatest { event ->
+            when (event) {
+                is ActionEvent.ActionNotification -> {
+                    if (state.isAllowNotify) {
+                        openDialog(DialogScreen.DialogSetNotify)
+                    } else {
+                        openDialog(DialogScreen.DialogAllowNotify)
+                    }
+                }
+            }
+        }
+    }
+
     ProductDetailScreen(
         state = state,
-        onNotificationChange = onNotificationChange,
         onFavoriteClick = viewModel::clickFavorite,
         onLearnMoreClick = { url ->
             openCustomTabs(
@@ -103,10 +160,25 @@ fun LoadProductDetailRoute(
             SetNotificationDialog(
                 onDismissRequest = onDismiss,
                 onButtonClick = {
-                    viewModel.setNotification(it)
+                    viewModel.setNotification(
+                        notificationTime = it,
+                        isNotAllowNotify = {
+                            openDialog(DialogScreen.DialogSetNotify)
+                        })
                     onDismiss()
                 },
                 settingTime = state.notificationEntity?.notificationDate ?: 0L
+            )
+        }
+
+        DialogScreen.DialogAllowNotify -> {
+            InformationDialog(
+                modifier = Modifier.fillMaxWidth(),
+                title = "알림 설정",
+                explain = stringResource(id = R.string.allow_notification_explain),
+                buttonText = "이동",
+                onDismissRequest = onDismiss,
+                onAllowClick = onDialogButtonClick
             )
         }
 

@@ -72,10 +72,11 @@ fun SettingRoute(
         }
 
         is DialogScreen.DialogSetPushAlarm -> {
-            SetPermissionsDialog(
+            InformationDialog(
                 modifier = Modifier.fillMaxWidth(),
                 title = "푸쉬알림 설정",
                 explain = stringResource(id = R.string.set_notification_explain),
+                buttonText = "확인",
                 onDismissRequest = onDismiss,
                 onAllowClick = {
                     moveSettingIntent(
@@ -93,10 +94,11 @@ fun SettingRoute(
 
         is DialogScreen.DialogSetPermission -> {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                SetPermissionsDialog(
+                InformationDialog(
                     modifier = Modifier.fillMaxWidth(),
                     title = "권한 설정",
                     explain = stringResource(id = R.string.permission_explain),
+                    buttonText = "확인",
                     onDismissRequest = onDismiss,
                     onAllowClick = {
                         moveSettingIntent(context, Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)

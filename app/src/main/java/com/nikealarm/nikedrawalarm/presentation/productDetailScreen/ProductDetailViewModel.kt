@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nikealarm.nikedrawalarm.data.model.entity.NotificationEntity
 import com.nikealarm.nikedrawalarm.domain.model.ProductInfo
+import com.nikealarm.nikedrawalarm.domain.usecase.GetAllowNotifyUseCase
 import com.nikealarm.nikedrawalarm.domain.usecase.GetFavoriteUseCase
 import com.nikealarm.nikedrawalarm.domain.usecase.GetNotificationUseCase
 import com.nikealarm.nikedrawalarm.domain.usecase.GetProductInfoUseCase
@@ -26,6 +27,7 @@ class ProductDetailViewModel @Inject constructor(
     private val alarmBuilder: AlarmBuilder,
     private val getProductUseCase: GetProductInfoUseCase,
     private val getFavoriteUseCase: GetFavoriteUseCase,
+    private val getAllowNotifyUseCase: GetAllowNotifyUseCase,
     private val getNotificationUseCase: GetNotificationUseCase,
     private val insertFavoriteUseCase: InsertFavoriteUseCase,
     private val insertLatestUseCase: InsertLatestUseCase,
@@ -39,15 +41,22 @@ class ProductDetailViewModel @Inject constructor(
             initialValue = _uiState.value
         )
 
-    fun loadProduct(productId: String, slug: String) = viewModelScope.launch {
+    fun loadProduct(
+        productId: String,
+        slug: String,
+        onNotificationChange: (NotificationEntity?) -> Unit
+    ) = viewModelScope.launch {
         if (_uiState.value.productInfo == null) {
             // 제품 정보를 API를 통해 로드해서 가져옴
             val productInfo = getProductUseCase(productId, slug)
-            initValue(productInfo)
+            initValue(productInfo, onNotificationChange)
         }
     }
 
-    fun initValue(productInfo: ProductInfo?) {
+    fun initValue(
+        productInfo: ProductInfo?,
+        onNotificationChange: (NotificationEntity?) -> Unit
+    ) {
         if (_uiState.value.productInfo == null && productInfo != null) {
             val productId = productInfo.productId
 
@@ -55,9 +64,10 @@ class ProductDetailViewModel @Inject constructor(
                 insertLatestUseCase(productInfo) // 최근에 본 제품 추가
 
                 combine(
+                    getAllowNotifyUseCase(),
                     getFavoriteUseCase(productId),
                     getNotificationUseCase(productId)
-                ) { favorite, notification ->
+                ) { isAllowNotify, favorite, notification ->
                     val notificationEntity = if (productInfo.eventDate != 0L) { // 이벤트 중인 상품일 때
                         if (alarmBuilder.isExistProductAlarm(productId) // 알람 설정된 상품일 경우
                             && notification != null
@@ -70,9 +80,11 @@ class ProductDetailViewModel @Inject constructor(
                         null
                     }
 
+                    onNotificationChange(notificationEntity)
                     _uiState.update {
                         it.copy(
                             productInfo = productInfo,
+                            isAllowNotify = isAllowNotify,
                             isFavorite = favorite != null,
                             notificationEntity = notificationEntity,
                             isLoading = false
@@ -92,18 +104,15 @@ class ProductDetailViewModel @Inject constructor(
         }
     }
 
-    fun setNotification(notificationTime: Long) = viewModelScope.launch {
-        val productInfo = _uiState.value.productInfo
-        if (productInfo != null) {
-            setNotificationUseCase(productInfo, notificationTime)
+    fun setNotification(notificationTime: Long, isNotAllowNotify: () -> Unit) =
+        viewModelScope.launch {
+            if (_uiState.value.isAllowNotify == true) { // 알림 허용을 한 경우
+                val productInfo = _uiState.value.productInfo
+                if (productInfo != null) {
+                    setNotificationUseCase(productInfo, notificationTime)
+                }
+            } else { // 알림 허용을 하지 않은 경우
+                isNotAllowNotify()
+            }
         }
-    }
-
-    private fun checkAlarmPermissions() {
-        if (alarmBuilder.checkPermissions()) {
-
-        } else {
-
-        }
-    }
 }
