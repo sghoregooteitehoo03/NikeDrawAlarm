@@ -35,14 +35,22 @@ class ProductNotificationWorker @AssistedInject constructor(
 ) : CoroutineWorker(appContext, workerParams) {
 
     override suspend fun doWork(): Result {
-        val productId = inputData.getString(Constants.INTENT_PRODUCT_ID) ?: return Result.failure()
-        val productEntity = databaseRepository.getProductData(productId) ?: return Result.failure()
-        val notificationEntity =
-            databaseRepository.getNotificationData(productId).first() ?: return Result.failure()
+        val isAllowNotify = databaseRepository.getAllowNotification().first()
 
-        setNotification(productEntity, notificationEntity) // 알림 생성
-        databaseRepository.deleteNotificationData(productId) // 알림 생성 끝나면 데이터베이스에서 지움
-        return Result.success()
+        return if (isAllowNotify) { // 설정에서 알림허용을 하였을 경우에만 동작
+            val productId =
+                inputData.getString(Constants.INTENT_PRODUCT_ID) ?: return Result.failure()
+            val productEntity =
+                databaseRepository.getProductData(productId) ?: return Result.failure()
+            val notificationEntity =
+                databaseRepository.getNotificationData(productId).first() ?: return Result.failure()
+
+            setNotification(productEntity, notificationEntity) // 알림 생성
+            databaseRepository.deleteNotificationData(productId) // 알림 생성 끝나면 데이터베이스에서 지움
+            Result.success()
+        } else {
+            Result.failure()
+        }
     }
 
     private fun setNotification(

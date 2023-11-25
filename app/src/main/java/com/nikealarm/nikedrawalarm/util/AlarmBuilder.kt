@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.core.app.NotificationManagerCompat
 import com.nikealarm.nikedrawalarm.Component.AlarmReceiver
 
 class AlarmBuilder(private val context: Context) {
@@ -89,7 +90,16 @@ class AlarmBuilder(private val context: Context) {
         alarmManager.cancel(alarmIntent)
     }
 
+    fun checkPermissions() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        areNotificationsEnabled() && canScheduleExactAlarms()
+    } else {
+        areNotificationsEnabled()
+    }
+
+    private fun areNotificationsEnabled() =
+        NotificationManagerCompat.from(context).areNotificationsEnabled()
+
     @RequiresApi(Build.VERSION_CODES.S)
-    fun canScheduleExactAlarms() =
+    private fun canScheduleExactAlarms() =
         alarmManager.canScheduleExactAlarms()
 }

@@ -12,14 +12,12 @@ import com.nikealarm.nikedrawalarm.data.repository.dataSource.JoinedProductPagin
 import com.nikealarm.nikedrawalarm.data.repository.database.ProductDao
 import com.nikealarm.nikedrawalarm.domain.model.JoinedProductCategory
 import com.nikealarm.nikedrawalarm.domain.model.ProductInfo
-import com.nikealarm.nikedrawalarm.util.AlarmBuilder
 import com.nikealarm.nikedrawalarm.util.Constants
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class ProductDatabaseRepository @Inject constructor(
-    private val alarmBuilder: AlarmBuilder,
     private val settingDataStore: DataStore<Preferences>,
     private val dao: ProductDao
 ) {

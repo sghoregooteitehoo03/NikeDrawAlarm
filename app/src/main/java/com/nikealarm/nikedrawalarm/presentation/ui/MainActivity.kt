@@ -379,33 +379,3 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-
-//                                                            // 푸쉬 알림을 보낼 수 있는 경우
-//                                                            if (NotificationManagerCompat
-//                                                                    .from(this@MainActivity)
-//                                                                    .areNotificationsEnabled()
-//                                                            ) {
-//                                                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-//                                                                    // 안드로이드 버전이 14인 경우 권한이 설정되어있는지 확인
-//                                                                    if (alarmManager.canScheduleExactAlarms()) {
-//                                                                        gViewModel.dialogOpen(true)
-//                                                                    } else { // 설정되어 있지 않으면 설정화면으로 이동
-//
-//                                                                    }
-//                                                                } else { // 알림 설정화면 다이얼로그 오픈
-//                                                                    gViewModel.dialogOpen(true)
-//                                                                }
-//                                                            } else {
-//                                                                // 푸쉬 알림을 보낼 수 없는 경우
-//                                                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//
-//                                                                    val intent =
-//                                                                        Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
-//                                                                            this.putExtra(
-//                                                                                Settings.EXTRA_APP_PACKAGE,
-//                                                                                applicationContext.packageName
-//                                                                            )
-//                                                                        }
-//                                                                    startActivity(intent)
-//                                                                }
-//                                                            }

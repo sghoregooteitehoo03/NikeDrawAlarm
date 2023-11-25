@@ -14,8 +14,7 @@ import javax.inject.Inject
 
 class ProductRepository @Inject constructor(
     private val alarmBuilder: AlarmBuilder,
-    private val retrofitBuilder: Retrofit.Builder,
-    private val databaseRepository: ProductDatabaseRepository
+    private val retrofitBuilder: Retrofit.Builder
 ) {
 
     fun getPagingProducts(isUpcoming: Boolean = false) = Pager(
@@ -40,6 +39,7 @@ class ProductRepository @Inject constructor(
         val productData =
             retrofitService.getProductInfo("seoSlugs%28{slug}%29".replace("{slug}", slug))
 
+        // TODO: 읽어오는 중 버그가 발생하는 상품 존재
         val productObject = productData.objects[0]
         val productInfoList = translateToProductInfoList(productObject)
 
@@ -47,36 +47,23 @@ class ProductRepository @Inject constructor(
     }
 
     // 알림 설정
-    suspend fun setNotificationProduct(
+    fun setNotificationProduct(
         productInfo: ProductInfo,
-        notificationTime: Long
+        triggerTime: Long
     ) {
-        val triggerTime = productInfo.eventDate.minus(notificationTime)
-
         alarmBuilder.setProductAlarm(
             triggerTime = triggerTime,
             productId = productInfo.productId
         )
-        databaseRepository.insertNotificationData(
-            productInfo = productInfo,
-            triggerTime = triggerTime,
-            notificationTime = notificationTime
-        )
     }
 
-    suspend fun cancelNotificationProduct(
+    fun cancelNotificationProduct(
         productId: String
     ) {
         alarmBuilder.cancelProductAlarm(productId)
-        databaseRepository.deleteNotificationData(productId)
     }
 
-    suspend fun clearNotification() {
-        val notificationEntities = databaseRepository.getNotificationsData()
-        notificationEntities.forEach { entity ->
-            cancelNotificationProduct(entity.productId)
-        }
-    }
+    fun checkAlarmPermissions() = alarmBuilder.checkPermissions()
 
     private fun getRetrofitService() =
         retrofitBuilder.baseUrl(Constants.NIKE_API_URL)

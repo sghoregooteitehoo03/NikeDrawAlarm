@@ -35,9 +35,10 @@ fun SettingScreen(
     uiState: SettingUiState,
     onAllowNotifyClick: (Boolean) -> Unit,
     onAllowDrawNotifyClick: (Boolean) -> Unit,
-    onClearProductClick: (ClearProductDialogType) -> Unit,
+    onClearProductClick: (ClearProductType) -> Unit,
     onContactEmailClick: () -> Unit
 ) {
+    // TODO: 로딩 화면 구현
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -81,19 +82,19 @@ fun SettingScreen(
                 modifier = Modifier.fillMaxWidth(),
                 text = "최근에 본 제품 목록 초기화",
                 paddingValues = paddingValue,
-                onContentClick = { onClearProductClick(ClearProductDialogType.ClearLatestDialog) }
+                onContentClick = { onClearProductClick(ClearProductType.ClearLatestProduct) }
             )
             SettingContent(
                 modifier = Modifier.fillMaxWidth(),
                 text = "알림 설정한 제품 목록 초기화",
                 paddingValues = paddingValue,
-                onContentClick = { onClearProductClick(ClearProductDialogType.ClearNotifyDialog) }
+                onContentClick = { onClearProductClick(ClearProductType.ClearNotifyProduct) }
             )
             SettingContent(
                 modifier = Modifier.fillMaxWidth(),
                 text = "좋아요 한 제품 목록 초기화",
                 paddingValues = paddingValue,
-                onContentClick = { onClearProductClick(ClearProductDialogType.ClearFavoriteDialog) }
+                onContentClick = { onClearProductClick(ClearProductType.ClearFavoriteProduct) }
             )
         }
         Spacer(modifier = Modifier.height(24.dp))
@@ -200,11 +201,11 @@ fun SettingContentWithSwitch(
             modifier = Modifier
                 .fillMaxWidth()
                 .align(Alignment.CenterStart),
-            onContentClick = { onContentClick(isAllow) }
+            onContentClick = { onContentClick(!isAllow) }
         )
         Switch(
             checked = isAllow,
-            onCheckedChange = { onContentClick(it) },
+            onCheckedChange = { onContentClick(!isAllow) },
             enabled = enabled,
             modifier = Modifier
                 .align(Alignment.CenterEnd)

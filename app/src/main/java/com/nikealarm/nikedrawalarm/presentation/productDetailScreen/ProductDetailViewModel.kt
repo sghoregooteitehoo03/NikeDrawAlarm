@@ -41,6 +41,7 @@ class ProductDetailViewModel @Inject constructor(
 
     fun loadProduct(productId: String, slug: String) = viewModelScope.launch {
         if (_uiState.value.productInfo == null) {
+            // 제품 정보를 API를 통해 로드해서 가져옴
             val productInfo = getProductUseCase(productId, slug)
             initValue(productInfo)
         }
@@ -52,16 +53,17 @@ class ProductDetailViewModel @Inject constructor(
 
             viewModelScope.launch {
                 insertLatestUseCase(productInfo) // 최근에 본 제품 추가
+
                 combine(
                     getFavoriteUseCase(productId),
                     getNotificationUseCase(productId)
                 ) { favorite, notification ->
-                    val notificationEntity = if (productInfo.eventDate != 0L) {
-                        if (alarmBuilder.isExistProductAlarm(productId)
+                    val notificationEntity = if (productInfo.eventDate != 0L) { // 이벤트 중인 상품일 때
+                        if (alarmBuilder.isExistProductAlarm(productId) // 알람 설정된 상품일 경우
                             && notification != null
                         ) {
                             notification
-                        } else {
+                        } else { // 알람 설정이 안된 상품일 경우
                             NotificationEntity(productId, 0L, 0L, 0L)
                         }
                     } else {
@@ -90,11 +92,18 @@ class ProductDetailViewModel @Inject constructor(
         }
     }
 
-    // 상품 알림 설정
     fun setNotification(notificationTime: Long) = viewModelScope.launch {
         val productInfo = _uiState.value.productInfo
         if (productInfo != null) {
             setNotificationUseCase(productInfo, notificationTime)
+        }
+    }
+
+    private fun checkAlarmPermissions() {
+        if (alarmBuilder.checkPermissions()) {
+
+        } else {
+
         }
     }
 }
