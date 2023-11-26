@@ -104,15 +104,13 @@ class ProductDetailViewModel @Inject constructor(
         }
     }
 
-    fun setNotification(notificationTime: Long, isNotAllowNotify: () -> Unit) =
+    fun setNotification(notificationTime: Long) =
         viewModelScope.launch {
-            if (_uiState.value.isAllowNotify == true) { // 알림 허용을 한 경우
+            if (_uiState.value.isAllowNotify) { // 알림 허용을 한 경우
                 val productInfo = _uiState.value.productInfo
                 if (productInfo != null) {
                     setNotificationUseCase(productInfo, notificationTime)
                 }
-            } else { // 알림 허용을 하지 않은 경우
-                isNotAllowNotify()
             }
         }
 }

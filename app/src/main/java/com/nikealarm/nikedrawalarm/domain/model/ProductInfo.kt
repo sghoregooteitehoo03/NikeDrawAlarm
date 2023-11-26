@@ -166,3 +166,8 @@ fun getShoesCategory(
         ProductCategory.Feed
     }
 }
+
+// 제품들에 관해서만 필터링, Test 제품 걸러내기
+fun getProductFilter(objects: Objects) =
+    (objects.publishedContent.properties.threadType == "product" || objects.publishedContent.properties.threadType == "multi_product")
+            && objects.publishedContent.nodes.size > 1

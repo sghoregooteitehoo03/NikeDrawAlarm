@@ -48,13 +48,17 @@ class ProductDatabaseRepository @Inject constructor(
     fun getFavoriteProductsData(limit: Int) =
         dao.getFavoriteProductsData(limit)
 
+    suspend fun insertProductData(productInfo: ProductInfo) {
+        val productEntity = productInfo.getProductEntity()
+
+        dao.insertProductData(productEntity)
+    }
 
     suspend fun insertLatestData(productInfo: ProductInfo) {
-        val productEntity = productInfo.getProductEntity()
         val latestEntity =
             LatestEntity(productId = productInfo.productId, latestDate = System.currentTimeMillis())
 
-        dao.insertProductData(productEntity)
+        insertProductData(productInfo)
         dao.insertLatestData(latestEntity)
     }
 
@@ -63,7 +67,6 @@ class ProductDatabaseRepository @Inject constructor(
         triggerTime: Long,
         notificationTime: Long
     ) {
-        val productEntity = productInfo.getProductEntity()
         val notificationEntity = NotificationEntity(
             productId = productInfo.productId,
             triggerTime = triggerTime,
@@ -71,18 +74,17 @@ class ProductDatabaseRepository @Inject constructor(
             addedDate = System.currentTimeMillis()
         )
 
-        dao.insertProductData(productEntity)
+        insertProductData(productInfo)
         dao.insertNotificationData(notificationEntity)
     }
 
     suspend fun insertFavoriteData(productInfo: ProductInfo) {
-        val productEntity = productInfo.getProductEntity()
         val favoriteEntity = FavoriteEntity(
             productId = productInfo.productId,
             favoriteDate = System.currentTimeMillis()
         )
 
-        dao.insertProductData(productEntity)
+        insertProductData(productInfo)
         dao.insertFavoriteData(favoriteEntity)
     }
 
@@ -120,6 +122,12 @@ class ProductDatabaseRepository @Inject constructor(
     suspend fun setAllowNotification(isAllow: Boolean) {
         settingDataStore.edit { settings ->
             settings[Constants.DATA_KEY_ALLOW_NOTIFICATION] = isAllow
+        }
+    }
+
+    suspend fun setAllowDrawNotification(isAllow: Boolean) {
+        settingDataStore.edit { settings ->
+            settings[Constants.DATA_KEY_ALLOW_DRAW_NOTIFICATION] = isAllow
         }
     }
 }

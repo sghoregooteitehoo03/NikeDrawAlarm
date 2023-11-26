@@ -2,10 +2,10 @@ package com.nikealarm.nikedrawalarm.presentation.settingScreen
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.nikealarm.nikedrawalarm.domain.usecase.AllowDrawNotifyUseCase
 import com.nikealarm.nikedrawalarm.domain.usecase.AllowNotificationUseCase
 import com.nikealarm.nikedrawalarm.domain.usecase.ClearProductUseCase
 import com.nikealarm.nikedrawalarm.domain.usecase.GetSettingInitUseCase
-import com.nikealarm.nikedrawalarm.util.AlarmBuilder
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
@@ -17,6 +17,7 @@ class SettingViewModel @Inject constructor(
     private val getSettingInitValueUseCase: GetSettingInitUseCase,
     private val clearProductUseCase: ClearProductUseCase,
     private val allowNotificationUseCase: AllowNotificationUseCase,
+    private val allowDrawNotifyUseCase: AllowDrawNotifyUseCase
 ) : ViewModel() {
     private var clearProductType: ClearProductType = ClearProductType.Nothing
     val uiState = getSettingInitValueUseCase { isAllowNotify, isAllowDrawNotify ->
@@ -41,10 +42,11 @@ class SettingViewModel @Inject constructor(
     }
 
     fun allowNotification(isAllow: Boolean) = viewModelScope.launch {
-        if (!isAllow) { // 알림을 해제하는 경우 기존에 설정 된 알림들을 지움
-            clearProductUseCase(ClearProductType.ClearNotifyProduct)
-        }
         allowNotificationUseCase(isAllow)
+    }
+
+    fun allowDrawNotification(isAllow: Boolean) = viewModelScope.launch {
+        allowDrawNotifyUseCase(isAllow)
     }
 
     fun getDialogCategory() = clearProductType

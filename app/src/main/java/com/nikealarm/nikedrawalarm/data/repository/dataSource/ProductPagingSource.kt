@@ -5,6 +5,7 @@ import androidx.paging.PagingState
 import com.nikealarm.nikedrawalarm.data.retrofit.RetrofitService
 import com.nikealarm.nikedrawalarm.domain.model.Collection
 import com.nikealarm.nikedrawalarm.domain.model.Product
+import com.nikealarm.nikedrawalarm.domain.model.getProductFilter
 import com.nikealarm.nikedrawalarm.domain.model.translateToProductInfoList
 import com.nikealarm.nikedrawalarm.util.Constants
 
@@ -34,8 +35,7 @@ class ProductPagingSource(
 
             val productList = data.objects
                 .filter { // 제품들에 관해서만 필터링, Test 제품 걸러내기
-                    (it.publishedContent.properties.threadType == "product" || it.publishedContent.properties.threadType == "multi_product")
-                            && it.publishedContent.nodes.size > 1
+                    getProductFilter(it)
                 }.map { filterProduct ->
                     val productInfoList = translateToProductInfoList(filterProduct)
                     val collection =

@@ -388,14 +388,26 @@ class MainActivity : ComponentActivity() {
 
     private fun createChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name = "제품 출시 알림"
+            val productNotify = "제품 출시 알림"
+            val drawProductNotify = "Draw 신제품 알림"
             val importance = NotificationManager.IMPORTANCE_DEFAULT
-            val channel =
-                NotificationChannel(Constants.CHANNEL_ID_PRODUCT_NOTIFICATION, name, importance)
+
+            val channels = listOf(
+                NotificationChannel(
+                    Constants.CHANNEL_ID_PRODUCT_NOTIFICATION,
+                    productNotify,
+                    importance
+                ),
+                NotificationChannel(
+                    Constants.CHANNEL_ID_DRAW_NEW_PRODUCT_NOTIFICATION,
+                    drawProductNotify,
+                    importance
+                )
+            )
 
             val notificationManager: NotificationManager =
                 getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(channel)
+            notificationManager.createNotificationChannels(channels)
         }
     }
 }

@@ -42,7 +42,7 @@ fun SettingRoute(
                 viewModel.allowNotification(false)
             }
         },
-        onAllowDrawNotifyClick = {},
+        onAllowDrawNotifyClick = viewModel::allowDrawNotification,
         onClearProductClick = {
             viewModel.setDialogType(it)
             openDialog(DialogScreen.DialogClearProduct)
@@ -122,7 +122,11 @@ private fun checkPushAlarm(
     // 푸쉬 알림설정이 활성화 되어있는 경우
     if (NotificationManagerCompat.from(context).areNotificationsEnabled()) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            checkPermission(openDialog, allowNotification, context) // Schedule 알림 권한이 설정 되어 있는 경우
+            checkAlarmPermission(
+                openDialog,
+                allowNotification,
+                context
+            ) // Schedule 알림 권한이 설정 되어 있는 경우
         } else {
             allowNotification(true)
         }
@@ -151,7 +155,7 @@ private fun moveSettingIntent(context: Context, action: String) {
 }
 
 @RequiresApi(Build.VERSION_CODES.S)
-private fun checkPermission(
+private fun checkAlarmPermission(
     openDialog: (DialogScreen) -> Unit,
     allowNotification: (Boolean) -> Unit,
     context: Context

@@ -1,25 +1,20 @@
 package com.nikealarm.nikedrawalarm.Component.work
 
-import android.Manifest
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.os.Build
-import androidx.core.app.ActivityCompat
-import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.TaskStackBuilder
 import androidx.core.net.toUri
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.data.model.entity.NotificationEntity
 import com.nikealarm.nikedrawalarm.data.model.entity.ProductEntity
 import com.nikealarm.nikedrawalarm.data.repository.ProductDatabaseRepository
 import com.nikealarm.nikedrawalarm.presentation.ui.MainActivity
 import com.nikealarm.nikedrawalarm.util.Constants
+import com.nikealarm.nikedrawalarm.util.NotificationBuilder
 import com.squareup.picasso.Picasso
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -40,12 +35,13 @@ class ProductNotificationWorker @AssistedInject constructor(
         return if (isAllowNotify) { // 설정에서 알림허용을 하였을 경우에만 동작
             val productId =
                 inputData.getString(Constants.INTENT_PRODUCT_ID) ?: return Result.failure()
+            // TODO: 알림 안울리는 버그 발생
             val productEntity =
                 databaseRepository.getProductData(productId) ?: return Result.failure()
             val notificationEntity =
                 databaseRepository.getNotificationData(productId).first() ?: return Result.failure()
 
-            setNotification(productEntity, notificationEntity) // 알림 생성
+            createNotification(productEntity, notificationEntity) // 알림 생성
             databaseRepository.deleteNotificationData(productId) // 알림 생성 끝나면 데이터베이스에서 지움
             Result.success()
         } else {
@@ -53,10 +49,11 @@ class ProductNotificationWorker @AssistedInject constructor(
         }
     }
 
-    private fun setNotification(
+    private fun createNotification(
         productEntity: ProductEntity,
         notificationEntity: NotificationEntity
     ) {
+        val notificationBuilder = NotificationBuilder(applicationContext)
         val title = productEntity.title
         val productCategory = when (productEntity.category) {
             "Coming" -> "출시"
@@ -96,27 +93,13 @@ class ProductNotificationWorker @AssistedInject constructor(
             getPendingIntent(0, flags)
         }
 
-        val builder = NotificationCompat.Builder(
-            applicationContext,
-            Constants.CHANNEL_ID_PRODUCT_NOTIFICATION
+        notificationBuilder.createNotification(
+            channelId = Constants.CHANNEL_ID_PRODUCT_NOTIFICATION,
+            notifyId = productEntity.productId.hashCode(),
+            title = title,
+            contentText = contentText,
+            image = productEntity.thumbnailImage,
+            actionPendingIntent = actionPendingIntent
         )
-            .setSmallIcon(R.mipmap.ic_launcher)
-            .setLargeIcon(image)
-            .setVibrate(longArrayOf(0, 100, 200, 300))
-            .setContentTitle(title)
-            .setContentText(contentText)
-            .setContentIntent(actionPendingIntent)
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-            .setAutoCancel(true)
-            .build()
-
-        if (ActivityCompat.checkSelfPermission(
-                applicationContext,
-                Manifest.permission.POST_NOTIFICATIONS
-            ) == PackageManager.PERMISSION_GRANTED
-        ) {
-            NotificationManagerCompat.from(applicationContext)
-                .notify(productEntity.productId.hashCode(), builder)
-        }
     }
 }

@@ -77,11 +77,7 @@ fun ProductDetailRoute(
             SetNotificationDialog(
                 onDismissRequest = onDismiss,
                 onButtonClick = {
-                    viewModel.setNotification(
-                        notificationTime = it,
-                        isNotAllowNotify = {
-                            openDialog(DialogScreen.DialogSetNotify)
-                        })
+                    viewModel.setNotification(notificationTime = it)
                     onDismiss()
                 },
                 settingTime = state.notificationEntity?.notificationDate ?: 0L
@@ -160,11 +156,7 @@ fun LoadProductDetailRoute(
             SetNotificationDialog(
                 onDismissRequest = onDismiss,
                 onButtonClick = {
-                    viewModel.setNotification(
-                        notificationTime = it,
-                        isNotAllowNotify = {
-                            openDialog(DialogScreen.DialogSetNotify)
-                        })
+                    viewModel.setNotification(notificationTime = it)
                     onDismiss()
                 },
                 settingTime = state.notificationEntity?.notificationDate ?: 0L

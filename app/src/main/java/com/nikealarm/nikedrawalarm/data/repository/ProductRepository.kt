@@ -47,25 +47,28 @@ class ProductRepository @Inject constructor(
     }
 
     // 알림 설정
-    fun setNotificationProduct(
-        productInfo: ProductInfo,
-        triggerTime: Long
-    ) {
+    fun setNotificationProduct(productInfo: ProductInfo, triggerTime: Long) {
         alarmBuilder.setProductAlarm(
             triggerTime = triggerTime,
             productId = productInfo.productId
         )
     }
 
-    fun cancelNotificationProduct(
-        productId: String
-    ) {
+    fun setRepeatNewDrawNotify() {
+        alarmBuilder.setRepeatNewDrawNotify()
+    }
+
+    fun cancelNotificationProduct(productId: String) {
         alarmBuilder.cancelProductAlarm(productId)
+    }
+
+    fun cancelRepeatNewDrawNotify() {
+        alarmBuilder.cancelRepeatNewDrawNotify()
     }
 
     fun checkAlarmPermissions() = alarmBuilder.checkPermissions()
 
-    private fun getRetrofitService() =
+    fun getRetrofitService() =
         retrofitBuilder.baseUrl(Constants.NIKE_API_URL)
             .build()
             .create(RetrofitService::class.java)
