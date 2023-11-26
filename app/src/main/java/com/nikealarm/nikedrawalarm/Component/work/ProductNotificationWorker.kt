@@ -71,7 +71,6 @@ class ProductNotificationWorker @AssistedInject constructor(
                 Locale.KOREA
             ).format(notificationEntity.notificationDate)
         }
-        val image = Picasso.get().load(productEntity.thumbnailImage).get()
 
         // Notification 클릭 시 시행할 동작
         val actionIntent = Intent(

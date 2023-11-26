@@ -57,8 +57,10 @@ class AppNavController(
                 )
             }
             composable(route = UiScreen.UpcomingScreen.route) {
-                // TODO: 나중에 clearData() 추가하기
-                UpcomingRoute(onProductClick = ::navigateToProductDetailScreen)
+                UpcomingRoute(
+                    onProductClick = ::navigateToProductDetailScreen,
+                    onCreate = { gViewModel.clearData() }
+                )
             }
             composable(route = UiScreen.FavoriteScreen.route) {
                 FavoriteRoute(
