@@ -9,7 +9,7 @@ import com.nikealarm.nikedrawalarm.domain.model.getProductFilter
 import com.nikealarm.nikedrawalarm.domain.model.translateToProductInfoList
 import com.nikealarm.nikedrawalarm.util.Constants
 
-// TODO: 출시 기간이 지난 상품은 eventDate 0으로 초기화 시키기
+// TODO: .fix 출시 기간이 지난 상품은 eventDate 0으로 초기화 시키기
 
 class ProductPagingSource(
     private val retrofitService: RetrofitService,

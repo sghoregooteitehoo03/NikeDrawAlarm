@@ -28,7 +28,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.rememberImagePainter
 import com.nikealarm.nikedrawalarm.data.model.entity.LatestProductEntity
 import com.nikealarm.nikedrawalarm.data.model.entity.ProductEntity
-import com.nikealarm.nikedrawalarm.domain.model.JoinedProductCategory
+import com.nikealarm.nikedrawalarm.domain.model.JoinedProductType
 import com.nikealarm.nikedrawalarm.presentation.ui.ProductInfoItemRow
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.NikeDrawAssistant
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Shapes
@@ -41,7 +41,7 @@ import java.util.Locale
 fun FavoriteScreen(
     state: FavoriteUiState,
     onProductClick: (ProductEntity) -> Unit,
-    onMoreClick: (JoinedProductCategory) -> Unit
+    onMoreClick: (JoinedProductType) -> Unit
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         when (state) {
@@ -67,7 +67,7 @@ fun FavoriteScreen(
                                 onProductClick = onProductClick
                             )
                         },
-                        onSubTitleClick = { onMoreClick(JoinedProductCategory.LatestProduct) }
+                        onSubTitleClick = { onMoreClick(JoinedProductType.LatestProduct) }
                     )
                     ProductColumn(
                         title = "알림 설정한 제품",
@@ -107,7 +107,7 @@ fun FavoriteScreen(
                                 )
                             }
                         },
-                        onSubTitleClick = { onMoreClick(JoinedProductCategory.NotifyProduct) }
+                        onSubTitleClick = { onMoreClick(JoinedProductType.NotifyProduct) }
                     )
                     ProductColumn(
                         title = "좋아요 한 제품",
@@ -142,7 +142,7 @@ fun FavoriteScreen(
                                 )
                             }
                         },
-                        onSubTitleClick = { onMoreClick(JoinedProductCategory.FavoriteProduct) }
+                        onSubTitleClick = { onMoreClick(JoinedProductType.FavoriteProduct) }
                     )
                 }
             }

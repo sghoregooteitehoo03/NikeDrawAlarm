@@ -6,7 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nikealarm.nikedrawalarm.data.model.entity.NotificationEntity
-import com.nikealarm.nikedrawalarm.domain.model.JoinedProductCategory
+import com.nikealarm.nikedrawalarm.domain.model.JoinedProductType
 import com.nikealarm.nikedrawalarm.domain.model.Product
 import com.nikealarm.nikedrawalarm.domain.model.ProductInfo
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -17,10 +17,11 @@ import javax.inject.Inject
 
 @HiltViewModel
 class GlobalViewModel @Inject constructor() : ViewModel() {
+    // TODO: .refactor Json으로 변환해서 전달하는 방법 생각해보기
     // 데이터 전달 용
     private var product: Product? = null
     private var productInfo: ProductInfo? = null
-    private var joinedProductCategory: JoinedProductCategory? = null
+    private var joinedProductCategory: JoinedProductType? = null
 
     fun sendProductData(_product: Product?) {
         product = _product
@@ -30,7 +31,7 @@ class GlobalViewModel @Inject constructor() : ViewModel() {
         productInfo = _productInfo
     }
 
-    fun sendJoinedProductCategory(_joinedProductCategory: JoinedProductCategory?) {
+    fun sendJoinedProductCategory(_joinedProductCategory: JoinedProductType?) {
         joinedProductCategory = _joinedProductCategory
     }
 

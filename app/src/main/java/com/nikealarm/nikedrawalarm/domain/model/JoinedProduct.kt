@@ -7,8 +7,8 @@ data class JoinedProduct(
     val explains: String
 )
 
-sealed class JoinedProductCategory(val text: String) {
-    data object LatestProduct : JoinedProductCategory("최근에 본 제품")
-    data object NotifyProduct: JoinedProductCategory("알림 설정한 제품")
-    data object FavoriteProduct: JoinedProductCategory("좋아요 한 제품")
+sealed class JoinedProductType(val text: String) {
+    data object LatestProduct : JoinedProductType("최근에 본 제품")
+    data object NotifyProduct: JoinedProductType("알림 설정한 제품")
+    data object FavoriteProduct: JoinedProductType("좋아요 한 제품")
 }

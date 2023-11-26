@@ -2,13 +2,10 @@ package com.nikealarm.nikedrawalarm.presentation.favoriteMoreScreen
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import com.nikealarm.nikedrawalarm.domain.model.JoinedProduct
-import com.nikealarm.nikedrawalarm.domain.model.JoinedProductCategory
+import com.nikealarm.nikedrawalarm.domain.model.JoinedProductType
 import com.nikealarm.nikedrawalarm.domain.usecase.GetPagingJoinedProductUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
@@ -26,7 +23,7 @@ class FavoriteMoreViewModel @Inject constructor(
         initialValue = _uiState.value
     )
 
-    fun initValue(joinedCategory: JoinedProductCategory?) {
+    fun initValue(joinedCategory: JoinedProductType?) {
         if (joinedCategory != null && _uiState.value.products == null)
             _uiState.update {
                 it.copy(

@@ -10,7 +10,7 @@ import com.nikealarm.nikedrawalarm.data.model.entity.LatestEntity
 import com.nikealarm.nikedrawalarm.data.model.entity.NotificationEntity
 import com.nikealarm.nikedrawalarm.data.repository.dataSource.JoinedProductPagingSource
 import com.nikealarm.nikedrawalarm.data.repository.database.ProductDao
-import com.nikealarm.nikedrawalarm.domain.model.JoinedProductCategory
+import com.nikealarm.nikedrawalarm.domain.model.JoinedProductType
 import com.nikealarm.nikedrawalarm.domain.model.ProductInfo
 import com.nikealarm.nikedrawalarm.util.Constants
 import kotlinx.coroutines.flow.Flow
@@ -21,7 +21,7 @@ class ProductDatabaseRepository @Inject constructor(
     private val settingDataStore: DataStore<Preferences>,
     private val dao: ProductDao
 ) {
-    fun getPagingJoinedProduct(joinedCategory: JoinedProductCategory) = Pager(
+    fun getPagingJoinedProduct(joinedCategory: JoinedProductType) = Pager(
         config = PagingConfig(20)
     ) {
         JoinedProductPagingSource(dao, joinedCategory)

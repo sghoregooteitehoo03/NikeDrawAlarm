@@ -4,14 +4,14 @@ import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.nikealarm.nikedrawalarm.data.repository.database.ProductDao
 import com.nikealarm.nikedrawalarm.domain.model.JoinedProduct
-import com.nikealarm.nikedrawalarm.domain.model.JoinedProductCategory
+import com.nikealarm.nikedrawalarm.domain.model.JoinedProductType
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.util.Locale
 
 class JoinedProductPagingSource(
     private val dao: ProductDao,
-    private val joinedCategory: JoinedProductCategory
+    private val joinedCategory: JoinedProductType
 ) : PagingSource<Int, JoinedProduct>() {
     override fun getRefreshKey(state: PagingState<Int, JoinedProduct>): Int? {
         return state.anchorPosition
@@ -22,7 +22,7 @@ class JoinedProductPagingSource(
             val offset = params.key ?: 0
             val limit = offset + 20
             val joinedProduct = when (joinedCategory) {
-                JoinedProductCategory.LatestProduct -> {
+                JoinedProductType.LatestProduct -> {
                     val product = dao.getLatestProductsPageData(limit, offset)
                     product.map {
                         JoinedProduct(
@@ -32,7 +32,7 @@ class JoinedProductPagingSource(
                     }
                 }
 
-                JoinedProductCategory.NotifyProduct -> {
+                JoinedProductType.NotifyProduct -> {
                     val product = dao.getNotifyProductsPageData(limit, offset)
                     product.map {
                         JoinedProduct(
@@ -54,7 +54,7 @@ class JoinedProductPagingSource(
                     }
                 }
 
-                JoinedProductCategory.FavoriteProduct -> {
+                JoinedProductType.FavoriteProduct -> {
                     val product = dao.getFavoriteProductsPageData(limit, offset)
                     product.map {
                         JoinedProduct(
