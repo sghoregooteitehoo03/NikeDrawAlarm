@@ -144,7 +144,9 @@ fun ProductInfoItem(
             blurItem()
         }
         Column(
-            modifier = Modifier.padding(4.dp)
+            modifier = Modifier
+                .width(screenWidth.dp)
+                .padding(4.dp)
         ) {
             Text(
                 text = title,

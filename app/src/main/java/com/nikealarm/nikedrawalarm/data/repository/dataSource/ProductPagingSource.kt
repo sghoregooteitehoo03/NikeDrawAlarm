@@ -23,15 +23,12 @@ class ProductPagingSource(
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Product> {
         return try {
-            val key = params.key ?: 0
+            val key: Int = params.key ?: 0
             val data = if (isUpcoming) {
                 retrofitService.getUpcomingProducts(key)
             } else {
                 retrofitService.getFeedProducts(key)
             }
-
-            if (data.objects.isEmpty())
-                throw NullPointerException()
 
             val productList = data.objects
                 .filter { // 제품들에 관해서만 필터링, Test 제품 걸러내기
@@ -64,7 +61,11 @@ class ProductPagingSource(
             LoadResult.Page(
                 data = productList,
                 prevKey = null,
-                nextKey = key + 50
+                nextKey = if (data.objects.isNotEmpty()) {
+                    key + 50
+                } else {
+                    null
+                }
             )
         } catch (e: Exception) {
             e.printStackTrace()

@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
@@ -70,7 +71,7 @@ class MainActivity : ComponentActivity() {
 
                         // TODO: .refactor 분리하기
                         TopAppBar(
-                            elevation = 4.dp,
+                            elevation = 0.dp,
                         ) {
                             NikeTopAppBar(
                                 modifier = Modifier
@@ -109,7 +110,7 @@ class MainActivity : ComponentActivity() {
                                                     modifier = Modifier
                                                         .size(24.dp)
                                                         .clickable { navController.navigateUp() },
-                                                    tint = Black
+                                                    tint = MaterialTheme.colors.onPrimary
                                                 )
                                                 Spacer(modifier = Modifier.width(14.dp))
                                             }
@@ -124,7 +125,7 @@ class MainActivity : ComponentActivity() {
                                             Icon(
                                                 imageVector = Icons.Default.Settings,
                                                 contentDescription = "설정",
-                                                tint = Black,
+                                                tint = MaterialTheme.colors.onPrimary,
                                                 modifier = it
                                                     .size(24.dp)
                                                     .clickable {
@@ -151,7 +152,7 @@ class MainActivity : ComponentActivity() {
                                                         .clickable {
                                                             gViewModel.setActionEvent(ActionEvent.ActionNotification)
                                                         },
-                                                    tint = Black
+                                                    tint = MaterialTheme.colors.onPrimary
                                                 )
                                             }
                                         }
@@ -171,7 +172,7 @@ class MainActivity : ComponentActivity() {
                             UiScreen.ProductScreen.route,
                             UiScreen.UpcomingScreen.route,
                             UiScreen.FavoriteScreen.route -> {
-                                BottomNavigation(elevation = 4.dp) {
+                                BottomNavigation {
                                     bottomScreenList.forEach { screen ->
                                         val selected =
                                             currentDestination?.hierarchy?.any { it.route == screen.route } == true

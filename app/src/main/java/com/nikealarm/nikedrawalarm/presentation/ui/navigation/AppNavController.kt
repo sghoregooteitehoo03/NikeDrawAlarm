@@ -46,7 +46,7 @@ class AppNavController(
         ) {
             composable(route = UiScreen.ProductScreen.route) {
                 ProductRoute(
-                    onProductItemClick = { product ->
+                    navigateDetailScreen = { product ->
                         if (product.collection != null) {
                             navigateToCollectionDetailScreen(product)
                         } else {

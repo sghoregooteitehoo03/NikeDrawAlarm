@@ -1,7 +1,7 @@
 package com.nikealarm.nikedrawalarm.presentation.productScreen
 
-import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -9,28 +9,29 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.paging.ItemSnapshotList
-import androidx.paging.compose.LazyPagingItems
+import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.nikealarm.nikedrawalarm.domain.model.Product
 import com.nikealarm.nikedrawalarm.domain.model.ProductCategory
@@ -40,24 +41,23 @@ import com.nikealarm.nikedrawalarm.presentation.ui.ProductInfoItem
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Black
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Gray
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.LightGray
+import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.LightSky
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.NikeDrawAssistant
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Shapes
+import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.TextGray
+import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Typography
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.White
-import kotlinx.coroutines.coroutineScope
+import com.valentinilk.shimmer.shimmer
 import me.onebone.toolbar.CollapsingToolbarScaffold
 import me.onebone.toolbar.ScrollStrategy
 import me.onebone.toolbar.rememberCollapsingToolbarScaffoldState
 import java.text.DecimalFormat
 
-// TODO:
-//  . 리스트 짤리는 버그 수정
-//  . Shimmer
-
 @Composable
 fun ProductScreen(
     state: ProductUiState,
-    onProductItemClick: (Product) -> Unit,
-    onCategoryItemClick: (ProductCategory) -> Unit
+    listState: LazyGridState = rememberLazyGridState(),
+    onEvent: (ProductUiEvent) -> Unit
 ) {
     val collapsingState = rememberCollapsingToolbarScaffoldState()
 
@@ -71,12 +71,12 @@ fun ProductScreen(
                     modifier = Modifier.padding(
                         start = 14.dp,
                         end = 14.dp,
-                        top = 12.dp,
-                        bottom = 12.dp
+                        top = 4.dp,
+                        bottom = 8.dp
                     ),
                     selectedCategory = state.selectedCategory,
                     onCategoryItemClick = { category ->
-                        onCategoryItemClick(category)
+                        onEvent(ProductUiEvent.ChangeProductCategory(category))
                     }
                 )
                 Divider(
@@ -86,13 +86,10 @@ fun ProductScreen(
             }
         }
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-        ) {
+        Box(modifier = Modifier.fillMaxSize()) {
             val products = when (state.selectedCategory) {
                 ProductCategory.All -> {
-                    state.products?.collectAsLazyPagingItems()
+                    state.allProducts?.collectAsLazyPagingItems()
                 }
 
                 ProductCategory.Coming -> {
@@ -104,25 +101,64 @@ fun ProductScreen(
                 }
 
                 else -> {
-                    state.products?.collectAsLazyPagingItems()
+                    state.allProducts?.collectAsLazyPagingItems()
                 }
             }
 
             products?.let {
-                LazyVerticalGrid(
-                    modifier = Modifier.padding(
-                        start = 8.dp,
-                        end = 8.dp,
-                        top = 6.dp,
-                        bottom = 6.dp
-                    ),
-                    columns = GridCells.Fixed(2)
-                ) {
-                    items(products.itemCount) { index ->
-                        ProductItem(
-                            product = it[index]!!,
-                            modifier = Modifier.padding(4.dp),
-                            onClick = onProductItemClick
+                val isLoading by derivedStateOf { products.loadState.refresh is LoadState.Loading }
+                val isError by derivedStateOf { products.loadState.refresh is LoadState.Error }
+
+                if (!isError) {
+                    if (!isLoading && products.itemCount == 0) {
+                        Text(
+                            text = "제품이 존재하지 않습니다.",
+                            style = Typography.h2.copy(color = TextGray),
+                            modifier = Modifier.align(Alignment.Center)
+                        )
+                    } else {
+                        LazyVerticalGrid(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(
+                                    start = 8.dp,
+                                    end = 8.dp,
+                                    top = 6.dp,
+                                    bottom = 6.dp
+                                ),
+                            columns = GridCells.Fixed(2),
+                            state = listState
+                        ) {
+                            if (!isLoading) {
+                                items(products.itemCount) { index ->
+                                    ProductItem(
+                                        product = it[index]!!,
+                                        modifier = Modifier.padding(4.dp),
+                                        onClick = { onEvent(ProductUiEvent.ProductItemClick(it)) }
+                                    )
+                                }
+                            } else {
+                                items(8) {
+                                    ProductItemShimmer()
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    Column(
+                        modifier = Modifier.align(Alignment.Center),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "오류가 발생하였습니다.",
+                            style = Typography.h2.copy(color = TextGray)
+                        )
+                        Spacer(modifier = Modifier.height(18.dp))
+                        Text(
+                            text = "재시도",
+                            style = Typography.h2.copy(color = LightSky, fontSize = 20.sp),
+                            modifier = Modifier
+                                .clickable { products.retry() }
                         )
                     }
                 }
@@ -168,6 +204,67 @@ fun ProductItem(
         },
         onClick = { onClick(product) }
     )
+}
+
+@Composable
+fun ProductItemShimmer(
+    modifier: Modifier = Modifier
+) {
+    val screenWidth = (LocalConfiguration.current.screenWidthDp / 2) - 16
+    Column(
+        modifier = modifier
+            .width(screenWidth.dp)
+            .clip(Shapes.large)
+            .shimmer()
+    ) {
+        Box(
+            modifier = Modifier
+                .size(screenWidth.dp)
+                .clip(Shapes.large)
+                .background(
+                    color = Color.Gray,
+                    shape = Shapes.large
+                )
+        )
+        Column(
+            modifier = Modifier
+                .width(screenWidth.dp)
+                .padding(top = 8.dp, bottom = 8.dp, start = 6.dp, end = 6.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(16.dp)
+                    .clip(Shapes.small)
+                    .background(
+                        color = Color.Gray,
+                        shape = Shapes.small
+                    )
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(16.dp)
+                    .clip(Shapes.small)
+                    .background(
+                        color = Color.Gray,
+                        shape = Shapes.small
+                    )
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(0.5f)
+                    .height(16.dp)
+                    .clip(Shapes.small)
+                    .background(
+                        color = Color.Gray,
+                        shape = Shapes.small
+                    )
+            )
+        }
+    }
 }
 
 @Composable
