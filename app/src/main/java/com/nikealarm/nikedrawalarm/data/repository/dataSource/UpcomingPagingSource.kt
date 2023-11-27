@@ -23,9 +23,6 @@ class UpcomingPagingSource(
             val data = retrofitService.getUpcomingProducts(key)
             val productInfoList = mutableListOf<ProductInfo>()
 
-            if (data.objects.isEmpty())
-                throw NullPointerException()
-
             data.objects.filter { // 제품들에 관해서만 필터링, Test 제품 걸러내기
                 getProductFilter(it)
             }.forEach { filterProduct ->
@@ -39,7 +36,7 @@ class UpcomingPagingSource(
             LoadResult.Page(
                 data = productInfoList.toList(),
                 prevKey = null,
-                nextKey = key + 50
+                nextKey = if (data.objects.isNotEmpty()) key + 50 else null
             )
         } catch (e: Exception) {
             e.printStackTrace()

@@ -17,7 +17,6 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -26,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -40,7 +40,6 @@ import com.nikealarm.nikedrawalarm.presentation.ui.BorderedBox
 import com.nikealarm.nikedrawalarm.presentation.ui.ProductInfoItem
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Black
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Gray
-import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.LightGray
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.LightSky
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.NikeDrawAssistant
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Shapes
@@ -68,20 +67,17 @@ fun ProductScreen(
         toolbar = {
             Column {
                 ProductCategories(
-                    modifier = Modifier.padding(
-                        start = 14.dp,
-                        end = 14.dp,
-                        top = 4.dp,
-                        bottom = 8.dp
-                    ),
+                    modifier = Modifier
+                        .padding(
+                            start = 14.dp,
+                            end = 14.dp,
+                            top = 12.dp,
+                            bottom = 6.dp
+                        ),
                     selectedCategory = state.selectedCategory,
                     onCategoryItemClick = { category ->
                         onEvent(ProductUiEvent.ChangeProductCategory(category))
                     }
-                )
-                Divider(
-                    color = LightGray,
-                    thickness = 2.dp
                 )
             }
         }

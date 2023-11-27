@@ -40,7 +40,6 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.nikealarm.nikedrawalarm.presentation.ui.navigation.AppNavController
 import com.nikealarm.nikedrawalarm.util.Constants
-import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Black
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.NikeDrawAssistant
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Typography
 import dagger.hilt.android.AndroidEntryPoint
@@ -70,9 +69,7 @@ class MainActivity : ComponentActivity() {
                         val currentRoute = backStack.value?.destination?.route ?: ""
 
                         // TODO: .refactor 분리하기
-                        TopAppBar(
-                            elevation = 0.dp,
-                        ) {
+                        TopAppBar {
                             NikeTopAppBar(
                                 modifier = Modifier
                                     .fillMaxWidth()
