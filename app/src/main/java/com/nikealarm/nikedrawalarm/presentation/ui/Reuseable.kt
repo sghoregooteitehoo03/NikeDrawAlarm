@@ -216,39 +216,38 @@ fun ProductInfoItemRow(
     explain: String
 ) {
     Row(
-        modifier = modifier
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Image(
             painter = rememberImagePainter(data = thumbnailImage),
             contentDescription = title,
             contentScale = ContentScale.Crop,
             modifier = Modifier
-                .size(80.dp)
+                .size(100.dp)
                 .clip(Shapes.large)
         )
         Spacer(modifier = Modifier.width(12.dp))
-        Box(modifier = Modifier.height(80.dp)) {
-            Column(modifier = Modifier.align(Alignment.TopStart)) {
-                Text(
-                    text = title,
-                    style = Typography.h5,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = subTitle,
-                    style = Typography.body1,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
+        Column {
+            Text(
+                text = title,
+                style = Typography.h5,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = subTitle,
+                style = Typography.body1,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Spacer(modifier = Modifier.height(20.dp))
             Text(
                 text = explain,
                 style = Typography.body1.copy(fontWeight = FontWeight.ExtraBold),
                 maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.align(Alignment.BottomStart)
+                overflow = TextOverflow.Ellipsis
             )
         }
     }

@@ -15,16 +15,19 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.compose.rememberImagePainter
 import com.nikealarm.nikedrawalarm.data.model.entity.LatestProductEntity
 import com.nikealarm.nikedrawalarm.data.model.entity.ProductEntity
@@ -58,7 +61,7 @@ fun FavoriteScreen(
                             if (state.latestProducts.isEmpty()) {
                                 Text(
                                     text = "최근에 본 제품이 없습니다.",
-                                    style = Typography.h5.copy(color = TextGray),
+                                    style = Typography.h3.copy(color = TextGray, fontSize = 20.sp),
                                     modifier = Modifier.align(Alignment.CenterHorizontally)
                                 )
                             }
@@ -76,7 +79,7 @@ fun FavoriteScreen(
                             if (state.notifyProducts.isEmpty()) {
                                 Text(
                                     text = "알림 설정한 제품이 없습니다.",
-                                    style = Typography.h5.copy(color = TextGray),
+                                    style = Typography.h3.copy(color = TextGray, fontSize = 20.sp),
                                     modifier = Modifier.align(Alignment.CenterHorizontally)
                                 )
                             }
@@ -87,7 +90,12 @@ fun FavoriteScreen(
                                         .clickable {
                                             onProductClick(notifyProduct.productEntity)
                                         }
-                                        .padding(14.dp),
+                                        .padding(
+                                            start = 14.dp,
+                                            end = 14.dp,
+                                            top = 8.dp,
+                                            bottom = 8.dp
+                                        ),
                                     thumbnailImage = notifyProduct.productEntity.thumbnailImage,
                                     title = notifyProduct.productEntity.title,
                                     subTitle = notifyProduct.productEntity.subTitle,
@@ -116,7 +124,7 @@ fun FavoriteScreen(
                             if (state.favoriteProducts.isEmpty()) {
                                 Text(
                                     text = "좋아요 한 제품이 없습니다.",
-                                    style = Typography.h5.copy(color = TextGray),
+                                    style = Typography.h3.copy(color = TextGray, fontSize = 20.sp),
                                     modifier = Modifier.align(Alignment.CenterHorizontally)
                                 )
                             }
@@ -127,7 +135,12 @@ fun FavoriteScreen(
                                         .clickable {
                                             onProductClick(favoriteProduct.productEntity)
                                         }
-                                        .padding(14.dp),
+                                        .padding(
+                                            start = 14.dp,
+                                            end = 14.dp,
+                                            top = 8.dp,
+                                            bottom = 8.dp
+                                        ),
                                     thumbnailImage = favoriteProduct.productEntity.thumbnailImage,
                                     title = favoriteProduct.productEntity.title,
                                     subTitle = favoriteProduct.productEntity.subTitle,
@@ -147,7 +160,12 @@ fun FavoriteScreen(
                 }
             }
 
-            is FavoriteUiState.Loading -> {}
+            is FavoriteUiState.Loading -> {
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center),
+                    color = Color.Black
+                )
+            }
         }
     }
 }
@@ -173,7 +191,7 @@ fun ProductColumn(
             )
             Text(
                 text = subTitle,
-                style = Typography.subtitle1.copy(fontWeight = FontWeight.Medium, color = TextGray),
+                style = Typography.body1.copy(fontWeight = FontWeight.Medium, color = TextGray),
                 modifier = Modifier
                     .align(Alignment.CenterEnd)
                     .clickable { onSubTitleClick() }
@@ -216,7 +234,7 @@ fun LatestProductItem(
 ) {
     Column(
         modifier = modifier
-            .width(120.dp)
+            .width(140.dp)
             .clip(Shapes.medium)
             .clickable {
                 onProductClick(productEntity)
@@ -227,7 +245,7 @@ fun LatestProductItem(
             contentDescription = productEntity.title,
             contentScale = ContentScale.Crop,
             modifier = Modifier
-                .size(120.dp)
+                .size(140.dp)
                 .clip(Shapes.large)
         )
         Spacer(modifier = Modifier.height(6.dp))
