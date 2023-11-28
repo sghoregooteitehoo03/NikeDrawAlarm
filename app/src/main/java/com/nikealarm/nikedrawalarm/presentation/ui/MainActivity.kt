@@ -11,7 +11,7 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -29,7 +29,6 @@ import androidx.compose.material.icons.filled.NotificationsNone
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -38,10 +37,14 @@ import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.nikealarm.nikedrawalarm.presentation.productScreen.ProductCategories
 import com.nikealarm.nikedrawalarm.presentation.ui.navigation.AppNavController
 import com.nikealarm.nikedrawalarm.util.Constants
+import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Black
+import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Gray
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.NikeDrawAssistant
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Typography
+import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.White
 import dagger.hilt.android.AndroidEntryPoint
 
 // TODO: Navigation 관리하는 Class 구현
@@ -69,12 +72,16 @@ class MainActivity : ComponentActivity() {
                         val currentRoute = backStack.value?.destination?.route ?: ""
 
                         // TODO: .refactor 분리하기
-                        TopAppBar {
+                        TopAppBar(
+                            modifier = if (currentRoute == UiScreen.ProductScreen.route) {
+                                Modifier.height(96.dp)
+                            } else {
+                                Modifier.height(54.dp)
+                            }
+                        ) {
                             NikeTopAppBar(
                                 modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(start = 14.dp, end = 14.dp)
-                                    .align(Alignment.CenterVertically),
+                                    .padding(start = 14.dp, end = 14.dp),
                                 title = when (currentRoute) {
                                     UiScreen.ProductScreen.route,
                                     UiScreen.UpcomingScreen.route,
@@ -155,6 +162,26 @@ class MainActivity : ComponentActivity() {
                                         }
 
                                         else -> {}
+                                    }
+                                },
+                                content = {
+                                    if (currentRoute == UiScreen.ProductScreen.route) {
+                                        val selectedCategory by gViewModel.selectedCategory
+                                        ProductCategories(
+                                            modifier = Modifier
+                                                .padding(
+                                                    top = 14.dp
+                                                ),
+                                            selectedCategory = selectedCategory,
+                                            onCategoryItemClick = { category ->
+                                                gViewModel.setSelectedCategory(category)
+                                                gViewModel.setActionEvent(
+                                                    ActionEvent.ActionSelectCategory(
+                                                        category
+                                                    )
+                                                )
+                                            }
+                                        )
                                     }
                                 }
                             )

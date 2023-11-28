@@ -7,12 +7,19 @@ import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nikealarm.nikedrawalarm.domain.model.Product
+import com.nikealarm.nikedrawalarm.presentation.ui.ActionEvent
 import com.nikealarm.nikedrawalarm.presentation.ui.DisposableEffectWithLifeCycle
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.flattenMerge
+import kotlinx.coroutines.flow.flowOf
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @Composable
 fun ProductRoute(
     viewModel: ProductViewModel = hiltViewModel(),
+    actionEvent: SharedFlow<ActionEvent>,
     navigateDetailScreen: (Product) -> Unit,
     onCreate: () -> Unit
 ) {
@@ -24,22 +31,30 @@ fun ProductRoute(
         onDispose = { }
     )
 
-    LaunchedEffect(key1 = viewModel.uiEvent) {
-        viewModel.uiEvent.collectLatest { event ->
-            when (event) {
-                is ProductUiEvent.ProductItemClick -> {
-                    navigateDetailScreen(event.product)
-                }
+    LaunchedEffect(key1 = true) {
+        flowOf(actionEvent, viewModel.uiEvent)
+            .flattenMerge()
+            .collectLatest { event ->
+                when (event) {
+                    is ActionEvent.ActionSelectCategory -> {
+                        viewModel.changeCategory(event.category)
+                    }
 
-                is ProductUiEvent.ChangeProductCategory -> {
-                    viewModel.changeCategory(event.selectedCategory)
-                }
+                    is ProductUiEvent.ProductItemClick -> {
+                        navigateDetailScreen(event.product)
+                    }
 
-                is ProductUiEvent.ChangedProductCategory -> {
-                    listState.scrollToItem(0)
+                    is ProductUiEvent.ChangeProductCategory -> {
+                        viewModel.changeCategory(event.selectedCategory)
+                    }
+
+                    is ProductUiEvent.ChangedProductCategory -> {
+                        listState.scrollToItem(0)
+                    }
+
+                    else -> {}
                 }
             }
-        }
     }
 
     ProductScreen(

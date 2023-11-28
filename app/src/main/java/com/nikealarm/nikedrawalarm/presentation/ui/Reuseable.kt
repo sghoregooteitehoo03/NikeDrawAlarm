@@ -174,32 +174,36 @@ fun NikeTopAppBar(
     modifier: Modifier = Modifier,
     title: String,
     navigationIcon: @Composable (Modifier) -> Unit,
-    actionIcon: @Composable (Modifier) -> Unit
+    actionIcon: @Composable (Modifier) -> Unit,
+    content: @Composable () -> Unit = {}
 ) {
-    ConstraintLayout(modifier = modifier) {
-        val (navigation, titleText, action) = createRefs()
-        navigationIcon(
-            Modifier.constrainAs(navigation) {
-                start.linkTo(parent.start)
+    Column(modifier = modifier) {
+        ConstraintLayout(modifier = Modifier.fillMaxWidth()) {
+            val (navigation, titleText, action) = createRefs()
+            navigationIcon(
+                Modifier.constrainAs(navigation) {
+                    start.linkTo(parent.start)
+                    top.linkTo(parent.top)
+                    bottom.linkTo(parent.bottom)
+                }
+            )
+            Text(
+                text = title,
+                style = Typography.h2,
+                color = MaterialTheme.colors.onPrimary,
+                modifier = Modifier.constrainAs(titleText) {
+                    start.linkTo(navigation.end)
+                    top.linkTo(parent.top)
+                    bottom.linkTo(parent.bottom)
+                }
+            )
+            actionIcon(Modifier.constrainAs(action) {
+                end.linkTo(parent.end)
                 top.linkTo(parent.top)
                 bottom.linkTo(parent.bottom)
-            }
-        )
-        Text(
-            text = title,
-            style = Typography.h2,
-            color = MaterialTheme.colors.onPrimary,
-            modifier = Modifier.constrainAs(titleText) {
-                start.linkTo(navigation.end)
-                top.linkTo(parent.top)
-                bottom.linkTo(parent.bottom)
-            }
-        )
-        actionIcon(Modifier.constrainAs(action) {
-            end.linkTo(parent.end)
-            top.linkTo(parent.top)
-            bottom.linkTo(parent.bottom)
-        })
+            })
+        }
+        content()
     }
 }
 

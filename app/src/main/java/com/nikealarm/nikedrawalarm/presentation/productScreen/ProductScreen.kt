@@ -58,105 +58,80 @@ fun ProductScreen(
     listState: LazyGridState = rememberLazyGridState(),
     onEvent: (ProductUiEvent) -> Unit
 ) {
-    val collapsingState = rememberCollapsingToolbarScaffoldState()
+    Box(modifier = Modifier.fillMaxSize()) {
+        val products = when (state.selectedCategory) {
+            ProductCategory.All -> {
+                state.allProducts?.collectAsLazyPagingItems()
+            }
 
-    CollapsingToolbarScaffold(
-        modifier = Modifier.fillMaxSize(),
-        state = collapsingState,
-        scrollStrategy = ScrollStrategy.EnterAlways,
-        toolbar = {
-            Column {
-                ProductCategories(
-                    modifier = Modifier
-                        .padding(
-                            start = 14.dp,
-                            end = 14.dp,
-                            top = 12.dp,
-                            bottom = 6.dp
-                        ),
-                    selectedCategory = state.selectedCategory,
-                    onCategoryItemClick = { category ->
-                        onEvent(ProductUiEvent.ChangeProductCategory(category))
-                    }
-                )
+            ProductCategory.Coming -> {
+                state.comingProducts?.collectAsLazyPagingItems()
+            }
+
+            ProductCategory.Draw -> {
+                state.drawProducts?.collectAsLazyPagingItems()
+            }
+
+            else -> {
+                state.allProducts?.collectAsLazyPagingItems()
             }
         }
-    ) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            val products = when (state.selectedCategory) {
-                ProductCategory.All -> {
-                    state.allProducts?.collectAsLazyPagingItems()
-                }
 
-                ProductCategory.Coming -> {
-                    state.comingProducts?.collectAsLazyPagingItems()
-                }
+        products?.let {
+            val isLoading by derivedStateOf { products.loadState.refresh is LoadState.Loading }
+            val isError by derivedStateOf { products.loadState.refresh is LoadState.Error }
 
-                ProductCategory.Draw -> {
-                    state.drawProducts?.collectAsLazyPagingItems()
-                }
-
-                else -> {
-                    state.allProducts?.collectAsLazyPagingItems()
-                }
-            }
-
-            products?.let {
-                val isLoading by derivedStateOf { products.loadState.refresh is LoadState.Loading }
-                val isError by derivedStateOf { products.loadState.refresh is LoadState.Error }
-
-                if (!isError) {
-                    if (!isLoading && products.itemCount == 0) {
-                        Text(
-                            text = "제품이 존재하지 않습니다.",
-                            style = Typography.h2.copy(color = TextGray),
-                            modifier = Modifier.align(Alignment.Center)
-                        )
-                    } else {
-                        LazyVerticalGrid(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(
-                                    start = 8.dp,
-                                    end = 8.dp,
-                                    top = 6.dp,
-                                    bottom = 6.dp
-                                ),
-                            columns = GridCells.Fixed(2),
-                            state = listState
-                        ) {
-                            if (!isLoading) {
-                                items(products.itemCount) { index ->
-                                    ProductItem(
-                                        product = it[index]!!,
-                                        modifier = Modifier.padding(4.dp),
-                                        onClick = { onEvent(ProductUiEvent.ProductItemClick(it)) }
-                                    )
-                                }
-                            } else {
-                                items(8) {
-                                    ProductItemShimmer()
-                                }
+            if (!isError) {
+                if (!isLoading && products.itemCount == 0) {
+                    Text(
+                        text = "제품이 존재하지 않습니다.",
+                        style = Typography.h2.copy(color = TextGray),
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                } else {
+                    LazyVerticalGrid(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(
+                                start = 8.dp,
+                                end = 8.dp,
+                                top = 6.dp,
+                                bottom = 6.dp
+                            ),
+                        columns = GridCells.Fixed(2),
+                        state = listState
+                    ) {
+                        if (!isLoading) {
+                            items(products.itemCount) { index ->
+                                ProductItem(
+                                    product = it[index]!!,
+                                    modifier = Modifier.padding(4.dp),
+                                    onClick = { onEvent(ProductUiEvent.ProductItemClick(it)) }
+                                )
+                            }
+                        } else {
+                            items(8) {
+                                ProductItemShimmer(modifier = Modifier.padding(4.dp))
                             }
                         }
                     }
-                } else {
-                    Column(
-                        modifier = Modifier.align(Alignment.Center),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = "오류가 발생하였습니다.",
-                            style = Typography.h2.copy(color = TextGray)
-                        )
-                        Spacer(modifier = Modifier.height(18.dp))
-                        Text(
-                            text = "재시도",
-                            style = Typography.h2.copy(color = LightSky, fontSize = 20.sp),
-                            modifier = Modifier
-                                .clickable { products.retry() }
-                        )
-                    }
+                }
+            } else {
+                Column(
+                    modifier = Modifier.align(Alignment.Center),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "오류가 발생하였습니다.",
+                        style = Typography.h2.copy(color = TextGray)
+                    )
+                    Spacer(modifier = Modifier.height(18.dp))
+                    Text(
+                        text = "재시도",
+                        style = Typography.h2.copy(color = LightSky, fontSize = 20.sp),
+                        modifier = Modifier
+                            .clickable { products.retry() }
+                    )
                 }
             }
         }

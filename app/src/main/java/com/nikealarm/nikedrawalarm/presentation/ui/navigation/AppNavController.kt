@@ -46,6 +46,7 @@ class AppNavController(
         ) {
             composable(route = UiScreen.ProductScreen.route) {
                 ProductRoute(
+                    actionEvent = gViewModel.event,
                     navigateDetailScreen = { product ->
                         if (product.collection != null) {
                             navigateToCollectionDetailScreen(product)

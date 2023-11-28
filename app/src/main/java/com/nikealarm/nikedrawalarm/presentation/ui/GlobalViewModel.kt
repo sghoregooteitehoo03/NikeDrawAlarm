@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.nikealarm.nikedrawalarm.data.model.entity.NotificationEntity
 import com.nikealarm.nikedrawalarm.domain.model.JoinedProductType
 import com.nikealarm.nikedrawalarm.domain.model.Product
+import com.nikealarm.nikedrawalarm.domain.model.ProductCategory
 import com.nikealarm.nikedrawalarm.domain.model.ProductInfo
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -49,14 +50,21 @@ class GlobalViewModel @Inject constructor() : ViewModel() {
     }
 
     // State
+    private val _selectedCategory: MutableState<ProductCategory> =
+        mutableStateOf(ProductCategory.All)
     private var _notificationEntity: MutableState<NotificationEntity?> = mutableStateOf(null)
     private val _dialogScreen: MutableState<DialogScreen> =
         mutableStateOf(DialogScreen.DialogDismiss)
     private val _event = MutableSharedFlow<ActionEvent>()
 
+    val selectedCategory: State<ProductCategory> = _selectedCategory
     val dialogScreen: State<DialogScreen> = _dialogScreen
     val notificationEntity: State<NotificationEntity?> = _notificationEntity
     val event = _event.asSharedFlow()
+
+    fun setSelectedCategory(category: ProductCategory) {
+        _selectedCategory.value = category
+    }
 
     fun dialogOpen(dialog: DialogScreen) {
         _dialogScreen.value = dialog
@@ -72,5 +80,6 @@ class GlobalViewModel @Inject constructor() : ViewModel() {
 }
 
 sealed interface ActionEvent {
+    data class ActionSelectCategory(val category: ProductCategory) : ActionEvent
     data object ActionNotification : ActionEvent
 }

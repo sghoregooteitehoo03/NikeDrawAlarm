@@ -50,6 +50,8 @@ fun ProductDetailRoute(
                         openDialog(DialogScreen.DialogAllowNotify)
                     }
                 }
+
+                else -> {}
             }
         }
     }
@@ -136,6 +138,8 @@ fun LoadProductDetailRoute(
                         openDialog(DialogScreen.DialogAllowNotify)
                     }
                 }
+
+                else -> {}
             }
         }
     }
