@@ -38,14 +38,15 @@ fun SettingScreen(
     onClearProductClick: (ClearProductType) -> Unit,
     onContactEmailClick: () -> Unit
 ) {
-    // TODO: 로딩 화면 구현
     Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
     ) {
         SettingLayout(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 14.dp),
             category = "알림",
             paddingValues = PaddingValues(start = 14.dp, end = 14.dp)
         ) { paddingValue ->

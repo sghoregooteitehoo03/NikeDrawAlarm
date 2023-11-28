@@ -27,7 +27,8 @@ class FavoriteMoreViewModel @Inject constructor(
         if (joinedCategory != null && _uiState.value.products == null)
             _uiState.update {
                 it.copy(
-                    products = getPagingJoinedProductUseCase(joinedCategory).cachedIn(viewModelScope)
+                    products = getPagingJoinedProductUseCase(joinedCategory).cachedIn(viewModelScope),
+                    sendType = joinedCategory
                 )
             }
     }
