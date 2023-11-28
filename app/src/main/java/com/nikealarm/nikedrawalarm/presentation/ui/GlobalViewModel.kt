@@ -81,5 +81,6 @@ class GlobalViewModel @Inject constructor() : ViewModel() {
 
 sealed interface ActionEvent {
     data class ActionSelectCategory(val category: ProductCategory) : ActionEvent
+    data class ActionShowMessage(val message: String) : ActionEvent
     data object ActionNotification : ActionEvent
 }

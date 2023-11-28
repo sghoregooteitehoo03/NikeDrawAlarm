@@ -2,10 +2,14 @@
 
 package com.nikealarm.nikedrawalarm.presentation.productDetailScreen
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -35,6 +39,11 @@ import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -42,6 +51,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
@@ -49,23 +59,23 @@ import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import coil.compose.rememberImagePainter
-import com.nikealarm.nikedrawalarm.domain.model.ProductInfo
+import com.nikealarm.nikedrawalarm.domain.model.ProductCategory
 import com.nikealarm.nikedrawalarm.presentation.ui.BorderedBox
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Black
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Gray
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.LightGray
+import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.NikeDrawAssistant
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Typography
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.White
+import kotlinx.coroutines.delay
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-// TODO: 알림 설정 시 Snack Bar 표시
 @Composable
 fun ProductDetailScreen(
     state: ProductDetailUiState,
-    onFavoriteClick: (ProductInfo?) -> Unit,
-    onLearnMoreClick: (String) -> Unit
+    onEvent: (ProductDetailUiEvent) -> Unit
 ) {
     Box(
         modifier = Modifier
@@ -94,6 +104,7 @@ fun ProductDetailScreen(
                     subTitle = productInfo?.subTitle ?: "",
                     price = DecimalFormat("₩#,###").format(productInfo?.price ?: 0),
                     eventDate = productInfo?.eventDate ?: 0L,
+                    category = productInfo?.category ?: ProductCategory.Feed,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(start = 14.dp, end = 14.dp)
@@ -132,8 +143,12 @@ fun ProductDetailScreen(
                     .fillMaxWidth()
                     .align(Alignment.BottomCenter),
                 isFavorite = state.isFavorite,
-                onFavoriteClick = { onFavoriteClick(productInfo) },
-                onLearnMoreClick = { onLearnMoreClick(productInfo?.url ?: "") }
+                onFavoriteClick = { onEvent(ProductDetailUiEvent.ClickFavorite) },
+                onLearnMoreClick = {
+                    onEvent(
+                        ProductDetailUiEvent.ClickLearnMore(productInfo?.url ?: "")
+                    )
+                }
             )
         }
     }
@@ -202,7 +217,8 @@ fun ProductInformation(
     title: String,
     subTitle: String,
     price: String,
-    eventDate: Long = 0L
+    eventDate: Long = 0L,
+    category: ProductCategory
 ) {
     Column(modifier = modifier) {
         Text(
@@ -229,9 +245,14 @@ fun ProductInformation(
                 Spacer(modifier = Modifier.width(2.dp))
                 Text(
                     text = SimpleDateFormat(
-                        "M. d. a hh:mm",
+                        "M. d. a hh:mm" +
+                                when (category) {
+                                    ProductCategory.Draw -> "응모"
+                                    ProductCategory.Coming -> "출시"
+                                    else -> ""
+                                },
                         Locale.KOREA
-                    ).format(eventDate) + "출시",
+                    ).format(eventDate),
                     style = Typography.h4
                 )
             }
@@ -301,6 +322,7 @@ fun ProductSizeItem(
 fun ProductButton(
     modifier: Modifier = Modifier,
     isFavorite: Boolean,
+    favoriteEnabled: Boolean = true,
     onFavoriteClick: () -> Unit = {},
     onLearnMoreClick: () -> Unit = {}
 ) {
@@ -315,7 +337,13 @@ fun ProductButton(
                 }
                 .size(54.dp)
                 .background(color = Gray)
-                .clickable { onFavoriteClick() },
+                .then(
+                    if (favoriteEnabled) {
+                        Modifier.clickable { onFavoriteClick() }
+                    } else {
+                        Modifier
+                    }
+                ),
             contentAlignment = Alignment.Center
         ) {
             val icon = if (isFavorite) {
@@ -323,12 +351,31 @@ fun ProductButton(
             } else {
                 Icons.Default.FavoriteBorder
             }
+            val size = remember { Animatable(1f) }
+            var isInit by remember { mutableStateOf(true) }
+
+            // LaunchedEffect를 사용하여 바운드 효과를 주는 애니메이션 추가
+            LaunchedEffect(isFavorite) {
+                if (isFavorite && !isInit) {
+                    size.animateTo(
+                        1.25f,
+                        animationSpec = spring(stiffness = Spring.StiffnessMedium)
+                    )
+                    delay(50)
+                    size.animateTo(1f, animationSpec = spring(stiffness = Spring.StiffnessMedium))
+                }
+                isInit = false
+            }
 
             Icon(
                 imageVector = icon,
                 contentDescription = "Favorite",
-                modifier = Modifier.size(24.dp),
-                tint = Color.Red
+                modifier = Modifier.size(24.dp * size.value),
+                tint = if (favoriteEnabled) {
+                    Color.Red
+                } else {
+                    Color.Red.copy(alpha = 0.4f)
+                }
             )
         }
         Box(
@@ -346,9 +393,65 @@ fun ProductButton(
         ) {
             Text(
                 text = "자세히 보기",
-                style = Typography.h3,
+                style = Typography.h3.copy(fontWeight = FontWeight.ExtraBold),
                 color = White
             )
         }
+    }
+}
+
+@Composable
+fun BouncingIcon() {
+    var isFavorite by remember { mutableStateOf(false) }
+
+    // Animatable을 사용하여 크기를 애니메이트
+    val size = remember { Animatable(1f) }
+
+    // LaunchedEffect를 사용하여 바운드 효과를 주는 애니메이션 추가
+    LaunchedEffect(isFavorite) {
+        if (isFavorite) {
+            size.animateTo(1.25f, animationSpec = spring(stiffness = Spring.StiffnessMedium))
+            delay(50)
+            size.animateTo(1f, animationSpec = spring(stiffness = Spring.StiffnessMedium))
+        }
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // 아이콘에 Modifier.graphicsLayer를 사용하여 크기 조절
+        if (isFavorite) {
+            Icon(
+                imageVector = Icons.Default.Favorite,
+                contentDescription = null,
+                modifier = Modifier
+                    .size(48.dp * size.value)
+                    .clickable {
+                        isFavorite = !isFavorite
+                    }
+            )
+        } else {
+            Icon(
+                imageVector = Icons.Default.FavoriteBorder,
+                contentDescription = null,
+                modifier = Modifier
+                    .size(48.dp)
+                    .clickable {
+                        isFavorite = !isFavorite
+                    }
+            )
+        }
+    }
+}
+
+@Preview
+@Composable
+fun BouncingIconPreview() {
+    NikeDrawAssistant {
+        BouncingIcon()
     }
 }

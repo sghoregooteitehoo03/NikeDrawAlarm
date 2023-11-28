@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.nikealarm.nikedrawalarm.domain.model.ProductCategory
 import com.nikealarm.nikedrawalarm.domain.model.ProductInfo
 import com.nikealarm.nikedrawalarm.presentation.productDetailScreen.Explains
 import com.nikealarm.nikedrawalarm.presentation.productDetailScreen.ImagePager
@@ -49,6 +50,7 @@ fun CollectionDetailScreen(
                 subTitle = collection?.subTitle ?: "",
                 price = collection?.price ?: "",
                 eventDate = 0L,
+                category = ProductCategory.Feed,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(start = 14.dp, end = 14.dp)
@@ -94,6 +96,7 @@ fun CollectionDetailScreen(
                 .fillMaxWidth()
                 .align(Alignment.BottomCenter),
             isFavorite = false,
+            favoriteEnabled = false,
             onLearnMoreClick = { onLearnMoreClick(collection?.url ?: "") }
         )
     }

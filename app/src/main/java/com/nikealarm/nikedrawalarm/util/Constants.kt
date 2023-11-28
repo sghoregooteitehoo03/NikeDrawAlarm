@@ -4,6 +4,8 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 
 object Constants {
+    const val LOCALIZING =32400000L
+
     const val DEVELOPER_EMAIL = "sghoregoodeveloper@gmail.com"
 
     const val NIKE_API_URL = "https://api.nike.com/product_feed/threads/v3/"

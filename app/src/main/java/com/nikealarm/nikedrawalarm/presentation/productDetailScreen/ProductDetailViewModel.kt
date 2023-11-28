@@ -13,10 +13,12 @@ import com.nikealarm.nikedrawalarm.domain.usecase.InsertLatestUseCase
 import com.nikealarm.nikedrawalarm.domain.usecase.SetNotificationUseCase
 import com.nikealarm.nikedrawalarm.util.AlarmBuilder
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -34,12 +36,18 @@ class ProductDetailViewModel @Inject constructor(
     private val setNotificationUseCase: SetNotificationUseCase
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(ProductDetailUiState())
+    private val _uiEvent = MutableSharedFlow<ProductDetailUiEvent>()
+
     val uiState = _uiState
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.Eagerly,
             initialValue = _uiState.value
         )
+    val uiEvent = _uiEvent.shareIn(
+        scope = viewModelScope,
+        started = SharingStarted.Eagerly
+    )
 
     fun loadProduct(
         productId: String,
@@ -56,46 +64,51 @@ class ProductDetailViewModel @Inject constructor(
     fun initValue(
         productInfo: ProductInfo?,
         onNotificationChange: (NotificationEntity?) -> Unit
-    ) {
+    ) = viewModelScope.launch {
         if (_uiState.value.productInfo == null && productInfo != null) {
             val productId = productInfo.productId
 
-            viewModelScope.launch {
-                insertLatestUseCase(productInfo) // 최근에 본 제품 추가
-
-                combine(
-                    getAllowNotifyUseCase(),
-                    getFavoriteUseCase(productId),
-                    getNotificationUseCase(productId)
-                ) { isAllowNotify, favorite, notification ->
-                    val notificationEntity = if (productInfo.eventDate != 0L) { // 이벤트 중인 상품일 때
-                        if (alarmBuilder.isExistProductAlarm(productId) // 알람 설정된 상품일 경우
-                            && notification != null
-                        ) {
-                            notification
-                        } else { // 알람 설정이 안된 상품일 경우
-                            NotificationEntity(productId, 0L, 0L, 0L)
-                        }
-                    } else {
-                        null
+            insertLatestUseCase(productInfo) // 최근에 본 제품 추가
+            combine(
+                getAllowNotifyUseCase(),
+                getFavoriteUseCase(productId),
+                getNotificationUseCase(productId)
+            ) { isAllowNotify, favorite, notification ->
+                val notificationEntity = if (productInfo.eventDate != 0L) { // 이벤트 중인 상품일 때
+                    if (alarmBuilder.isExistProductAlarm(productId) // 알람 설정된 상품일 경우
+                        && notification != null
+                    ) {
+                        notification
+                    } else { // 알람 설정이 안된 상품일 경우
+                        NotificationEntity(productId, 0L, 0L, 0L)
                     }
+                } else {
+                    null
+                }
 
-                    onNotificationChange(notificationEntity)
-                    _uiState.update {
-                        it.copy(
-                            productInfo = productInfo,
-                            isAllowNotify = isAllowNotify,
-                            isFavorite = favorite != null,
-                            notificationEntity = notificationEntity,
-                            isLoading = false
-                        )
-                    }
-                }.collect()
-            }
+                onNotificationChange(notificationEntity)
+                _uiState.update {
+                    it.copy(
+                        productInfo = productInfo,
+                        isAllowNotify = isAllowNotify,
+                        isFavorite = favorite != null,
+                        notificationEntity = notificationEntity,
+                        isLoading = false
+                    )
+                }
+            }.collect()
+        } else if (productInfo == null) {
+            _uiEvent.emit(ProductDetailUiEvent.Error("제품을 읽어오는 과정에서 오류가 발생하였습니다."))
         }
     }
 
-    fun clickFavorite(productInfo: ProductInfo?) = viewModelScope.launch {
+    fun handelEvent(onEvent: ProductDetailUiEvent) =
+        viewModelScope.launch {
+            _uiEvent.emit(onEvent)
+        }
+
+    fun clickFavorite() = viewModelScope.launch {
+        val productInfo = _uiState.value.productInfo
         if (productInfo != null) {
             insertFavoriteUseCase(
                 productInfo = productInfo,
@@ -111,6 +124,7 @@ class ProductDetailViewModel @Inject constructor(
                 if (productInfo != null) {
                     setNotificationUseCase(productInfo, notificationTime)
                 }
+                _uiEvent.emit(ProductDetailUiEvent.SuccessInsertNotification(notificationTime))
             }
         }
 }

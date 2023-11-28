@@ -5,6 +5,8 @@ import android.util.Log
 import android.widget.Toast
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material.Snackbar
+import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -22,14 +24,22 @@ import com.nikealarm.nikedrawalarm.presentation.settingScreen.InformationDialog
 import com.nikealarm.nikedrawalarm.presentation.ui.ActionEvent
 import com.nikealarm.nikedrawalarm.presentation.ui.DialogScreen
 import com.nikealarm.nikedrawalarm.presentation.ui.DisposableEffectWithLifeCycle
+import com.nikealarm.nikedrawalarm.util.Constants
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.flattenMerge
+import kotlinx.coroutines.flow.flowOf
+import java.text.SimpleDateFormat
+import java.util.Locale
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @Composable
 fun ProductDetailRoute(
     viewModel: ProductDetailViewModel = hiltViewModel(),
     sendProductInfo: ProductInfo?,
     actionEvent: SharedFlow<ActionEvent>,
+    showSnackBar: (String) -> Unit,
     dialogScreen: DialogScreen,
     openDialog: (DialogScreen) -> Unit,
     onDismiss: () -> Unit,
@@ -40,20 +50,51 @@ fun ProductDetailRoute(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
-    LaunchedEffect(key1 = actionEvent) {
-        actionEvent.collectLatest { event ->
-            when (event) {
-                is ActionEvent.ActionNotification -> {
-                    if (state.isAllowNotify) {
-                        openDialog(DialogScreen.DialogSetNotify)
-                    } else {
-                        openDialog(DialogScreen.DialogAllowNotify)
+    LaunchedEffect(key1 = true) {
+        flowOf(actionEvent, viewModel.uiEvent)
+            .flattenMerge()
+            .collectLatest { event ->
+                when (event) {
+                    is ActionEvent.ActionNotification -> {
+                        if (state.isAllowNotify) {
+                            openDialog(DialogScreen.DialogSetNotify)
+                        } else {
+                            openDialog(DialogScreen.DialogAllowNotify)
+                        }
                     }
-                }
 
-                else -> {}
+                    is ProductDetailUiEvent.ClickFavorite -> {
+                        viewModel.clickFavorite()
+                    }
+
+                    is ProductDetailUiEvent.ClickLearnMore -> {
+                        openCustomTabs(context, url = event.url)
+                    }
+
+                    is ProductDetailUiEvent.SuccessInsertNotification -> {
+                        val message = if (event.notificationTime != 0L) {
+                            SimpleDateFormat(
+                                if (event.notificationTime >= 3600000) {
+                                    "제품 출시 h시간 전에 알림이 울립니다."
+                                } else {
+                                    "제품 출시 m분 전에 알림이 울립니다."
+                                }, Locale.KOREA
+                            )
+                                .format(event.notificationTime.minus(Constants.LOCALIZING))
+                        } else {
+                            "알림이 해제 되었습니다."
+                        }
+
+                        showSnackBar(message)
+                    }
+
+                    is ProductDetailUiEvent.Error -> {
+                        showSnackBar(event.message)
+                    }
+
+                    else -> {}
+                }
             }
-        }
     }
 
     DisposableEffectWithLifeCycle(
@@ -68,10 +109,7 @@ fun ProductDetailRoute(
 
     ProductDetailScreen(
         state = state,
-        onFavoriteClick = viewModel::clickFavorite,
-        onLearnMoreClick = { url ->
-            openCustomTabs(context, url)
-        }
+        onEvent = viewModel::handelEvent
     )
 
     when (dialogScreen) {
@@ -82,7 +120,8 @@ fun ProductDetailRoute(
                     viewModel.setNotification(notificationTime = it)
                     onDismiss()
                 },
-                settingTime = state.notificationEntity?.notificationDate ?: 0L
+                settingTime = state.notificationEntity?.notificationDate ?: 0L,
+                context = context
             )
         }
 
@@ -101,12 +140,14 @@ fun ProductDetailRoute(
     }
 }
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @Composable
 fun LoadProductDetailRoute(
     viewModel: ProductDetailViewModel = hiltViewModel(),
     productId: String,
     slug: String,
     actionEvent: SharedFlow<ActionEvent>,
+    showSnackBar: (String) -> Unit,
     openDialog: (DialogScreen) -> Unit,
     dialogScreen: DialogScreen,
     onDismiss: () -> Unit,
@@ -128,31 +169,54 @@ fun LoadProductDetailRoute(
         onDispose = onDispose
     )
 
-    LaunchedEffect(key1 = actionEvent) {
-        actionEvent.collectLatest { event ->
-            when (event) {
-                is ActionEvent.ActionNotification -> {
-                    if (state.isAllowNotify) {
-                        openDialog(DialogScreen.DialogSetNotify)
-                    } else {
-                        openDialog(DialogScreen.DialogAllowNotify)
+    LaunchedEffect(key1 = true) {
+        flowOf(actionEvent, viewModel.uiEvent)
+            .flattenMerge()
+            .collectLatest { event ->
+                when (event) {
+                    is ActionEvent.ActionNotification -> {
+                        if (state.isAllowNotify) {
+                            openDialog(DialogScreen.DialogSetNotify)
+                        } else {
+                            openDialog(DialogScreen.DialogAllowNotify)
+                        }
                     }
-                }
 
-                else -> {}
+                    is ProductDetailUiEvent.ClickFavorite -> {
+                        viewModel.clickFavorite()
+                    }
+
+                    is ProductDetailUiEvent.ClickLearnMore -> {
+                        openCustomTabs(context, url = event.url)
+                    }
+
+                    is ProductDetailUiEvent.SuccessInsertNotification -> {
+                        val message = if (event.notificationTime != 0L) {
+                            SimpleDateFormat(
+                                if (event.notificationTime >= 3600000) {
+                                    "제품 출시 h시간 전에 알림이 울립니다."
+                                } else {
+                                    "제품 출시 m분 전에 알림이 울립니다."
+                                }, Locale.KOREA
+                            )
+                                .format(event.notificationTime.minus(Constants.LOCALIZING))
+                        } else {
+                            "알림이 해제 되었습니다."
+                        }
+
+                        showSnackBar(message)
+                    }
+                    is ProductDetailUiEvent.Error -> {
+                        showSnackBar(event.message)
+                    }
+                    else -> {}
+                }
             }
-        }
     }
 
     ProductDetailScreen(
         state = state,
-        onFavoriteClick = viewModel::clickFavorite,
-        onLearnMoreClick = { url ->
-            openCustomTabs(
-                context,
-                url
-            )
-        }
+        onEvent = viewModel::handelEvent
     )
 
     when (dialogScreen) {
@@ -163,7 +227,8 @@ fun LoadProductDetailRoute(
                     viewModel.setNotification(notificationTime = it)
                     onDismiss()
                 },
-                settingTime = state.notificationEntity?.notificationDate ?: 0L
+                settingTime = state.notificationEntity?.notificationDate ?: 0L,
+                context = context
             )
         }
 

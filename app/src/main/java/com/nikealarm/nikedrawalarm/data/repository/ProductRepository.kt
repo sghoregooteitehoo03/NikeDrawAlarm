@@ -34,16 +34,21 @@ class ProductRepository @Inject constructor(
         UpcomingPagingSource(retrofitService)
     }.flow
 
-    suspend fun getProductInfo(productId: String, slug: String): ProductInfo {
-        val retrofitService = getRetrofitService()
-        val productData =
-            retrofitService.getProductInfo("seoSlugs%28{slug}%29".replace("{slug}", slug))
+    suspend fun getProductInfo(productId: String, slug: String): ProductInfo? {
+        try {
+            val retrofitService = getRetrofitService()
+            val productData =
+                retrofitService.getProductInfo("seoSlugs%28{slug}%29".replace("{slug}", slug))
 
-        // TODO: 읽어오는 중 버그가 발생하는 상품 존재
-        val productObject = productData.objects[0]
-        val productInfoList = translateToProductInfoList(productObject)
+            // TODO: 읽어오는 중 버그가 발생하는 상품 존재
+            val productObject = productData.objects[0]
+            val productInfoList = translateToProductInfoList(productObject)
 
-        return productInfoList.filter { it.productId == productId }[0]
+            return productInfoList.filter { it.productId == productId }[0]
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return null
+        }
     }
 
     // 알림 설정

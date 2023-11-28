@@ -21,6 +21,7 @@ import com.nikealarm.nikedrawalarm.presentation.productDetailScreen.LoadProductD
 import com.nikealarm.nikedrawalarm.presentation.productDetailScreen.ProductDetailRoute
 import com.nikealarm.nikedrawalarm.presentation.productScreen.ProductRoute
 import com.nikealarm.nikedrawalarm.presentation.settingScreen.SettingRoute
+import com.nikealarm.nikedrawalarm.presentation.ui.ActionEvent
 import com.nikealarm.nikedrawalarm.presentation.ui.DialogScreen
 import com.nikealarm.nikedrawalarm.presentation.ui.GlobalViewModel
 import com.nikealarm.nikedrawalarm.presentation.ui.UiScreen
@@ -102,6 +103,7 @@ class AppNavController(
                     sendProductInfo = gViewModel.getProductInfoData(),
                     dialogScreen = dialogScreen,
                     actionEvent = gViewModel.event,
+                    showSnackBar = { gViewModel.setActionEvent(ActionEvent.ActionShowMessage(it)) },
                     openDialog = { gViewModel.dialogOpen(it) },
                     onDismiss = { gViewModel.dialogOpen(DialogScreen.DialogDismiss) },
                     onDialogButtonClick = {
@@ -132,6 +134,7 @@ class AppNavController(
                     slug = backStackEntry.arguments?.getString("productSlug")
                         ?: "",
                     actionEvent = gViewModel.event,
+                    showSnackBar = { gViewModel.setActionEvent(ActionEvent.ActionShowMessage(it)) },
                     dialogScreen = dialogScreen,
                     openDialog = { gViewModel.dialogOpen(it) },
                     onDispose = { gViewModel.sendProductInfoData(null) },

@@ -27,6 +27,8 @@ import androidx.compose.material.icons.filled.ArrowBackIos
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.NotificationsNone
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.rememberScaffoldState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -46,6 +48,7 @@ import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.NikeDrawAssistant
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Typography
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.White
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collectLatest
 
 // TODO: Navigation 관리하는 Class 구현
 @AndroidEntryPoint
@@ -64,9 +67,24 @@ class MainActivity : ComponentActivity() {
         setContent {
             NikeDrawAssistant {
                 val navController = rememberNavController()
+                val scaffoldState = rememberScaffoldState()
                 val appNavController = remember { AppNavController(gViewModel, navController) }
 
+                LaunchedEffect(key1 = gViewModel.event) {
+                    gViewModel.event.collectLatest { event ->
+                        when (event) {
+                            is ActionEvent.ActionShowMessage -> {
+                                scaffoldState.snackbarHostState
+                                    .showSnackbar(event.message)
+                            }
+
+                            else -> {}
+                        }
+                    }
+                }
+
                 Scaffold(
+                    scaffoldState = scaffoldState,
                     topBar = {
                         val backStack = navController.currentBackStackEntryAsState()
                         val currentRoute = backStack.value?.destination?.route ?: ""

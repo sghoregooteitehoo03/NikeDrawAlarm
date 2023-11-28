@@ -1,5 +1,9 @@
 package com.nikealarm.nikedrawalarm.presentation.setNotificationScreen
 
+import android.content.Context
+import android.os.Build
+import android.os.VibrationEffect
+import android.os.Vibrator
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,6 +20,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,10 +36,12 @@ import java.util.Locale
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SetNotificationDialog(
+    settingTime: Long,
+    context: Context,
     onDismissRequest: () -> Unit,
-    onButtonClick: (Long) -> Unit,
-    settingTime: Long
+    onButtonClick: (Long) -> Unit
 ) {
+    val vibrator = remember { context.getSystemService(Vibrator::class.java) }
     val timeList = remember { listOf(0L, 60000L, 300000L, 600000L, 1800000L, 3600000L, 7200000L) }
     val initialPage = timeList.indexOf(settingTime)
     val pagerState = rememberPagerState(pageCount = { timeList.size }, initialPage = initialPage)
@@ -54,7 +61,8 @@ fun SetNotificationDialog(
                         "설정 안함"
                     }
                 },
-                pagerState = pagerState
+                pagerState = pagerState,
+                vibrator = vibrator
             )
             Spacer(modifier = Modifier.height(32.dp))
         },
@@ -73,8 +81,18 @@ fun NotificationPager(
     modifier: Modifier = Modifier,
     pagerList: List<String>,
     pagerState: PagerState,
+    vibrator: Vibrator
 ) {
     val currentPage = pagerState.currentPage
+
+    LaunchedEffect(key1 = currentPage) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            vibrator.vibrate(VibrationEffect.createOneShot(300, VibrationEffect.DEFAULT_AMPLITUDE))
+        } else {
+            @Suppress("DEPRECATION")
+            vibrator.vibrate(300)
+        }
+    }
 
     Box(
         modifier = modifier,
@@ -85,7 +103,6 @@ fun NotificationPager(
             Spacer(modifier = Modifier.height(46.dp))
             Divider(color = Gray)
         }
-        // TODO: 페이지 넘길때 마다 진동울리게
         VerticalPager(
             state = pagerState,
             modifier = Modifier
