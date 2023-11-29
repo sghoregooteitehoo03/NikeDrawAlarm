@@ -35,7 +35,7 @@ class ProductRepository @Inject constructor(
     }.flow
 
     suspend fun getProductInfo(productId: String, slug: String): ProductInfo? {
-        try {
+        return try {
             val retrofitService = getRetrofitService()
             val productData =
                 retrofitService.getProductInfo("seoSlugs%28{slug}%29".replace("{slug}", slug))
@@ -44,10 +44,10 @@ class ProductRepository @Inject constructor(
             val productObject = productData.objects[0]
             val productInfoList = translateToProductInfoList(productObject)
 
-            return productInfoList.filter { it.productId == productId }[0]
+            productInfoList.filter { it.productId == productId }[0]
         } catch (e: Exception) {
             e.printStackTrace()
-            return null
+            null
         }
     }
 

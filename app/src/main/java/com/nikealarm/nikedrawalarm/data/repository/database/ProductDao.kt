@@ -4,7 +4,6 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import androidx.room.Transaction
 import com.nikealarm.nikedrawalarm.data.model.entity.FavoriteEntity
 import com.nikealarm.nikedrawalarm.data.model.entity.FavoriteProductEntity
 import com.nikealarm.nikedrawalarm.data.model.entity.LatestEntity
@@ -102,7 +101,7 @@ interface ProductDao {
     suspend fun getFavoriteProductsPageData(limit: Int, offset: Int): List<FavoriteProductEntity>
 
 
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertProductData(product: ProductEntity)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
