@@ -2,6 +2,13 @@ package com.nikealarm.nikedrawalarm.presentation.ui.navigation
 
 import android.content.Intent
 import android.net.Uri
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -41,9 +48,11 @@ class AppNavController(
         val context = LocalContext.current
 
         NavHost(
+            modifier = modifier,
             navController = navController,
             startDestination = UiScreen.ProductScreen.route,
-            modifier = modifier
+            enterTransition = { EnterTransition.None },
+            exitTransition = { ExitTransition.None }
         ) {
             composable(route = UiScreen.ProductScreen.route) {
                 ProductRoute(
@@ -71,7 +80,15 @@ class AppNavController(
                     onCreate = { gViewModel.clearData() }
                 )
             }
-            composable(route = UiScreen.SettingScreen.route) {
+            composable(
+                route = UiScreen.SettingScreen.route,
+                enterTransition = { enterTransition() },
+                exitTransition = { exitTransition() },
+                popEnterTransition = { popEnterTransition() },
+                popExitTransition = {
+                    popExitTransition()
+                }
+            ) {
                 val dialogScreen by gViewModel.dialogScreen
 
                 SettingRoute(
@@ -95,7 +112,19 @@ class AppNavController(
                 )
             }
             composable(
-                route = UiScreen.ProductDetailScreen.route
+                route = UiScreen.ProductDetailScreen.route,
+                enterTransition = {
+                    enterTransition()
+                },
+                popEnterTransition = {
+                    popEnterTransition()
+                },
+                exitTransition = {
+                    exitTransition()
+                },
+                popExitTransition = {
+                    popExitTransition()
+                }
             ) {
                 val dialogScreen by gViewModel.dialogScreen
 
@@ -122,6 +151,18 @@ class AppNavController(
             }
             composable(
                 route = UiScreen.LoadProductDetailScreen.route,
+                enterTransition = {
+                    enterTransition()
+                },
+                popEnterTransition = {
+                    popEnterTransition()
+                },
+                exitTransition = {
+                    exitTransition()
+                },
+                popExitTransition = {
+                    popExitTransition()
+                },
                 deepLinks = listOf(navDeepLink {
                     uriPattern =
                         Constants.PRODUCT_DETAIL_URI + "/{productId}/{productSlug}"
@@ -154,7 +195,21 @@ class AppNavController(
                     }
                 )
             }
-            composable(route = UiScreen.CollectionDetailScreen.route) {
+            composable(
+                route = UiScreen.CollectionDetailScreen.route,
+                enterTransition = {
+                    enterTransition()
+                },
+                popEnterTransition = {
+                    popEnterTransition()
+                },
+                exitTransition = {
+                    exitTransition()
+                },
+                popExitTransition = {
+                    popExitTransition()
+                }
+            ) {
                 CollectionDetailRoute(
                     sendProduct = gViewModel.getProductData(),
                     onProductItemClick = { productInfo ->
@@ -163,7 +218,21 @@ class AppNavController(
                     onDispose = { gViewModel.sendProductData(null) }
                 )
             }
-            composable(route = UiScreen.FavoriteMoreScreen.route) {
+            composable(
+                route = UiScreen.FavoriteMoreScreen.route,
+                enterTransition = {
+                    enterTransition()
+                },
+                popEnterTransition = {
+                    popEnterTransition()
+                },
+                exitTransition = {
+                    exitTransition()
+                },
+                popExitTransition = {
+                    popExitTransition()
+                }
+            ) {
                 FavoriteMoreRoute(
                     sendCategory = gViewModel.getJoinedProductCategory(),
                     onProductClick = { productEntity ->
@@ -202,4 +271,26 @@ class AppNavController(
     fun navigateToSettingScreen() {
         navController.navigate(route = UiScreen.SettingScreen.route)
     }
+
+    private fun enterTransition() =
+        fadeIn(animationSpec = tween(500)) + scaleIn(
+            animationSpec = tween(300),
+            initialScale = 1.2f
+        )
+
+    private fun popEnterTransition() =
+        fadeIn(animationSpec = tween(500)) + scaleIn(
+            animationSpec = tween(300),
+            initialScale = 0.8f
+        )
+
+    private fun exitTransition() =
+        fadeOut(animationSpec = tween(100)) + scaleOut(animationSpec = tween(500))
+
+    private fun popExitTransition() =
+        fadeOut(animationSpec = tween(100)) + scaleOut(
+            animationSpec = tween(500),
+            targetScale = 1.2f
+        )
+
 }

@@ -21,7 +21,10 @@ import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -84,14 +87,18 @@ fun NotificationPager(
     vibrator: Vibrator
 ) {
     val currentPage = pagerState.currentPage
+    var isInit by remember { mutableStateOf(true) }
 
     LaunchedEffect(key1 = currentPage) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            vibrator.vibrate(VibrationEffect.createOneShot(300, VibrationEffect.DEFAULT_AMPLITUDE))
-        } else {
-            @Suppress("DEPRECATION")
-            vibrator.vibrate(300)
+        if (!isInit) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                vibrator.vibrate(VibrationEffect.createOneShot(15, 100))
+            } else {
+                @Suppress("DEPRECATION")
+                vibrator.vibrate(15)
+            }
         }
+        isInit = false
     }
 
     Box(
