@@ -24,7 +24,11 @@ class ProductDatabaseRepository @Inject constructor(
     fun getPagingJoinedProduct(joinedCategory: JoinedProductType) = Pager(
         config = PagingConfig(20)
     ) {
-        JoinedProductPagingSource(dao, joinedCategory)
+        JoinedProductPagingSource(
+            dao,
+            joinedCategory,
+            pageSize = 20
+        )
     }.flow
 
     suspend fun getProductData(productId: String) =

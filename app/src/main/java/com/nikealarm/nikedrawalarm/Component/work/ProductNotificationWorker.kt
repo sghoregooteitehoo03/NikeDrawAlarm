@@ -37,7 +37,6 @@ class ProductNotificationWorker @AssistedInject constructor(
 
         // 설정에서 알림허용을 하였고 권한들이 설정되었을 때만 동작
         return if (isAllowNotify && productRepository.checkAlarmPermissions()) {
-            // TODO: 알림 안울리는 버그 발생
             val productEntity =
                 databaseRepository.getProductData(productId) ?: return Result.failure()
             val notificationEntity =

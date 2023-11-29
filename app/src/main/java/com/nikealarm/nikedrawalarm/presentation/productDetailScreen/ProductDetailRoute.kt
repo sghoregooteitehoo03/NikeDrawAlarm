@@ -247,7 +247,6 @@ fun LoadProductDetailRoute(
     }
 }
 
-// TODO: 사이트 안열리는 버그
 private fun openCustomTabs(context: Context, url: String) {
     try {
         Log.i("check", "url: $url")

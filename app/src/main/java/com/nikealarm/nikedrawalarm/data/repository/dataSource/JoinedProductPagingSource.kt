@@ -11,7 +11,8 @@ import java.util.Locale
 
 class JoinedProductPagingSource(
     private val dao: ProductDao,
-    private val joinedCategory: JoinedProductType
+    private val joinedCategory: JoinedProductType,
+    private val pageSize: Int
 ) : PagingSource<Int, JoinedProduct>() {
     override fun getRefreshKey(state: PagingState<Int, JoinedProduct>): Int? {
         return state.anchorPosition
@@ -20,10 +21,9 @@ class JoinedProductPagingSource(
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, JoinedProduct> {
         return try {
             val offset = params.key ?: 0
-            val limit = offset + 20
             val joinedProduct = when (joinedCategory) {
                 JoinedProductType.LatestProduct -> {
-                    val product = dao.getLatestProductsPageData(limit, offset)
+                    val product = dao.getLatestProductsPageData(pageSize, offset)
                     product.map {
                         JoinedProduct(
                             productEntity = it.productEntity,
@@ -33,7 +33,7 @@ class JoinedProductPagingSource(
                 }
 
                 JoinedProductType.NotifyProduct -> {
-                    val product = dao.getNotifyProductsPageData(limit, offset)
+                    val product = dao.getNotifyProductsPageData(pageSize, offset)
                     product.map {
                         JoinedProduct(
                             productEntity = it.productEntity,
@@ -55,7 +55,7 @@ class JoinedProductPagingSource(
                 }
 
                 JoinedProductType.FavoriteProduct -> {
-                    val product = dao.getFavoriteProductsPageData(limit, offset)
+                    val product = dao.getFavoriteProductsPageData(pageSize, offset)
                     product.map {
                         JoinedProduct(
                             productEntity = it.productEntity,
@@ -73,13 +73,14 @@ class JoinedProductPagingSource(
                 }
             }
 
-            if (joinedProduct.isEmpty())
-                throw NullPointerException()
-
             LoadResult.Page(
                 data = joinedProduct,
                 prevKey = null,
-                nextKey = limit
+                nextKey = if (joinedProduct.isNotEmpty()) {
+                    offset + pageSize
+                } else {
+                    null
+                }
             )
         } catch (e: Exception) {
             e.printStackTrace()

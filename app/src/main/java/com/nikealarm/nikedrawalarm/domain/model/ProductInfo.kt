@@ -53,10 +53,18 @@ fun translateToProductInfoList(filterProduct: Objects): List<ProductInfo> {
         .nodes
         .filter { it.subType == "carousel" } // 제품들만 필터링
         .map { nodes ->
-            val explains: String =
-                nodes.properties.jsonBody?.content?.get(0)?.content?.filter {
-                    !it.text.contains("SNKRS")
-                }?.get(0)?.text ?: ""
+            var explains = ""
+            val jsonBody = nodes.properties.jsonBody?.content?.get(0)?.content
+            for (i in 0 until (jsonBody?.size ?: 0)) {
+                val content = jsonBody?.get(i)?.text
+                if (content?.contains("SKU") == true) {
+                    explains += content
+                    break
+                }
+
+                explains += "$content\n\n" // 제품에 관한 설명을 추가함
+            }
+
             val productId = nodes.properties.actions[0].product.productId
 
             try {

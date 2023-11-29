@@ -393,65 +393,9 @@ fun ProductButton(
         ) {
             Text(
                 text = "자세히 보기",
-                style = Typography.h3.copy(fontWeight = FontWeight.ExtraBold),
+                style = Typography.h4,
                 color = White
             )
         }
-    }
-}
-
-@Composable
-fun BouncingIcon() {
-    var isFavorite by remember { mutableStateOf(false) }
-
-    // Animatable을 사용하여 크기를 애니메이트
-    val size = remember { Animatable(1f) }
-
-    // LaunchedEffect를 사용하여 바운드 효과를 주는 애니메이션 추가
-    LaunchedEffect(isFavorite) {
-        if (isFavorite) {
-            size.animateTo(1.25f, animationSpec = spring(stiffness = Spring.StiffnessMedium))
-            delay(50)
-            size.animateTo(1f, animationSpec = spring(stiffness = Spring.StiffnessMedium))
-        }
-    }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        // 아이콘에 Modifier.graphicsLayer를 사용하여 크기 조절
-        if (isFavorite) {
-            Icon(
-                imageVector = Icons.Default.Favorite,
-                contentDescription = null,
-                modifier = Modifier
-                    .size(48.dp * size.value)
-                    .clickable {
-                        isFavorite = !isFavorite
-                    }
-            )
-        } else {
-            Icon(
-                imageVector = Icons.Default.FavoriteBorder,
-                contentDescription = null,
-                modifier = Modifier
-                    .size(48.dp)
-                    .clickable {
-                        isFavorite = !isFavorite
-                    }
-            )
-        }
-    }
-}
-
-@Preview
-@Composable
-fun BouncingIconPreview() {
-    NikeDrawAssistant {
-        BouncingIcon()
     }
 }
