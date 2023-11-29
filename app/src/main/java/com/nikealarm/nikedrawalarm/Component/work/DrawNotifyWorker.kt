@@ -34,7 +34,7 @@ class DrawNotifyWorker @AssistedInject constructor(
 
     override suspend fun doWork(): Result {
         val isAllow = databaseRepository.getAllowDrawNotification().first()
-        if (!isAllow)
+        if (!isAllow && !productRepository.checkAlarmPermissions())
             return Result.failure()
 
         val productInfoList = mutableListOf<ProductInfo>()

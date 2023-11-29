@@ -18,7 +18,8 @@ class SetNotificationUseCase @Inject constructor(
             val triggerTime = productInfo.eventDate.minus(notificationTime)
 
             productRepository.setNotificationProduct(
-                productInfo,
+                productInfo.productId,
+                productUrl = productInfo.url,
                 triggerTime
             )
             databaseRepository.insertNotificationData(

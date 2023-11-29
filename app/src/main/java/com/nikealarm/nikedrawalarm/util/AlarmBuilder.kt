@@ -7,7 +7,10 @@ import android.content.Intent
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.app.TaskStackBuilder
+import androidx.core.net.toUri
 import com.nikealarm.nikedrawalarm.Component.AlarmReceiver
+import com.nikealarm.nikedrawalarm.presentation.ui.MainActivity
 import java.util.Calendar
 
 class AlarmBuilder(private val context: Context) {
@@ -38,31 +41,52 @@ class AlarmBuilder(private val context: Context) {
     // 상품 알림 설정
     fun setProductAlarm(
         triggerTime: Long,
-        productId: String
+        productId: String,
+        productUrl: String
     ) {
         val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         } else {
             PendingIntent.FLAG_UPDATE_CURRENT
         }
-        val intent = Intent(context, AlarmReceiver::class.java).apply {
+        // 브로드캐스트로 넘길 정보
+        val alarmIntent = Intent(context, AlarmReceiver::class.java).apply {
             action = Constants.INTENT_ACTION_PRODUCT_NOTIFICATION
             putExtra(Constants.INTENT_PRODUCT_ID, productId)
         }
-        val alarmIntent = PendingIntent.getBroadcast(
+        val alarmPendingIntent = PendingIntent.getBroadcast(
             context,
             productId.hashCode(),
-            intent,
+            alarmIntent,
             flags
         )
+
+        // 알림에 대한 정보
+        val alarmInfoIntent = Intent(
+            Intent.ACTION_VIEW,
+            (Constants.PRODUCT_DETAIL_URI + "/${productId}/${productUrl.substringAfter("t/")}")
+                .toUri(),
+            context,
+            MainActivity::class.java
+        )
+        val alarmInfoPendingIntent = TaskStackBuilder.create(context).run {
+            val actionFlags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            } else {
+                PendingIntent.FLAG_UPDATE_CURRENT
+            }
+
+            addNextIntentWithParentStack(alarmInfoIntent)
+            getPendingIntent(0, actionFlags)
+        }
 
         try {
             alarmManager.setAlarmClock(
                 AlarmManager.AlarmClockInfo(
                     triggerTime,
-                    alarmIntent // TODO: AlarmInfo 위한 PendingIntent 구현
+                    alarmInfoPendingIntent
                 ),
-                alarmIntent
+                alarmPendingIntent
             )
         } catch (e: SecurityException) {
             e.printStackTrace()

@@ -3,20 +3,24 @@ package com.nikealarm.nikedrawalarm.Component
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.util.Log
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.nikealarm.nikedrawalarm.Component.work.DrawNotifyWorker
 import com.nikealarm.nikedrawalarm.Component.work.ProductNotificationWorker
+import com.nikealarm.nikedrawalarm.Component.work.ResetAlarmWorker
 import com.nikealarm.nikedrawalarm.util.Constants
 
 class AlarmReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         when (intent.action) {
-            Intent.ACTION_BOOT_COMPLETED -> {
-                // TODO: 재부팅 및 다양한 상황에서 알람이 지워졌을 경우 다시 설정하는 기능 구현하기
+            Intent.ACTION_BOOT_COMPLETED, Intent.ACTION_MY_PACKAGE_REPLACED -> {
+                val resetAlarmWorker = OneTimeWorkRequestBuilder<ResetAlarmWorker>()
+                    .build()
+
+                WorkManager.getInstance(context)
+                    .enqueue(resetAlarmWorker)
             }
 
             Constants.INTENT_ACTION_PRODUCT_NOTIFICATION -> { // 제품 알림
@@ -35,12 +39,12 @@ class AlarmReceiver : BroadcastReceiver() {
             }
 
             Constants.INTENT_ACTION_NEW_DRAW_PRODUCT_NOTIFICATION -> { // Draw 신제품 출시
-                val notificationWorker = OneTimeWorkRequestBuilder<DrawNotifyWorker>()
+                val findDrawWorker = OneTimeWorkRequestBuilder<DrawNotifyWorker>()
                     .build()
 
                 // 새로 출시한 Draw 제품이 있으면 Notification 날림
                 WorkManager.getInstance(context)
-                    .enqueue(notificationWorker)
+                    .enqueue(findDrawWorker)
             }
         }
     }

@@ -42,6 +42,9 @@ class ProductDatabaseRepository @Inject constructor(
     fun getLatestProductsData(limit: Int) =
         dao.getLatestProductsData(limit)
 
+    fun getNotifyProductsData() =
+        dao.getNotifyProductsData()
+
     fun getNotifyProductsData(limit: Int) =
         dao.getNotifyProductsData(limit)
 

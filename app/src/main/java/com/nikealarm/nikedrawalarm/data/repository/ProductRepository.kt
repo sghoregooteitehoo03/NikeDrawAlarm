@@ -52,10 +52,11 @@ class ProductRepository @Inject constructor(
     }
 
     // 알림 설정
-    fun setNotificationProduct(productInfo: ProductInfo, triggerTime: Long) {
+    fun setNotificationProduct(productId: String, productUrl: String, triggerTime: Long) {
         alarmBuilder.setProductAlarm(
             triggerTime = triggerTime,
-            productId = productInfo.productId
+            productId = productId,
+            productUrl = productUrl
         )
     }
 

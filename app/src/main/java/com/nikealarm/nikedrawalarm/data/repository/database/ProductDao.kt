@@ -55,6 +55,15 @@ interface ProductDao {
                 "FROM ProductEntity AS product " +
                 "INNER JOIN NotificationEntity AS notification " +
                 "ON product.Id == notification.productId " +
+                "ORDER BY product.eventDate ASC "
+    )
+    fun getNotifyProductsData(): Flow<List<NotifyProductEntity>>
+
+    @Query(
+        "SELECT * " +
+                "FROM ProductEntity AS product " +
+                "INNER JOIN NotificationEntity AS notification " +
+                "ON product.Id == notification.productId " +
                 "ORDER BY product.eventDate ASC " +
                 "LIMIT :limit"
     )
