@@ -38,6 +38,25 @@ class AlarmBuilder(private val context: Context) {
         return alarmIntent != null
     }
 
+    fun isExistRepeatAlarm(): Boolean {
+        val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
+        } else {
+            PendingIntent.FLAG_NO_CREATE
+        }
+        val intent = Intent(context, AlarmReceiver::class.java).apply {
+            action = Constants.INTENT_ACTION_NEW_DRAW_PRODUCT_NOTIFICATION
+        }
+        val alarmIntent = PendingIntent.getBroadcast(
+            context,
+            Constants.REQUEST_CODE_REPEAT_ALARM,
+            intent,
+            flags
+        )
+
+        return alarmIntent != null
+    }
+
     // 상품 알림 설정
     fun setProductAlarm(
         triggerTime: Long,

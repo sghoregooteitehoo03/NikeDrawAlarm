@@ -36,6 +36,7 @@ import com.nikealarm.nikedrawalarm.presentation.ui.UiScreenName
 import com.nikealarm.nikedrawalarm.presentation.upcomingScreen.UpcomingRoute
 import com.nikealarm.nikedrawalarm.util.Constants
 
+// TODO: 화면 전환 부드럽게 바꾸기
 class AppNavController(
     private val gViewModel: GlobalViewModel,
     private val navController: NavHostController
@@ -250,7 +251,14 @@ class AppNavController(
     }
 
     fun navigateToProductDetailScreen(productInfo: ProductInfo) {
-        gViewModel.sendProductInfoData(productInfo)
+        val updatedProductInfo =
+            if (productInfo.eventDate != 0L && productInfo.eventDate < System.currentTimeMillis()) {
+                productInfo.copy(eventDate = 0L)
+            } else {
+                productInfo
+            }
+
+        gViewModel.sendProductInfoData(updatedProductInfo)
         navController.navigate(route = UiScreen.ProductDetailScreen.route)
     }
 

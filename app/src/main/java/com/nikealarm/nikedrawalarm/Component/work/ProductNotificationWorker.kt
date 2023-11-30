@@ -31,21 +31,30 @@ class ProductNotificationWorker @AssistedInject constructor(
 ) : CoroutineWorker(appContext, workerParams) {
 
     override suspend fun doWork(): Result {
-        val isAllowNotify = databaseRepository.getAllowNotification().first()
         val productId =
             inputData.getString(Constants.INTENT_PRODUCT_ID) ?: return Result.failure()
 
-        // 설정에서 알림허용을 하였고 권한들이 설정되었을 때만 동작
-        return if (isAllowNotify && productRepository.checkAlarmPermissions()) {
-            val productEntity =
-                databaseRepository.getProductData(productId) ?: return Result.failure()
-            val notificationEntity =
-                databaseRepository.getNotificationData(productId).first() ?: return Result.failure()
+        return try {
+            val isAllowNotify = databaseRepository.getAllowNotification().first()
 
-            createNotification(productEntity, notificationEntity) // 알림 생성
-            databaseRepository.deleteNotificationData(productId) // 알림 생성 끝나면 데이터베이스에서 지움
-            Result.success()
-        } else {
+            // 설정에서 알림허용을 하였고 권한들이 설정되었을 때만 동작
+            if (isAllowNotify && productRepository.checkAlarmPermissions()) {
+                val productEntity =
+                    databaseRepository.getProductData(productId) ?: return Result.failure()
+                val notificationEntity =
+                    databaseRepository.getNotificationData(productId).first()
+                        ?: return Result.failure()
+
+                createNotification(productEntity, notificationEntity) // 알림 생성
+                databaseRepository.deleteNotificationData(productId) // 알림 생성 끝나면 데이터베이스에서 지움
+                Result.success()
+            } else {
+                databaseRepository.deleteNotificationData(productId)
+                Result.failure()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+
             databaseRepository.deleteNotificationData(productId)
             Result.failure()
         }

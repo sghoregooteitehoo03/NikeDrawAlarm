@@ -1,12 +1,9 @@
 package com.nikealarm.nikedrawalarm.presentation.productDetailScreen
 
 import android.content.Context
-import android.util.Log
 import android.widget.Toast
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material.Snackbar
-import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -249,7 +246,6 @@ fun LoadProductDetailRoute(
 
 private fun openCustomTabs(context: Context, url: String) {
     try {
-        Log.i("check", "url: $url")
         CustomTabsIntent.Builder()
             .build()
             .launchUrl(context, url.toUri())

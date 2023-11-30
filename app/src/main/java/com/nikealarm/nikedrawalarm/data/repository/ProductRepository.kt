@@ -64,6 +64,12 @@ class ProductRepository @Inject constructor(
         alarmBuilder.setRepeatNewDrawNotify()
     }
 
+    fun isExistProductAlarm(productId: String) =
+        alarmBuilder.isExistProductAlarm(productId)
+
+    fun isExistRepeatAlarm() =
+        alarmBuilder.isExistRepeatAlarm()
+
     fun cancelNotificationProduct(productId: String) {
         alarmBuilder.cancelProductAlarm(productId)
     }

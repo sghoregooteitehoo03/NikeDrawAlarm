@@ -11,7 +11,6 @@ import com.nikealarm.nikedrawalarm.domain.usecase.GetProductInfoUseCase
 import com.nikealarm.nikedrawalarm.domain.usecase.InsertFavoriteUseCase
 import com.nikealarm.nikedrawalarm.domain.usecase.InsertLatestUseCase
 import com.nikealarm.nikedrawalarm.domain.usecase.SetNotificationUseCase
-import com.nikealarm.nikedrawalarm.util.AlarmBuilder
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,7 +25,6 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ProductDetailViewModel @Inject constructor(
-    private val alarmBuilder: AlarmBuilder,
     private val getProductUseCase: GetProductInfoUseCase,
     private val getFavoriteUseCase: GetFavoriteUseCase,
     private val getAllowNotifyUseCase: GetAllowNotifyUseCase,
@@ -72,27 +70,16 @@ class ProductDetailViewModel @Inject constructor(
             combine(
                 getAllowNotifyUseCase(),
                 getFavoriteUseCase(productId),
-                getNotificationUseCase(productId)
-            ) { isAllowNotify, favorite, notification ->
-                val notificationEntity = if (productInfo.eventDate != 0L) { // 이벤트 중인 상품일 때
-                    if (alarmBuilder.isExistProductAlarm(productId) // 알람 설정된 상품일 경우
-                        && notification != null
-                    ) {
-                        notification
-                    } else { // 알람 설정이 안된 상품일 경우
-                        NotificationEntity(productId, 0L, 0L, 0L)
-                    }
-                } else {
-                    null
-                }
+                getNotificationUseCase(productId, productInfo.eventDate)
+            ) { isAllowNotify, favorite, notifyEntity ->
 
-                onNotificationChange(notificationEntity)
+                onNotificationChange(notifyEntity)
                 _uiState.update {
                     it.copy(
                         productInfo = productInfo,
                         isAllowNotify = isAllowNotify,
                         isFavorite = favorite != null,
-                        notificationEntity = notificationEntity,
+                        notificationEntity = notifyEntity,
                         isLoading = false
                     )
                 }
