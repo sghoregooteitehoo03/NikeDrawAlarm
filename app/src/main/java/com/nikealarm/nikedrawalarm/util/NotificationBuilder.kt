@@ -26,7 +26,7 @@ class NotificationBuilder(
             context,
             channelId
         )
-            .setSmallIcon(R.mipmap.ic_launcher)
+            .setSmallIcon(R.drawable.app_logo_v2)
             .setLargeIcon(imageBitmap)
             .setVibrate(longArrayOf(0, 100, 200, 300))
             .setContentTitle(title)
