@@ -42,11 +42,8 @@ import androidx.navigation.compose.rememberNavController
 import com.nikealarm.nikedrawalarm.presentation.productScreen.ProductCategories
 import com.nikealarm.nikedrawalarm.presentation.ui.navigation.AppNavController
 import com.nikealarm.nikedrawalarm.util.Constants
-import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Black
-import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Gray
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.NikeDrawAssistant
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Typography
-import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.White
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 

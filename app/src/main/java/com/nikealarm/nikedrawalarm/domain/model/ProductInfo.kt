@@ -54,16 +54,20 @@ fun translateToProductInfoList(filterProduct: Objects): List<ProductInfo> {
         .filter { it.subType == "carousel" } // 제품들만 필터링
         .map { nodes ->
             var explains = ""
-            val jsonBody = nodes.properties.jsonBody?.content?.get(0)?.content
-            for (i in 0 until (jsonBody?.size ?: 0)) {
-                val content = jsonBody?.get(i)?.text
-                if (content?.contains("SKU") == true) {
-                    explains += content
-                    break
-                }
+            nodes.properties.jsonBody?.content?.forEach {
+                val jsonBody = it.content
 
-                explains += "$content\n\n" // 제품에 관한 설명을 추가함
+                for (i in jsonBody.indices) {
+                    val content = jsonBody[i].text
+                    if (content.contains("SKU")) {
+                        explains += content
+                        break
+                    }
+
+                    explains += "$content\n\n" // 제품에 관한 설명을 추가함
+                }
             }
+
 
             val productId = nodes.properties.actions[0].product.productId
 
@@ -129,8 +133,12 @@ fun getShoesCategory(
     launchView: LaunchView?
 ): ProductCategory {
     return if (launchView != null) {
-        if (merchProduct.commerceEndDate == null && launchView.stopEntryDate != null) {
-            ProductCategory.Draw
+        if (launchView.stopEntryDate != null && launchView.method == "DAN") {
+            if (getDateToLong(launchView.stopEntryDate) >= System.currentTimeMillis()) {
+                ProductCategory.Draw
+            } else {
+                ProductCategory.Feed
+            }
         } else {
             if (merchProduct.status == ProductState.PRODUCT_STATUS_INACTIVE && merchProduct.commerceEndDate != null) {
                 ProductCategory.SoldOut
