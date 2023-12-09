@@ -1,21 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">NDA</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
-
-    <!-- 키 -->
-    <string name="setting_preference_switchKey">isAllowSync</string>
-    <string name="setting_preference_showListPreferenceKey">showList</string>
-    <string name="setting_preference_email">Email</string>
-    <string name="setting_preference_version">Version</string>
-    <string name="setting_preference_autoEnter">autoEnter</string>
-    <string name="setting_preference_editInfo">editInfo</string>
-
-    <string name="open_drawer">Open</string>
-    <string name="close_drawer">Close</string>
-    <string name="appbar_scrolling_view_behavior" translatable="false">
-        com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior
-    </string>
-
-    <string name="developer_email">sghoregoodeveloper@gmail.com</string>
+    <string name="app_name">스니커즈 어시스턴트</string>
+    <string name="permission_explain">제품에 정확한 알림을 위해 설정에서 해당 어플에 알람 권한을 활성화 해주세요.</string>
+    <string name="set_notification_explain">제품에 알림정보를 받기 위한 푸쉬 알림 설정을 활성화 해주세요.</string>
+    <string name="allow_notification_explain">알림 설정이 꺼져있습니다.\n알림을 활성화 하여 제품 출시 전 알림을 받아보세요!</string>
 </resources>
