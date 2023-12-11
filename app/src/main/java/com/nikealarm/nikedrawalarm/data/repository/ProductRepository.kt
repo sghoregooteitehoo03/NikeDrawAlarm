@@ -40,7 +40,6 @@ class ProductRepository @Inject constructor(
             val productData =
                 retrofitService.getProductInfo("seoSlugs%28{slug}%29".replace("{slug}", slug))
 
-            // TODO: 읽어오는 중 버그가 발생하는 상품 존재
             val productObject = productData.objects[0]
             val productInfoList = translateToProductInfoList(productObject)
 

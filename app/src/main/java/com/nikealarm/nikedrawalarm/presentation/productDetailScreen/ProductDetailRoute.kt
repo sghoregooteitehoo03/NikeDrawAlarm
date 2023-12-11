@@ -52,7 +52,7 @@ fun ProductDetailRoute(
             .flattenMerge()
             .collectLatest { event ->
                 when (event) {
-                    is ActionEvent.ActionNotification -> {
+                    is ActionEvent.ActionNotificationIcon -> {
                         if (state.isAllowNotify) {
                             openDialog(DialogScreen.DialogSetNotify)
                         } else {
@@ -171,7 +171,7 @@ fun LoadProductDetailRoute(
             .flattenMerge()
             .collectLatest { event ->
                 when (event) {
-                    is ActionEvent.ActionNotification -> {
+                    is ActionEvent.ActionNotificationIcon -> {
                         if (state.isAllowNotify) {
                             openDialog(DialogScreen.DialogSetNotify)
                         } else {

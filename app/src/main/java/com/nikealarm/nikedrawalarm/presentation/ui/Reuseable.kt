@@ -19,12 +19,21 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CornerSize
+import androidx.compose.material.BottomNavigation
+import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.Divider
+import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBackIos
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.NotificationsNone
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,6 +41,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -42,7 +52,10 @@ import androidx.compose.ui.window.Dialog
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.navigation.NavDestination
+import androidx.navigation.NavDestination.Companion.hierarchy
 import coil.compose.rememberImagePainter
+import com.nikealarm.nikedrawalarm.data.model.entity.NotificationEntity
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Black
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Gray
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.LightGray
@@ -204,6 +217,63 @@ fun NikeTopAppBar(
             })
         }
         content()
+    }
+}
+
+@Composable
+fun NikeBottomBar(
+    currentDestination: NavDestination?,
+    onClick: (String) -> Unit = {}
+) {
+    val bottomScreenList = remember {
+        listOf(
+            UiScreen.ProductScreen,
+            UiScreen.UpcomingScreen,
+            UiScreen.FavoriteScreen
+        )
+    }
+
+    when (currentDestination?.route ?: "") {
+        UiScreen.ProductScreen.route,
+        UiScreen.UpcomingScreen.route,
+        UiScreen.FavoriteScreen.route -> {
+            BottomNavigation {
+                bottomScreenList.forEach { screen ->
+                    val selected =
+                        currentDestination?.hierarchy?.any { it.route == screen.route } == true
+
+                    BottomNavigationItem(
+                        selected = selected,
+                        label = {
+                            Text(
+                                text = screen.route,
+                                style = Typography.subtitle1.copy(
+                                    fontWeight = if (selected) {
+                                        FontWeight.Bold
+                                    } else {
+                                        FontWeight.Normal
+                                    }
+                                )
+                            )
+                        },
+                        onClick = { onClick(screen.route) },
+                        icon = {
+                            val iconRes = if (selected) {
+                                screen.bottomSelectedIcon
+                            } else {
+                                screen.bottomUnSelectedIcon
+                            }
+
+                            Icon(
+                                painterResource(id = iconRes),
+                                screen.route
+                            )
+                        })
+                }
+            }
+        }
+
+        else -> {}
     }
 }
 
@@ -443,3 +513,94 @@ fun DialogWithCancelFormatPreview() {
         )
     }
 }
+
+@Composable
+fun ActionIcon(
+    modifier: Modifier = Modifier,
+    currentRoute: String,
+    notificationEntity: NotificationEntity?,
+    onClick: (ActionEvent) -> Unit = {}
+) {
+    when (currentRoute) {
+        UiScreen.ProductScreen.route,
+        UiScreen.UpcomingScreen.route,
+        UiScreen.FavoriteScreen.route -> {
+            Icon(
+                imageVector = Icons.Default.Settings,
+                contentDescription = "설정",
+                tint = MaterialTheme.colors.onPrimary,
+                modifier = modifier
+                    .size(24.dp)
+                    .clickable { onClick(ActionEvent.ActionSettingIcon) },
+            )
+        }
+
+        UiScreen.ProductDetailScreen.route, UiScreen.LoadProductDetailScreen.route -> {
+            if (notificationEntity != null) {
+                val icon =
+                    if (notificationEntity.notificationDate != 0L) {
+                        Icons.Default.Notifications
+                    } else {
+                        Icons.Default.NotificationsNone
+                    }
+
+                Icon(
+                    imageVector = icon,
+                    contentDescription = "알림",
+                    modifier = modifier
+                        .size(24.dp)
+                        .clickable { onClick(ActionEvent.ActionNotificationIcon) },
+                    tint = MaterialTheme.colors.onPrimary
+                )
+            }
+        }
+
+        else -> {}
+    }
+}
+
+@Composable
+fun NavigationIcon(
+    modifier: Modifier = Modifier,
+    currentRoute: String,
+    onClick: (ActionEvent) -> Unit = {}
+) {
+    when (currentRoute) {
+        UiScreen.ProductScreen.route,
+        UiScreen.UpcomingScreen.route,
+        UiScreen.FavoriteScreen.route -> {
+        }
+
+        else -> {
+            Row(modifier = modifier) {
+                Icon(
+                    imageVector = Icons.Default.ArrowBackIos,
+                    contentDescription = "뒤로가기",
+                    modifier = Modifier
+                        .size(24.dp)
+                        .clickable { onClick(ActionEvent.ActionNavigationUp) },
+                    tint = MaterialTheme.colors.onPrimary
+                )
+                Spacer(modifier = Modifier.width(14.dp))
+            }
+        }
+    }
+}
+
+fun getTopAppBarTitle(currentRoute: String, title: String) =
+    when (currentRoute) {
+        UiScreen.ProductScreen.route,
+        UiScreen.UpcomingScreen.route,
+        UiScreen.FavoriteScreen.route,
+        UiScreen.SettingScreen.route -> {
+            currentRoute
+        }
+
+        UiScreen.FavoriteMoreScreen.route -> {
+            title
+        }
+
+        else -> {
+            ""
+        }
+    }
