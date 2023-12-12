@@ -18,37 +18,6 @@ import javax.inject.Inject
 
 @HiltViewModel
 class GlobalViewModel @Inject constructor() : ViewModel() {
-    // TODO: .refactor Json으로 변환해서 전달하는 방법 생각해보기
-    // 데이터 전달 용
-    private var product: Product? = null
-    private var productInfo: ProductInfo? = null
-    private var joinedProductCategory: JoinedProductType? = null
-
-    fun sendProductData(_product: Product?) {
-        product = _product
-    }
-
-    fun sendProductInfoData(_productInfo: ProductInfo?) {
-        productInfo = _productInfo
-    }
-
-    fun sendJoinedProductCategory(_joinedProductCategory: JoinedProductType?) {
-        joinedProductCategory = _joinedProductCategory
-    }
-
-    fun getProductData() = product
-
-    fun getProductInfoData() = productInfo
-
-    fun getJoinedProductCategory() = joinedProductCategory
-
-    fun clearData() {
-        product = null
-        productInfo = null
-        joinedProductCategory = null
-        _notificationEntity.value = null
-    }
-
     // State
     private val _selectedCategory: MutableState<ProductCategory> =
         mutableStateOf(ProductCategory.All)

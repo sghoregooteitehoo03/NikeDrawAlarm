@@ -52,10 +52,12 @@ import androidx.compose.ui.window.Dialog
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
 import coil.compose.rememberImagePainter
 import com.nikealarm.nikedrawalarm.data.model.entity.NotificationEntity
+import com.nikealarm.nikedrawalarm.domain.model.JoinedProductType
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Black
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Gray
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.LightGray
@@ -63,6 +65,7 @@ import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.NikeDrawAssistant
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Shapes
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Typography
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.White
+import kotlinx.serialization.json.Json
 
 @Composable
 fun DisposableEffectWithLifeCycle(
@@ -587,7 +590,7 @@ fun NavigationIcon(
     }
 }
 
-fun getTopAppBarTitle(currentRoute: String, title: String) =
+fun getTopAppBarTitle(currentRoute: String, backStack: NavBackStackEntry?) =
     when (currentRoute) {
         UiScreen.ProductScreen.route,
         UiScreen.UpcomingScreen.route,
@@ -597,7 +600,10 @@ fun getTopAppBarTitle(currentRoute: String, title: String) =
         }
 
         UiScreen.FavoriteMoreScreen.route -> {
-            title
+            val typeJson = backStack?.arguments?.getString("type") ?: ""
+            val type = Json.decodeFromString(JoinedProductType.serializer(), typeJson)
+
+            type.text
         }
 
         else -> {

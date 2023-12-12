@@ -16,16 +16,15 @@ import com.nikealarm.nikedrawalarm.presentation.ui.DisposableEffectWithLifeCycle
 @Composable
 fun CollectionDetailRoute(
     viewModel: CollectionDetailViewModel = hiltViewModel(),
-    sendProduct: Product?,
     onProductItemClick: (ProductInfo) -> Unit,
-    onDispose: () -> Unit
+    onCreate: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
     DisposableEffectWithLifeCycle(
-        onCreate = { viewModel.initValue(sendProduct) },
-        onDispose = onDispose
+        onCreate = onCreate,
+        onDispose = {}
     )
 
     CollectionDetailScreen(

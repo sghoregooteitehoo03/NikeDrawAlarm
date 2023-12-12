@@ -11,15 +11,9 @@ import com.nikealarm.nikedrawalarm.presentation.ui.DisposableEffectWithLifeCycle
 @Composable
 fun FavoriteMoreRoute(
     viewModel: FavoriteMoreViewModel = hiltViewModel(),
-    sendCategory: JoinedProductType?,
-    onProductClick: (ProductEntity) -> Unit,
-    onDispose: () -> Unit,
+    onProductClick: (ProductEntity) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    DisposableEffectWithLifeCycle(
-        onCreate = { viewModel.initValue(sendCategory) },
-        onDispose = onDispose
-    )
 
     FavoriteMoreScreen(
         state = uiState,

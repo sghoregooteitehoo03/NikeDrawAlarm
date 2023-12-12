@@ -14,8 +14,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import com.nikealarm.nikedrawalarm.data.model.entity.ProductEntity
 import com.nikealarm.nikedrawalarm.domain.model.JoinedProductType
@@ -35,6 +37,8 @@ import com.nikealarm.nikedrawalarm.presentation.ui.UiScreen
 import com.nikealarm.nikedrawalarm.presentation.ui.UiScreenName
 import com.nikealarm.nikedrawalarm.presentation.upcomingScreen.UpcomingRoute
 import com.nikealarm.nikedrawalarm.util.Constants
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 // TODO: 화면 전환 부드럽게 바꾸기
 class AppNavController(
@@ -65,20 +69,20 @@ class AppNavController(
                             navigateToProductDetailScreen(product.productInfoList[0])
                         }
                     },
-                    onCreate = { gViewModel.clearData() }
+                    onCreate = { gViewModel.setNotificationEntity(null) }
                 )
             }
             composable(route = UiScreen.UpcomingScreen.route) {
                 UpcomingRoute(
                     onProductClick = ::navigateToProductDetailScreen,
-                    onCreate = { gViewModel.clearData() }
+                    onCreate = { gViewModel.setNotificationEntity(null) }
                 )
             }
             composable(route = UiScreen.FavoriteScreen.route) {
                 FavoriteRoute(
                     onProductClick = ::navigateToLoadProductDetailScreen,
                     onMoreClick = ::navigateToFavoriteMoreScreen,
-                    onCreate = { gViewModel.clearData() }
+                    onCreate = { gViewModel.setNotificationEntity(null) }
                 )
             }
             composable(
@@ -114,6 +118,9 @@ class AppNavController(
             }
             composable(
                 route = UiScreen.ProductDetailScreen.route,
+                arguments = listOf(
+                    navArgument("productInfo") { type = NavType.StringType }
+                ),
                 enterTransition = {
                     enterTransition()
                 },
@@ -130,7 +137,6 @@ class AppNavController(
                 val dialogScreen by gViewModel.dialogScreen
 
                 ProductDetailRoute(
-                    sendProductInfo = gViewModel.getProductInfoData(),
                     dialogScreen = dialogScreen,
                     actionEvent = gViewModel.event,
                     showSnackBar = { gViewModel.setActionEvent(ActionEvent.ActionShowMessage(it)) },
@@ -146,8 +152,7 @@ class AppNavController(
                             else -> {}
                         }
                     },
-                    onNotificationChange = { gViewModel.setNotificationEntity(it) },
-                    onDispose = { gViewModel.sendProductInfoData(null) }
+                    onNotificationChange = { gViewModel.setNotificationEntity(it) }
                 )
             }
             composable(
@@ -172,14 +177,10 @@ class AppNavController(
                 val dialogScreen by gViewModel.dialogScreen
 
                 LoadProductDetailRoute(
-                    productId = backStackEntry.arguments?.getString("productId") ?: "",
-                    slug = backStackEntry.arguments?.getString("productSlug")
-                        ?: "",
                     actionEvent = gViewModel.event,
                     showSnackBar = { gViewModel.setActionEvent(ActionEvent.ActionShowMessage(it)) },
                     dialogScreen = dialogScreen,
                     openDialog = { gViewModel.dialogOpen(it) },
-                    onDispose = { gViewModel.sendProductInfoData(null) },
                     onDismiss = { gViewModel.dialogOpen(DialogScreen.DialogDismiss) },
                     onNotificationChange = { notification ->
                         gViewModel.setNotificationEntity(notification)
@@ -198,6 +199,9 @@ class AppNavController(
             }
             composable(
                 route = UiScreen.CollectionDetailScreen.route,
+                arguments = listOf(
+                    navArgument("product") { type = NavType.StringType }
+                ),
                 enterTransition = {
                     enterTransition()
                 },
@@ -212,11 +216,10 @@ class AppNavController(
                 }
             ) {
                 CollectionDetailRoute(
-                    sendProduct = gViewModel.getProductData(),
                     onProductItemClick = { productInfo ->
                         navigateToProductDetailScreen(productInfo)
                     },
-                    onDispose = { gViewModel.sendProductData(null) }
+                    onCreate = { gViewModel.setNotificationEntity(null) }
                 )
             }
             composable(
@@ -235,19 +238,19 @@ class AppNavController(
                 }
             ) {
                 FavoriteMoreRoute(
-                    sendCategory = gViewModel.getJoinedProductCategory(),
                     onProductClick = { productEntity ->
                         navigateToLoadProductDetailScreen(productEntity)
-                    },
-                    onDispose = { }
+                    }
                 )
             }
         }
     }
 
     fun navigateToCollectionDetailScreen(product: Product) {
-        gViewModel.sendProductData(product)
-        navController.navigate(route = UiScreen.CollectionDetailScreen.route)
+        val productJson = Json.encodeToString(Product.serializer(), product)
+        val route = UiScreenName.COLLECTION_DETAIL_SCREEN + "?product=${productJson}"
+
+        navController.navigate(route = route)
     }
 
     fun navigateToProductDetailScreen(productInfo: ProductInfo) {
@@ -258,8 +261,9 @@ class AppNavController(
                 productInfo
             }
 
-        gViewModel.sendProductInfoData(updatedProductInfo)
-        navController.navigate(route = UiScreen.ProductDetailScreen.route)
+        val productInfoJson = Json.encodeToString(ProductInfo.serializer(), updatedProductInfo)
+        val route = UiScreenName.PRODUCT_DETAIL_SCREEN + "?productInfo=${productInfoJson}"
+        navController.navigate(route = route)
     }
 
     fun navigateToLoadProductDetailScreen(productEntity: ProductEntity) {
@@ -272,8 +276,10 @@ class AppNavController(
     }
 
     fun navigateToFavoriteMoreScreen(joinedProductType: JoinedProductType) {
-        gViewModel.sendJoinedProductCategory(joinedProductType)
-        navController.navigate(UiScreen.FavoriteMoreScreen.route)
+        val typeJson = Json.encodeToString(JoinedProductType.serializer(), joinedProductType)
+        val route = UiScreenName.FAVORITE_MORE_SCREEN + "?type=${typeJson}"
+
+        navController.navigate(route)
     }
 
     fun navigateToSettingScreen() {

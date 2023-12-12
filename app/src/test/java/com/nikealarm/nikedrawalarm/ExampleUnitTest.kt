@@ -4,11 +4,20 @@ import com.nikealarm.nikedrawalarm.data.model.LaunchView
 import com.nikealarm.nikedrawalarm.data.model.MerchProduct
 import com.nikealarm.nikedrawalarm.data.retrofit.RetrofitService
 import com.nikealarm.nikedrawalarm.domain.model.ProductCategory
+import com.nikealarm.nikedrawalarm.domain.model.ProductInfo
 import com.nikealarm.nikedrawalarm.domain.model.ProductState
 import com.nikealarm.nikedrawalarm.domain.model.getProductFilter
 import com.nikealarm.nikedrawalarm.domain.model.translateToProductInfoList
 import com.nikealarm.nikedrawalarm.util.Constants
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.Json.Default.encodeToString
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.polymorphic
+import kotlinx.serialization.modules.subclass
 import okhttp3.OkHttpClient
 import org.junit.Test
 import org.junit.Assert.*
@@ -75,19 +84,25 @@ class ExampleUnitTest {
 
     @Test
     fun functionTest() {
-        val msg = listOf(
-            "아이코닉하고 내구성이 뛰어나며 유행을 타지 않는 아이템을 찾는다면 바로 에어 포스 1이죠. 과감한 디테일이 적용된 클래식한 80년대 디자인으로 어떤 활동을 하든 상관없이 조화롭게 어우러집니다. 버건디 크러시 가죽과 직물 소재의 조합이 시선을 사로잡는 과감한 룩을 선사합니다.\n\n",
-            "SKU: FB8876-600",
-            "asdfasdfasdf"
+        val productInfo = ProductInfo(
+            "123",
+            "Product Title",
+            "Product SubTitle",
+            100,
+            listOf("image1.jpg", "image2.jpg"),
+            System.currentTimeMillis(),
+            "Product Explanation",
+            listOf("Size1", "Size2"),
+            "http://example.com/product",
+            ProductCategory.Draw
         )
-        var result: String = ""
-        for (s in msg) {
-            result += s
-            if (s.contains("SKU"))
-                break
-        }
 
-        print(result)
+        val jsonString = Json.encodeToString(ProductInfo.serializer(), productInfo)
+        println(jsonString)
+
+        val reCategory =
+            Json.decodeFromString(ProductInfo.serializer(), jsonString)
+        println(reCategory)
     }
 
     private fun getDateToLong(date: String?): Long {

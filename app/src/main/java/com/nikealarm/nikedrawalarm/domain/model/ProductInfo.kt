@@ -5,10 +5,13 @@ import com.nikealarm.nikedrawalarm.data.model.MerchProduct
 import com.nikealarm.nikedrawalarm.data.model.Objects
 import com.nikealarm.nikedrawalarm.data.model.entity.ProductEntity
 import com.nikealarm.nikedrawalarm.util.Constants
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import java.lang.NullPointerException
 import java.text.SimpleDateFormat
 import java.util.Locale
 
+@Serializable
 data class ProductInfo(
     val productId: String,
     val title: String,
@@ -39,12 +42,27 @@ object ProductState {
     const val PRODUCT_STATUS_INACTIVE = "INACTIVE"
 }
 
+@Serializable
 sealed class ProductCategory(val text: String = "") {
-    object All : ProductCategory("All")
-    object Feed : ProductCategory("Feed")
-    object SoldOut : ProductCategory("SoldOut")
-    object Coming : ProductCategory("Coming")
-    object Draw : ProductCategory("Draw")
+    @Serializable
+    @SerialName("All")
+    data object All : ProductCategory("All")
+
+    @Serializable
+    @SerialName("Feed")
+    data object Feed : ProductCategory("Feed")
+
+    @Serializable
+    @SerialName("SoldOut")
+    data object SoldOut : ProductCategory("SoldOut")
+
+    @Serializable
+    @SerialName("Coming")
+    data object Coming : ProductCategory("Coming")
+
+    @Serializable
+    @SerialName("Draw")
+    data object Draw : ProductCategory("Draw")
 }
 
 fun translateToProductInfoList(filterProduct: Objects): List<ProductInfo> {

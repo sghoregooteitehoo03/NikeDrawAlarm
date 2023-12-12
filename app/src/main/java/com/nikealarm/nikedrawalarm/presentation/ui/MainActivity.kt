@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.nikealarm.nikedrawalarm.presentation.productScreen.ProductCategories
 import com.nikealarm.nikedrawalarm.presentation.ui.navigation.AppNavController
 import com.nikealarm.nikedrawalarm.util.Constants
@@ -81,7 +82,7 @@ class MainActivity : ComponentActivity() {
                                     .padding(start = 14.dp, end = 14.dp),
                                 title = getTopAppBarTitle(
                                     currentRoute = currentRoute,
-                                    title = gViewModel.getJoinedProductCategory()?.text ?: ""
+                                    backStack = backStack.value
                                 ),
                                 navigationIcon = {
                                     NavigationIcon(

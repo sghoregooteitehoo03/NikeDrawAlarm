@@ -27,14 +27,20 @@ sealed class UiScreen(
 
     data object SettingScreen : UiScreen(route = UiScreenName.SETTING_SCREEN)
 
-    data object FavoriteMoreScreen : UiScreen(route = UiScreenName.FAVORITE_MORE_SCREEN)
+    data object FavoriteMoreScreen : UiScreen(
+        route = UiScreenName.FAVORITE_MORE_SCREEN + "?type={type}"
+    )
 
-    data object ProductDetailScreen : UiScreen(route = UiScreenName.PRODUCT_DETAIL_SCREEN)
+    data object ProductDetailScreen : UiScreen(
+        route = UiScreenName.PRODUCT_DETAIL_SCREEN + "?productInfo={productInfo}"
+    )
 
     data object LoadProductDetailScreen :
         UiScreen(route = UiScreenName.LOAD_PRODUCT_DETAIL_SCREEN + "?id={productId}&slug={productSlug}")
 
-    data object CollectionDetailScreen : UiScreen(route = UiScreenName.COLLECTION_DETAIL_SCREEN)
+    data object CollectionDetailScreen : UiScreen(
+        route = UiScreenName.COLLECTION_DETAIL_SCREEN + "?product={product}"
+    )
 }
 
 object UiScreenName {
@@ -43,7 +49,7 @@ object UiScreenName {
     const val FAVORITE_SCREEN = "Favorite"
     const val SETTING_SCREEN = "Setting"
     const val FAVORITE_MORE_SCREEN = "FavoriteMore"
-    const val PRODUCT_DETAIL_SCREEN = "ProductDatail"
+    const val PRODUCT_DETAIL_SCREEN = "ProductDetail"
     const val LOAD_PRODUCT_DETAIL_SCREEN = "LoadProductDetail"
     const val COLLECTION_DETAIL_SCREEN = "CollectionDetail"
 }

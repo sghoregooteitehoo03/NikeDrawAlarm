@@ -34,7 +34,6 @@ import java.util.Locale
 @Composable
 fun ProductDetailRoute(
     viewModel: ProductDetailViewModel = hiltViewModel(),
-    sendProductInfo: ProductInfo?,
     actionEvent: SharedFlow<ActionEvent>,
     showSnackBar: (String) -> Unit,
     dialogScreen: DialogScreen,
@@ -42,7 +41,6 @@ fun ProductDetailRoute(
     onDismiss: () -> Unit,
     onNotificationChange: (NotificationEntity?) -> Unit,
     onDialogButtonClick: () -> Unit,
-    onDispose: () -> Unit
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -58,6 +56,10 @@ fun ProductDetailRoute(
                         } else {
                             openDialog(DialogScreen.DialogAllowNotify)
                         }
+                    }
+
+                    is ProductDetailUiEvent.NotificationChange -> {
+                        onNotificationChange(event.notificationEntity)
                     }
 
                     is ProductDetailUiEvent.ClickFavorite -> {
@@ -94,16 +96,6 @@ fun ProductDetailRoute(
             }
     }
 
-    DisposableEffectWithLifeCycle(
-        onCreate = {
-            viewModel.initValue(
-                sendProductInfo,
-                onNotificationChange
-            )
-        },
-        onDispose = onDispose
-    )
-
     ProductDetailScreen(
         state = state,
         onEvent = viewModel::handelEvent
@@ -137,12 +129,9 @@ fun ProductDetailRoute(
     }
 }
 
-@OptIn(ExperimentalCoroutinesApi::class)
 @Composable
 fun LoadProductDetailRoute(
     viewModel: ProductDetailViewModel = hiltViewModel(),
-    productId: String,
-    slug: String,
     actionEvent: SharedFlow<ActionEvent>,
     showSnackBar: (String) -> Unit,
     openDialog: (DialogScreen) -> Unit,
@@ -150,98 +139,17 @@ fun LoadProductDetailRoute(
     onDismiss: () -> Unit,
     onNotificationChange: (NotificationEntity?) -> Unit,
     onDialogButtonClick: () -> Unit,
-    onDispose: () -> Unit
 ) {
-    val state by viewModel.uiState.collectAsStateWithLifecycle()
-    val context = LocalContext.current
-
-    DisposableEffectWithLifeCycle(
-        onCreate = {
-            viewModel.loadProduct(
-                productId,
-                slug,
-                onNotificationChange
-            )
-        },
-        onDispose = onDispose
+    ProductDetailRoute(
+        viewModel = viewModel,
+        actionEvent = actionEvent,
+        showSnackBar = showSnackBar,
+        dialogScreen = dialogScreen,
+        openDialog = openDialog,
+        onDismiss = onDismiss,
+        onNotificationChange = onNotificationChange,
+        onDialogButtonClick = onDialogButtonClick
     )
-
-    LaunchedEffect(key1 = true) {
-        flowOf(actionEvent, viewModel.uiEvent)
-            .flattenMerge()
-            .collectLatest { event ->
-                when (event) {
-                    is ActionEvent.ActionNotificationIcon -> {
-                        if (state.isAllowNotify) {
-                            openDialog(DialogScreen.DialogSetNotify)
-                        } else {
-                            openDialog(DialogScreen.DialogAllowNotify)
-                        }
-                    }
-
-                    is ProductDetailUiEvent.ClickFavorite -> {
-                        viewModel.clickFavorite()
-                    }
-
-                    is ProductDetailUiEvent.ClickLearnMore -> {
-                        openCustomTabs(context, url = event.url)
-                    }
-
-                    is ProductDetailUiEvent.SuccessInsertNotification -> {
-                        val message = if (event.notificationTime != 0L) {
-                            SimpleDateFormat(
-                                if (event.notificationTime >= 3600000) {
-                                    "제품 출시 h시간 전에 알림이 울립니다."
-                                } else {
-                                    "제품 출시 m분 전에 알림이 울립니다."
-                                }, Locale.KOREA
-                            )
-                                .format(event.notificationTime.minus(Constants.LOCALIZING))
-                        } else {
-                            "알림이 해제 되었습니다."
-                        }
-
-                        showSnackBar(message)
-                    }
-                    is ProductDetailUiEvent.Error -> {
-                        showSnackBar(event.message)
-                    }
-                    else -> {}
-                }
-            }
-    }
-
-    ProductDetailScreen(
-        state = state,
-        onEvent = viewModel::handelEvent
-    )
-
-    when (dialogScreen) {
-        DialogScreen.DialogSetNotify -> {
-            SetNotificationDialog(
-                onDismissRequest = onDismiss,
-                onButtonClick = {
-                    viewModel.setNotification(notificationTime = it)
-                    onDismiss()
-                },
-                settingTime = state.notificationEntity?.notificationDate ?: 0L,
-                context = context
-            )
-        }
-
-        DialogScreen.DialogAllowNotify -> {
-            InformationDialog(
-                modifier = Modifier.fillMaxWidth(),
-                title = "알림 설정",
-                explain = stringResource(id = R.string.allow_notification_explain),
-                buttonText = "이동",
-                onDismissRequest = onDismiss,
-                onAllowClick = onDialogButtonClick
-            )
-        }
-
-        else -> {}
-    }
 }
 
 private fun openCustomTabs(context: Context, url: String) {
