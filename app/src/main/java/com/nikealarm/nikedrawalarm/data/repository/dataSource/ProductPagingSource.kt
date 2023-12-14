@@ -35,15 +35,30 @@ class ProductPagingSource(
                     val productInfoList = translateToProductInfoList(filterProduct)
                     val collection =
                         if (filterProduct.publishedContent.nodes[0].subType == "image") { // 컬렉션 제품인 경우
+                            var explains = ""
+                            val contents = filterProduct.publishedContent.nodes[1]
+                                .properties
+                                .jsonBody
+                                ?.content
+                                ?.get(0)?.content ?: listOf()
+
+                            for (i in contents.indices) {
+                                if (contents[i].text.contains("제품 출시 전")) {
+                                    break
+                                }
+
+                                explains += "${contents[i].text}\n\n"
+                            }
+                            // 기존에 있는 띄어쓰기를 지움
+                            explains = explains.trimEnd('\n').trimEnd('\n')
+
                             Collection(
                                 id = filterProduct.id,
                                 title = filterProduct.publishedContent.nodes[1].properties.title,
                                 subTitle = filterProduct.publishedContent.nodes[1].properties.subtitle,
                                 price = "컬렉션 제품",
                                 thumbnailImage = filterProduct.publishedContent.nodes[0].properties.portraitURL,
-                                explains = filterProduct.publishedContent.nodes[1].properties.jsonBody?.content?.get(
-                                    0
-                                )?.content?.get(0)?.text ?: "",
+                                explains = explains,
                                 url = Constants.NIKE_PRODUCT_URL + filterProduct.publishedContent.properties.seo.slug
                             )
                         } else {

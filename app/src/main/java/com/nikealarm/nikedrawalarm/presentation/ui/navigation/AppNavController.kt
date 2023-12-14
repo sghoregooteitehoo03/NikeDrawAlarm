@@ -2,9 +2,6 @@ package com.nikealarm.nikedrawalarm.presentation.ui.navigation
 
 import android.content.Intent
 import android.net.Uri
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
-import androidx.compose.animation.core.FiniteAnimationSpec
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -38,10 +35,8 @@ import com.nikealarm.nikedrawalarm.presentation.ui.UiScreen
 import com.nikealarm.nikedrawalarm.presentation.ui.UiScreenName
 import com.nikealarm.nikedrawalarm.presentation.upcomingScreen.UpcomingRoute
 import com.nikealarm.nikedrawalarm.util.Constants
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
-// TODO: 화면 전환 부드럽게 바꾸기
 class AppNavController(
     private val gViewModel: GlobalViewModel,
     private val navController: NavHostController
