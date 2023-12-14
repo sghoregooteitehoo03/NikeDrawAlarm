@@ -48,10 +48,11 @@ import java.util.Locale
 
 @Composable
 fun UpcomingScreen(
+    modifier: Modifier = Modifier,
     state: UpcomingUiState,
     onProductClick: (ProductInfo) -> Unit
 ) {
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = modifier.fillMaxSize()) {
         val products = state.products?.collectAsLazyPagingItems()
         products?.let {
             val isLoading by remember { derivedStateOf { products.loadState.refresh is LoadState.Loading } }

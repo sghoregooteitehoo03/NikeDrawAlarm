@@ -54,11 +54,12 @@ import java.text.DecimalFormat
 
 @Composable
 fun ProductScreen(
+    modifier: Modifier = Modifier,
     state: ProductUiState,
     listState: LazyGridState = rememberLazyGridState(),
     onEvent: (ProductUiEvent) -> Unit
 ) {
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = modifier.fillMaxSize()) {
         val products = when (state.selectedCategory) {
             ProductCategory.All -> {
                 state.allProducts?.collectAsLazyPagingItems()

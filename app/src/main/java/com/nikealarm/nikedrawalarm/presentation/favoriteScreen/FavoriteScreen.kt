@@ -42,11 +42,12 @@ import java.util.Locale
 
 @Composable
 fun FavoriteScreen(
+    modifier: Modifier = Modifier,
     state: FavoriteUiState,
     onProductClick: (ProductEntity) -> Unit,
     onMoreClick: (JoinedProductType) -> Unit
 ) {
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = modifier.fillMaxSize()) {
         when (state) {
             is FavoriteUiState.Success -> {
                 Column(

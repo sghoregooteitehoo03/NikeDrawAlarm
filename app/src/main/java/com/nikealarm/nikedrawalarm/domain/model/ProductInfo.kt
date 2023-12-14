@@ -72,6 +72,7 @@ fun translateToProductInfoList(filterProduct: Objects): List<ProductInfo> {
         .filter { it.subType == "carousel" } // 제품들만 필터링
         .map { nodes ->
             var explains = ""
+            // TODO: .fix 설명글 오류
             nodes.properties.jsonBody?.content?.forEach {
                 val jsonBody = it.content
 

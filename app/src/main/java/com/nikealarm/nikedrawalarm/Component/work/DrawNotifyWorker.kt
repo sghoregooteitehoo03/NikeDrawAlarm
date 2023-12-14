@@ -33,6 +33,7 @@ class DrawNotifyWorker @AssistedInject constructor(
 ) : CoroutineWorker(appContext, workerParams) {
 
     override suspend fun doWork(): Result {
+        // TODO: .redesign 컬렉션 제품 묶어서 알림
         val isAllow = databaseRepository.getAllowDrawNotification().first()
         if (!isAllow && !productRepository.checkAlarmPermissions())
             return Result.failure()

@@ -4,6 +4,7 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nikealarm.nikedrawalarm.domain.model.Product
@@ -18,6 +19,7 @@ import kotlinx.coroutines.flow.flowOf
 @OptIn(ExperimentalCoroutinesApi::class)
 @Composable
 fun ProductRoute(
+    modifier: Modifier = Modifier,
     viewModel: ProductViewModel = hiltViewModel(),
     actionEvent: SharedFlow<ActionEvent>,
     navigateDetailScreen: (Product) -> Unit,
@@ -58,6 +60,7 @@ fun ProductRoute(
     }
 
     ProductScreen(
+        modifier = modifier,
         state = state,
         listState = listState,
         onEvent = viewModel::handelEvent
