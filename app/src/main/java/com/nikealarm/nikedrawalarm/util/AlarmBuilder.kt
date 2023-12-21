@@ -9,7 +9,7 @@ import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.TaskStackBuilder
 import androidx.core.net.toUri
-import com.nikealarm.nikedrawalarm.Component.AlarmReceiver
+import com.nikealarm.nikedrawalarm.component.AlarmReceiver
 import com.nikealarm.nikedrawalarm.presentation.ui.MainActivity
 import java.util.Calendar
 

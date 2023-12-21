@@ -1,4 +1,4 @@
-package com.nikealarm.nikedrawalarm.Component.work
+package com.nikealarm.nikedrawalarm.component.work
 
 import android.app.PendingIntent
 import android.content.Context
@@ -73,12 +73,12 @@ class ProductNotificationWorker @AssistedInject constructor(
         }
         val contentText = if (notificationEntity.notificationDate >= 3600000L) {
             SimpleDateFormat(
-                "제품 ${productCategory} h시간 전 입니다.",
+                "제품 $productCategory h시간 전 입니다.",
                 Locale.KOREA
             ).format(notificationEntity.notificationDate.minus(32400000L))
         } else {
             SimpleDateFormat(
-                "제품 ${productCategory} m분 전 입니다.",
+                "제품 $productCategory m분 전 입니다.",
                 Locale.KOREA
             ).format(notificationEntity.notificationDate)
         }

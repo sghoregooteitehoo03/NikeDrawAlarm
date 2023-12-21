@@ -11,7 +11,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import java.lang.Exception
 import javax.inject.Inject
@@ -44,15 +43,5 @@ class FavoriteMoreViewModel @Inject constructor(
         } catch (e: Exception) {
             e.printStackTrace()
         }
-    }
-
-    fun initValue(joinedCategory: JoinedProductType?) {
-        if (joinedCategory != null && _uiState.value.products == null)
-            _uiState.update {
-                it.copy(
-                    products = getPagingJoinedProductUseCase(joinedCategory).cachedIn(viewModelScope),
-                    sendType = joinedCategory
-                )
-            }
     }
 }

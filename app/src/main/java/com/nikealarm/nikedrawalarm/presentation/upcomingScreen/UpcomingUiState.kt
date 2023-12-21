@@ -1,7 +1,6 @@
 package com.nikealarm.nikedrawalarm.presentation.upcomingScreen
 
 import androidx.paging.PagingData
-import com.nikealarm.nikedrawalarm.domain.model.Product
 import com.nikealarm.nikedrawalarm.domain.model.ProductInfo
 import kotlinx.coroutines.flow.Flow
 

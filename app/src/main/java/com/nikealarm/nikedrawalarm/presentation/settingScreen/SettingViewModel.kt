@@ -14,7 +14,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SettingViewModel @Inject constructor(
-    private val getSettingInitValueUseCase: GetSettingInitUseCase,
+    getSettingInitValueUseCase: GetSettingInitUseCase,
     private val clearProductUseCase: ClearProductUseCase,
     private val allowNotificationUseCase: AllowNotificationUseCase,
     private val allowDrawNotifyUseCase: AllowDrawNotifyUseCase

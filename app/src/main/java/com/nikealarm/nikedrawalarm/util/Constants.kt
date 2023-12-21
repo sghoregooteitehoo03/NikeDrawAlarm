@@ -1,7 +1,6 @@
 package com.nikealarm.nikedrawalarm.util
 
 import androidx.datastore.preferences.core.booleanPreferencesKey
-import androidx.datastore.preferences.core.intPreferencesKey
 
 object Constants {
     const val LOCALIZING =32400000L

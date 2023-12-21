@@ -206,6 +206,7 @@ class AppNavController(
 
     fun navigateToCollectionDetailScreen(product: Product) {
         val productJson = Json.encodeToString(Product.serializer(), product)
+            .replace("&", "%26")
         val route = UiScreenName.COLLECTION_DETAIL_SCREEN + "?product=${productJson}"
 
         navController.navigate(route = route)
@@ -220,6 +221,7 @@ class AppNavController(
             }
 
         val productInfoJson = Json.encodeToString(ProductInfo.serializer(), updatedProductInfo)
+            .replace("&", "%26")
         val route = UiScreenName.PRODUCT_DETAIL_SCREEN + "?productInfo=${productInfoJson}"
         navController.navigate(route = route)
     }

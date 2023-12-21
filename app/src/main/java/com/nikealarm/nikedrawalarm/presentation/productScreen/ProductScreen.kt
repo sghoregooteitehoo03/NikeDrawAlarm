@@ -25,7 +25,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -47,9 +46,6 @@ import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.TextGray
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Typography
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.White
 import com.valentinilk.shimmer.shimmer
-import me.onebone.toolbar.CollapsingToolbarScaffold
-import me.onebone.toolbar.ScrollStrategy
-import me.onebone.toolbar.rememberCollapsingToolbarScaffoldState
 import java.text.DecimalFormat
 
 @Composable

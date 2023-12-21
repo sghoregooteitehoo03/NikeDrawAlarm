@@ -48,7 +48,7 @@
         </activity>
 
         <receiver
-            android:name=".Component.AlarmReceiver"
+            android:name=".component.AlarmReceiver"
             android:enabled="true"
             android:exported="true"
             android:permission="android.permission.RECEIVE_BOOT_COMPLETED">

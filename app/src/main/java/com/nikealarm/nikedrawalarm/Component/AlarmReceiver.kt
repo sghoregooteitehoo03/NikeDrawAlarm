@@ -1,4 +1,4 @@
-package com.nikealarm.nikedrawalarm.Component
+package com.nikealarm.nikedrawalarm.component
 
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -7,8 +7,8 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.nikealarm.nikedrawalarm.Component.work.DrawNotifyWorker
-import com.nikealarm.nikedrawalarm.Component.work.ProductNotificationWorker
-import com.nikealarm.nikedrawalarm.Component.work.ResetAlarmWorker
+import com.nikealarm.nikedrawalarm.component.work.ProductNotificationWorker
+import com.nikealarm.nikedrawalarm.component.work.ResetAlarmWorker
 import com.nikealarm.nikedrawalarm.util.Constants
 
 class AlarmReceiver : BroadcastReceiver() {

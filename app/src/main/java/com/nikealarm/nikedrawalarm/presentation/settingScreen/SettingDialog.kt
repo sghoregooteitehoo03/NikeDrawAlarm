@@ -74,7 +74,7 @@ fun ProductClearDialog(
     )
 }
 
-sealed class ClearProductType() {
+sealed class ClearProductType {
     data object Nothing : ClearProductType()
     data object ClearLatestProduct : ClearProductType()
     data object ClearNotifyProduct : ClearProductType()

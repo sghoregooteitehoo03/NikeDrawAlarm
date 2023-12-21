@@ -1,4 +1,4 @@
-package com.nikealarm.nikedrawalarm.Component.work
+package com.nikealarm.nikedrawalarm.component.work
 
 import android.content.Context
 import androidx.hilt.work.HiltWorker

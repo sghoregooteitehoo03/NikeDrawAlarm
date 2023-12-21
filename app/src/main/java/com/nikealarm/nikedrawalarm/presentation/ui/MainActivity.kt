@@ -21,7 +21,6 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
 import com.nikealarm.nikedrawalarm.presentation.productScreen.ProductCategories
 import com.nikealarm.nikedrawalarm.presentation.ui.navigation.AppNavController
 import com.nikealarm.nikedrawalarm.util.Constants
@@ -111,11 +110,6 @@ class MainActivity : ComponentActivity() {
                                             selectedCategory = selectedCategory,
                                             onCategoryItemClick = { category ->
                                                 gViewModel.setSelectedCategory(category)
-                                                gViewModel.setActionEvent(
-                                                    ActionEvent.ActionSelectCategory(
-                                                        category
-                                                    )
-                                                )
                                             }
                                         )
                                     }

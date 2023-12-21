@@ -6,10 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nikealarm.nikedrawalarm.data.model.entity.NotificationEntity
-import com.nikealarm.nikedrawalarm.domain.model.JoinedProductType
-import com.nikealarm.nikedrawalarm.domain.model.Product
 import com.nikealarm.nikedrawalarm.domain.model.ProductCategory
-import com.nikealarm.nikedrawalarm.domain.model.ProductInfo
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -33,6 +30,7 @@ class GlobalViewModel @Inject constructor() : ViewModel() {
 
     fun setSelectedCategory(category: ProductCategory) {
         _selectedCategory.value = category
+        setActionEvent(ActionEvent.ActionSelectCategory(category))
     }
 
     fun dialogOpen(dialog: DialogScreen) {
