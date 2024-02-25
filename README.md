@@ -24,7 +24,7 @@
 새로운 응모 제품이 나올 때 푸시 알림으로 알려드립니다.
 
 ## 스크린샷
-
+![스크린샷](https://github.com/sghoregooteitehoo03/NikeDrawAlarm/blob/master/image/screenshot.png)
 
 ## 아키텍쳐 및 라이브러리
 - 아키텍처
