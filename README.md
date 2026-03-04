@@ -12,7 +12,8 @@
 ## 아키텍쳐
 ![아키텍쳐](https://github.com/sghoregooteitehoo03/NikeDrawAlarm/blob/master/image/architecture.png)
 - ### UI Layer ###
-  사용자에게 화면을 그리는 역할을 담당합니다 ViewModel을 통해 전달받은 UI State를 렌더링합니다.  사용자 입력은 Event 형태로 받아 ViewModel에 적절한 함수를 호출합니다.
+  사용자에게 화면을 그리는 역할을 담당합니다 ViewModel을 통해 전달받은 UI State를 렌더링합니다.  
+  사용자 입력은 Event 형태로 받아 ViewModel에 적절한 함수를 호출합니다.
 - ### Domain Layer ###
   앱의 핵심 비즈니스 로직을 담당하는 영역입니다. UseCase를 통해 데이터를 UI에서 사용 가능한 형태로 정제하여 UI Layer로 전달합니다.
 - ### Data Layer ###
