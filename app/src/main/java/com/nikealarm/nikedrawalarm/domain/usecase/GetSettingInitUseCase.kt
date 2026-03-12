@@ -12,7 +12,7 @@ class GetSettingInitUseCase @Inject constructor(
     private val productRepository: ProductRepository,
     private val getAllowNotifyUseCase: GetAllowNotifyUseCase
 ) {
-    operator fun invoke(transform: suspend (Boolean, Boolean) -> SettingUiState) =
+    operator fun invoke(transform: suspend (Boolean, Boolean) -> Unit) =
         combine(
             getAllowNotifyUseCase(),
             databaseRepository.getAllowDrawNotification().map {

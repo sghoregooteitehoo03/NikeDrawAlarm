@@ -1,16 +1,12 @@
 package com.nikealarm.nikedrawalarm.presentation.ui.navigation
 
-import android.content.Intent
-import android.net.Uri
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -29,7 +25,6 @@ import com.nikealarm.nikedrawalarm.presentation.productDetailScreen.ProductDetai
 import com.nikealarm.nikedrawalarm.presentation.productScreen.ProductRoute
 import com.nikealarm.nikedrawalarm.presentation.settingScreen.SettingRoute
 import com.nikealarm.nikedrawalarm.presentation.ui.ActionEvent
-import com.nikealarm.nikedrawalarm.presentation.ui.DialogScreen
 import com.nikealarm.nikedrawalarm.presentation.ui.GlobalViewModel
 import com.nikealarm.nikedrawalarm.presentation.ui.UiScreen
 import com.nikealarm.nikedrawalarm.presentation.ui.UiScreenName
@@ -46,8 +41,6 @@ class AppNavController(
     fun AppNavHost(
         modifier: Modifier = Modifier
     ) {
-        val context = LocalContext.current
-
         NavHost(
             navController = navController,
             startDestination = UiScreen.ProductScreen.route,
@@ -100,27 +93,7 @@ class AppNavController(
             composable(
                 route = UiScreen.SettingScreen.route
             ) {
-                val dialogScreen by gViewModel.dialogScreen
-
-                SettingRoute(
-                    dialogScreen = dialogScreen,
-                    openDialog = { _dialogScreen ->
-                        gViewModel.dialogOpen(_dialogScreen)
-                    },
-                    onContactEmailClick = {
-                        // 이메일로 바로 이동
-                        val intent = Intent(Intent.ACTION_SENDTO).apply {
-                            val email = arrayOf(Constants.DEVELOPER_EMAIL)
-                            data = Uri.parse("mailto:")
-                            putExtra(Intent.EXTRA_EMAIL, email)
-                        }
-
-                        if (intent.resolveActivity(context.packageManager) != null) {
-                            context.startActivity(intent)
-                        }
-                    },
-                    onDismiss = { gViewModel.dialogOpen(DialogScreen.DialogDismiss) }
-                )
+                SettingRoute()
             }
             composable(
                 route = UiScreen.ProductDetailScreen.route,
@@ -128,25 +101,11 @@ class AppNavController(
                     navArgument("productInfo") { type = NavType.StringType }
                 )
             ) {
-                val dialogScreen by gViewModel.dialogScreen
-
                 ProductDetailRoute(
-                    dialogScreen = dialogScreen,
                     actionEvent = gViewModel.event,
                     showSnackBar = { gViewModel.setActionEvent(ActionEvent.ActionShowMessage(it)) },
-                    openDialog = { gViewModel.dialogOpen(it) },
-                    onDismiss = { gViewModel.dialogOpen(DialogScreen.DialogDismiss) },
-                    onDialogButtonClick = {
-                        when (dialogScreen) {
-                            DialogScreen.DialogAllowNotify -> {
-                                navigateToSettingScreen()
-                                gViewModel.dialogOpen(DialogScreen.DialogDismiss)
-                            }
-
-                            else -> {}
-                        }
-                    },
-                    onNotificationChange = { gViewModel.setNotificationEntity(it) }
+                    onNotificationChange = { gViewModel.setNotificationEntity(it) },
+                    navigateToSetting = { navigateToSettingScreen() }
                 )
             }
             composable(
@@ -156,27 +115,13 @@ class AppNavController(
                         Constants.PRODUCT_DETAIL_URI + "/{productId}/{productSlug}"
                 })
             ) { backStackEntry ->
-                val dialogScreen by gViewModel.dialogScreen
-
                 LoadProductDetailRoute(
                     actionEvent = gViewModel.event,
                     showSnackBar = { gViewModel.setActionEvent(ActionEvent.ActionShowMessage(it)) },
-                    dialogScreen = dialogScreen,
-                    openDialog = { gViewModel.dialogOpen(it) },
-                    onDismiss = { gViewModel.dialogOpen(DialogScreen.DialogDismiss) },
                     onNotificationChange = { notification ->
                         gViewModel.setNotificationEntity(notification)
                     },
-                    onDialogButtonClick = {
-                        when (dialogScreen) {
-                            DialogScreen.DialogAllowNotify -> {
-                                navigateToSettingScreen()
-                                gViewModel.dialogOpen(DialogScreen.DialogDismiss)
-                            }
-
-                            else -> {}
-                        }
-                    }
+                    navigateToSetting = { navigateToSettingScreen() }
                 )
             }
             composable(

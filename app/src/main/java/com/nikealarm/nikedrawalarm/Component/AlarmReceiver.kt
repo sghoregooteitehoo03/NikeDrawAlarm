@@ -6,7 +6,7 @@ import android.content.Intent
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
-import com.nikealarm.nikedrawalarm.Component.work.DrawNotifyWorker
+import com.nikealarm.nikedrawalarm.component.work.DrawNotifyWorker
 import com.nikealarm.nikedrawalarm.component.work.ProductNotificationWorker
 import com.nikealarm.nikedrawalarm.component.work.ResetAlarmWorker
 import com.nikealarm.nikedrawalarm.util.Constants
@@ -36,15 +36,6 @@ class AlarmReceiver : BroadcastReceiver() {
                 // 알림 설정한 제품에 대한 정보를 Notification 날림
                 WorkManager.getInstance(context)
                     .enqueue(notificationWorker)
-            }
-
-            Constants.INTENT_ACTION_NEW_DRAW_PRODUCT_NOTIFICATION -> { // Draw 신제품 출시
-                val findDrawWorker = OneTimeWorkRequestBuilder<DrawNotifyWorker>()
-                    .build()
-
-                // 새로 출시한 Draw 제품이 있으면 Notification 날림
-                WorkManager.getInstance(context)
-                    .enqueue(findDrawWorker)
             }
         }
     }

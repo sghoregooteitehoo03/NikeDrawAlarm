@@ -33,10 +33,7 @@ import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Typography
 @Composable
 fun SettingScreen(
     uiState: SettingUiState,
-    onAllowNotifyClick: (Boolean) -> Unit,
-    onAllowDrawNotifyClick: (Boolean) -> Unit,
-    onClearProductClick: (ClearProductType) -> Unit,
-    onContactEmailClick: () -> Unit
+    onEvent: (SettingUiEvent) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -55,7 +52,7 @@ fun SettingScreen(
                 isAllow = uiState.isAllowNotify,
                 text = "알림 허용",
                 paddingValues = paddingValue,
-                onContentClick = onAllowNotifyClick
+                onContentClick = { onEvent(SettingUiEvent.ClickAllowNotify(it)) }
             )
             SettingContent(
                 modifier = Modifier.fillMaxWidth(),
@@ -70,7 +67,7 @@ fun SettingScreen(
                 subText = "새로 출시하는 Draw 제품을 알려드립니다.",
                 enabled = uiState.isAllowNotify,
                 paddingValues = paddingValue,
-                onContentClick = onAllowDrawNotifyClick
+                onContentClick = { onEvent(SettingUiEvent.ClickAllowDrawFind(it)) }
             )
         }
         Spacer(modifier = Modifier.height(24.dp))
@@ -83,19 +80,19 @@ fun SettingScreen(
                 modifier = Modifier.fillMaxWidth(),
                 text = "최근에 본 제품 목록 초기화",
                 paddingValues = paddingValue,
-                onContentClick = { onClearProductClick(ClearProductType.ClearLatestProduct) }
+                onContentClick = { onEvent(SettingUiEvent.ClickClearProduct(ClearProductType.ClearLatestProduct)) }
             )
             SettingContent(
                 modifier = Modifier.fillMaxWidth(),
                 text = "알림 설정한 제품 목록 초기화",
                 paddingValues = paddingValue,
-                onContentClick = { onClearProductClick(ClearProductType.ClearNotifyProduct) }
+                onContentClick = { onEvent(SettingUiEvent.ClickClearProduct(ClearProductType.ClearNotifyProduct)) }
             )
             SettingContent(
                 modifier = Modifier.fillMaxWidth(),
                 text = "좋아요 한 제품 목록 초기화",
                 paddingValues = paddingValue,
-                onContentClick = { onClearProductClick(ClearProductType.ClearFavoriteProduct) }
+                onContentClick = { onEvent(SettingUiEvent.ClickClearProduct(ClearProductType.ClearFavoriteProduct)) }
             )
         }
         Spacer(modifier = Modifier.height(24.dp))
@@ -108,7 +105,7 @@ fun SettingScreen(
                 modifier = Modifier.fillMaxWidth(),
                 text = "개발자에게 문의하기",
                 paddingValues = paddingValue,
-                onContentClick = onContactEmailClick
+                onContentClick = { onEvent(SettingUiEvent.ClickContactEmail) }
             )
             SettingContent(
                 modifier = Modifier.fillMaxWidth(),

@@ -1,7 +1,12 @@
 package com.nikealarm.nikedrawalarm.data.repository
 
+import android.content.Context
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
+import com.nikealarm.nikedrawalarm.component.work.DrawNotifyWorker
 import com.nikealarm.nikedrawalarm.data.repository.dataSource.ProductPagingSource
 import com.nikealarm.nikedrawalarm.data.repository.dataSource.UpcomingPagingSource
 import com.nikealarm.nikedrawalarm.data.retrofit.RetrofitService
@@ -9,10 +14,13 @@ import com.nikealarm.nikedrawalarm.domain.model.ProductInfo
 import com.nikealarm.nikedrawalarm.domain.model.translateToProductInfoList
 import com.nikealarm.nikedrawalarm.util.AlarmBuilder
 import com.nikealarm.nikedrawalarm.util.Constants
+import dagger.hilt.android.qualifiers.ApplicationContext
 import retrofit2.Retrofit
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 class ProductRepository @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val alarmBuilder: AlarmBuilder,
     private val retrofitBuilder: Retrofit.Builder
 ) {
@@ -60,7 +68,16 @@ class ProductRepository @Inject constructor(
     }
 
     fun setRepeatNewDrawNotify() {
-        alarmBuilder.setRepeatNewDrawNotify()
+        val workRequest =
+            PeriodicWorkRequestBuilder<DrawNotifyWorker>(
+                6, TimeUnit.HOURS
+            ).build()
+
+        WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+            "DrawNotifyWorker",
+            ExistingPeriodicWorkPolicy.KEEP,
+            workRequest
+        )
     }
 
     fun isExistProductAlarm(productId: String) =
@@ -74,7 +91,7 @@ class ProductRepository @Inject constructor(
     }
 
     fun cancelRepeatNewDrawNotify() {
-        alarmBuilder.cancelRepeatNewDrawNotify()
+        WorkManager.getInstance(context).cancelUniqueWork("DrawNotifyWorker")
     }
 
     fun checkAlarmPermissions() = alarmBuilder.checkPermissions()

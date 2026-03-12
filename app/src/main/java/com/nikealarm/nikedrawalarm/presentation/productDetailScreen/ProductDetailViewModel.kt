@@ -11,6 +11,7 @@ import com.nikealarm.nikedrawalarm.domain.usecase.GetProductInfoUseCase
 import com.nikealarm.nikedrawalarm.domain.usecase.InsertFavoriteUseCase
 import com.nikealarm.nikedrawalarm.domain.usecase.InsertLatestUseCase
 import com.nikealarm.nikedrawalarm.domain.usecase.SetNotificationUseCase
+import com.nikealarm.nikedrawalarm.presentation.ui.DialogScreen
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -97,6 +98,12 @@ class ProductDetailViewModel @Inject constructor(
         viewModelScope.launch {
             _uiEvent.emit(onEvent)
         }
+
+    fun setDialogScreen(dialogScreen: DialogScreen) {
+        _uiState.update {
+            it.copy(dialogScreen = dialogScreen)
+        }
+    }
 
     fun clickFavorite() = viewModelScope.launch {
         val productInfo = _uiState.value.productInfo

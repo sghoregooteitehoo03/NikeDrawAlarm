@@ -3,11 +3,13 @@ package com.nikealarm.nikedrawalarm.presentation.settingScreen
 import android.app.AlarmManager
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -17,40 +19,51 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.presentation.ui.DialogScreen
+import com.nikealarm.nikedrawalarm.util.Constants
+import kotlinx.coroutines.flow.collectLatest
 
 @Composable
-fun SettingRoute(
-    viewModel: SettingViewModel = hiltViewModel(),
-    dialogScreen: DialogScreen,
-    openDialog: (DialogScreen) -> Unit,
-    onContactEmailClick: () -> Unit,
-    onDismiss: () -> Unit
-) {
+fun SettingRoute(viewModel: SettingViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
+    LaunchedEffect(key1 = viewModel.uiEvent) {
+        viewModel.uiEvent.collectLatest { event ->
+            when (event) {
+                is SettingUiEvent.ClickAllowNotify -> {
+                    if (event.isAllow) {
+                        checkPushAlarm(
+                            openDialog = viewModel::setDialogScreen,
+                            allowNotification = viewModel::allowNotification,
+                            context = context
+                        )
+                    } else {
+                        viewModel.allowNotification(false)
+                    }
+                }
+
+                is SettingUiEvent.ClickAllowDrawFind -> {
+                    viewModel.allowDrawNotification(event.isAllow)
+                }
+
+                is SettingUiEvent.ClickClearProduct -> {
+                    viewModel.setClearType(event.clearProductType)
+                    viewModel.setDialogScreen(DialogScreen.DialogClearProduct)
+                }
+
+                is SettingUiEvent.ClickContactEmail -> {
+                    moveEmailIntent(context)
+                }
+            }
+        }
+    }
+
     SettingScreen(
         uiState = uiState,
-        onAllowNotifyClick = { isAllow ->
-            if (isAllow) {
-                checkPushAlarm(
-                    openDialog = openDialog,
-                    allowNotification = viewModel::allowNotification,
-                    context = context
-                )
-            } else {
-                viewModel.allowNotification(false)
-            }
-        },
-        onAllowDrawNotifyClick = viewModel::allowDrawNotification,
-        onClearProductClick = {
-            viewModel.setDialogType(it)
-            openDialog(DialogScreen.DialogClearProduct)
-        },
-        onContactEmailClick = onContactEmailClick
+        onEvent = viewModel::handleEvent
     )
 
-    when (dialogScreen) {
+    when (uiState.dialogScreen) {
         is DialogScreen.DialogClearProduct -> {
             val explain = when (viewModel.getDialogCategory()) {
                 is ClearProductType.ClearLatestProduct -> "최근에 본 제품 목록들을 초기화 하시겠습니까?"
@@ -62,12 +75,12 @@ fun SettingRoute(
             ProductClearDialog(
                 modifier = Modifier.fillMaxWidth(),
                 explain = explain,
-                onDismissRequest = onDismiss,
+                onDismissRequest = { viewModel.setDialogScreen(DialogScreen.DialogDismiss) },
                 onAllowClick = {
                     viewModel.clearProduct()
-                    onDismiss()
+                    viewModel.setDialogScreen(DialogScreen.DialogDismiss)
                 },
-                onCancelClick = { onDismiss() }
+                onCancelClick = { viewModel.setDialogScreen(DialogScreen.DialogDismiss) }
             )
         }
 
@@ -77,7 +90,7 @@ fun SettingRoute(
                 title = "푸쉬알림 설정",
                 explain = stringResource(id = R.string.set_notification_explain),
                 buttonText = "확인",
-                onDismissRequest = onDismiss,
+                onDismissRequest = { viewModel.setDialogScreen(DialogScreen.DialogDismiss) },
                 onAllowClick = {
                     moveSettingIntent(
                         context = context,
@@ -87,7 +100,7 @@ fun SettingRoute(
                             "android.settings.APP_NOTIFICATION_SETTINGS"
                         }
                     )
-                    onDismiss()
+                    viewModel.setDialogScreen(DialogScreen.DialogDismiss)
                 }
             )
         }
@@ -99,14 +112,14 @@ fun SettingRoute(
                     title = "권한 설정",
                     explain = stringResource(id = R.string.permission_explain),
                     buttonText = "확인",
-                    onDismissRequest = onDismiss,
+                    onDismissRequest = { viewModel.setDialogScreen(DialogScreen.DialogDismiss) },
                     onAllowClick = {
                         moveSettingIntent(context, Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
-                        onDismiss()
+                        viewModel.setDialogScreen(DialogScreen.DialogDismiss)
                     }
                 )
             } else {
-                onDismiss()
+                viewModel.setDialogScreen(DialogScreen.DialogDismiss)
             }
         }
 
@@ -132,6 +145,19 @@ private fun checkPushAlarm(
         }
     } else {
         openDialog(DialogScreen.DialogSetPushAlarm)
+    }
+}
+
+private fun moveEmailIntent(context: Context) {
+    // 이메일로 바로 이동
+    val intent = Intent(Intent.ACTION_SENDTO).apply {
+        val email = arrayOf(Constants.DEVELOPER_EMAIL)
+        data = Uri.parse("mailto:")
+        putExtra(Intent.EXTRA_EMAIL, email)
+    }
+
+    if (intent.resolveActivity(context.packageManager) != null) {
+        context.startActivity(intent)
     }
 }
 

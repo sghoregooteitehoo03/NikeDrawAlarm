@@ -15,12 +15,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nikealarm.nikedrawalarm.R
 import com.nikealarm.nikedrawalarm.data.model.entity.NotificationEntity
-import com.nikealarm.nikedrawalarm.domain.model.ProductInfo
 import com.nikealarm.nikedrawalarm.presentation.setNotificationScreen.SetNotificationDialog
 import com.nikealarm.nikedrawalarm.presentation.settingScreen.InformationDialog
 import com.nikealarm.nikedrawalarm.presentation.ui.ActionEvent
 import com.nikealarm.nikedrawalarm.presentation.ui.DialogScreen
-import com.nikealarm.nikedrawalarm.presentation.ui.DisposableEffectWithLifeCycle
 import com.nikealarm.nikedrawalarm.util.Constants
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharedFlow
@@ -36,11 +34,8 @@ fun ProductDetailRoute(
     viewModel: ProductDetailViewModel = hiltViewModel(),
     actionEvent: SharedFlow<ActionEvent>,
     showSnackBar: (String) -> Unit,
-    dialogScreen: DialogScreen,
-    openDialog: (DialogScreen) -> Unit,
-    onDismiss: () -> Unit,
     onNotificationChange: (NotificationEntity?) -> Unit,
-    onDialogButtonClick: () -> Unit,
+    navigateToSetting: () -> Unit
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -52,9 +47,9 @@ fun ProductDetailRoute(
                 when (event) {
                     is ActionEvent.ActionNotificationIcon -> {
                         if (state.isAllowNotify) {
-                            openDialog(DialogScreen.DialogSetNotify)
+                            viewModel.setDialogScreen(DialogScreen.DialogSetNotify)
                         } else {
-                            openDialog(DialogScreen.DialogAllowNotify)
+                            viewModel.setDialogScreen(DialogScreen.DialogAllowNotify)
                         }
                     }
 
@@ -101,13 +96,13 @@ fun ProductDetailRoute(
         onEvent = viewModel::handelEvent
     )
 
-    when (dialogScreen) {
+    when (state.dialogScreen) {
         DialogScreen.DialogSetNotify -> {
             SetNotificationDialog(
-                onDismissRequest = onDismiss,
+                onDismissRequest = { viewModel.setDialogScreen(DialogScreen.DialogDismiss) },
                 onButtonClick = {
                     viewModel.setNotification(notificationTime = it)
-                    onDismiss()
+                    viewModel.setDialogScreen(DialogScreen.DialogDismiss)
                 },
                 settingTime = state.notificationEntity?.notificationDate ?: 0L,
                 context = context
@@ -120,8 +115,11 @@ fun ProductDetailRoute(
                 title = "알림 설정",
                 explain = stringResource(id = R.string.allow_notification_explain),
                 buttonText = "이동",
-                onDismissRequest = onDismiss,
-                onAllowClick = onDialogButtonClick
+                onDismissRequest = { viewModel.setDialogScreen(DialogScreen.DialogDismiss) },
+                onAllowClick = {
+                    navigateToSetting()
+                    viewModel.setDialogScreen(DialogScreen.DialogDismiss)
+                }
             )
         }
 
@@ -134,21 +132,15 @@ fun LoadProductDetailRoute(
     viewModel: ProductDetailViewModel = hiltViewModel(),
     actionEvent: SharedFlow<ActionEvent>,
     showSnackBar: (String) -> Unit,
-    openDialog: (DialogScreen) -> Unit,
-    dialogScreen: DialogScreen,
-    onDismiss: () -> Unit,
     onNotificationChange: (NotificationEntity?) -> Unit,
-    onDialogButtonClick: () -> Unit,
+    navigateToSetting: () -> Unit
 ) {
     ProductDetailRoute(
         viewModel = viewModel,
         actionEvent = actionEvent,
         showSnackBar = showSnackBar,
-        dialogScreen = dialogScreen,
-        openDialog = openDialog,
-        onDismiss = onDismiss,
         onNotificationChange = onNotificationChange,
-        onDialogButtonClick = onDialogButtonClick
+        navigateToSetting = navigateToSetting
     )
 }
 

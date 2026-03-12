@@ -19,22 +19,15 @@ class GlobalViewModel @Inject constructor() : ViewModel() {
     private val _selectedCategory: MutableState<ProductCategory> =
         mutableStateOf(ProductCategory.All)
     private var _notificationEntity: MutableState<NotificationEntity?> = mutableStateOf(null)
-    private val _dialogScreen: MutableState<DialogScreen> =
-        mutableStateOf(DialogScreen.DialogDismiss)
     private val _event = MutableSharedFlow<ActionEvent>()
 
     val selectedCategory: State<ProductCategory> = _selectedCategory
-    val dialogScreen: State<DialogScreen> = _dialogScreen
     val notificationEntity: State<NotificationEntity?> = _notificationEntity
     val event = _event.asSharedFlow()
 
     fun setSelectedCategory(category: ProductCategory) {
         _selectedCategory.value = category
         setActionEvent(ActionEvent.ActionSelectCategory(category))
-    }
-
-    fun dialogOpen(dialog: DialogScreen) {
-        _dialogScreen.value = dialog
     }
 
     fun setNotificationEntity(data: NotificationEntity?) {
