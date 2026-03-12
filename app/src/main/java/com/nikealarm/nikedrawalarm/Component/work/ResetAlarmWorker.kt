@@ -28,7 +28,7 @@ class ResetAlarmWorker @AssistedInject constructor(
         // 드로우 신제품 출시 알림이 설정되어 있으면
         val isAllowDrawNotify = databaseRepository.getAllowDrawNotification().first()
         if (isAllowDrawNotify) {
-            productRepository.setFindNewDrawWork()
+            productRepository.setRepeatNewDrawNotify()
         }
 
         val notificationProducts = databaseRepository.getNotifyProductsData()
