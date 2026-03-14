@@ -17,8 +17,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.Divider
-import androidx.compose.material.Text
+import androidx.compose.material3.Divider
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -84,12 +84,12 @@ fun UpcomingScreen(
                 ) {
                     Text(
                         text = "오류가 발생하였습니다.",
-                        style = Typography.h2.copy(color = TextGray)
+                        style = Typography.headlineMedium.copy(color = TextGray)
                     )
                     Spacer(modifier = Modifier.height(18.dp))
                     Text(
                         text = "재시도",
-                        style = Typography.h2.copy(color = LightSky, fontSize = 20.sp),
+                        style = Typography.headlineMedium.copy(color = LightSky, fontSize = 20.sp),
                         modifier = Modifier
                             .clickable { products.retry() }
                     )
@@ -116,7 +116,7 @@ fun UpcomingProductItem(
                 Locale.KOREA
             ).format(productInfo.eventDate) +
                     if (productInfo.category == ProductCategory.Draw) "응모" else "출시",
-            style = Typography.h3.copy(fontWeight = FontWeight.ExtraBold),
+            style = Typography.headlineSmall.copy(fontWeight = FontWeight.ExtraBold),
             modifier = Modifier.padding(paddingValues)
         )
         Spacer(modifier = Modifier.height(14.dp))
@@ -124,18 +124,18 @@ fun UpcomingProductItem(
         Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = productInfo.title,
-            style = Typography.h4.copy(fontWeight = FontWeight.Medium),
+            style = Typography.titleLarge.copy(fontWeight = FontWeight.Medium),
             modifier = Modifier.padding(paddingValues)
         )
         Text(
             text = productInfo.subTitle,
-            style = Typography.h5.copy(fontWeight = FontWeight.Normal),
+            style = Typography.titleMedium.copy(fontWeight = FontWeight.Normal),
             modifier = Modifier.padding(paddingValues)
         )
         Spacer(modifier = Modifier.height(16.dp))
         Text(
             text = DecimalFormat("₩#,###").format(productInfo.price),
-            style = Typography.h5,
+            style = Typography.titleMedium,
             modifier = Modifier.padding(paddingValues)
         )
         Spacer(modifier = Modifier.height(14.dp))

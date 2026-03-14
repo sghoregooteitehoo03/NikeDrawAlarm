@@ -9,7 +9,6 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -30,14 +29,14 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.Divider
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Divider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -64,7 +63,6 @@ import com.nikealarm.nikedrawalarm.presentation.ui.BorderedBox
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Black
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Gray
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.LightGray
-import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.NikeDrawAssistant
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Typography
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.White
 import kotlinx.coroutines.delay
@@ -223,17 +221,17 @@ fun ProductInformation(
     Column(modifier = modifier) {
         Text(
             text = title,
-            style = Typography.h3
+            style = Typography.headlineSmall
         )
         Text(
             text = subTitle,
-            style = Typography.h4.copy(fontWeight = FontWeight.Normal)
+            style = Typography.titleLarge.copy(fontWeight = FontWeight.Normal)
         )
         Spacer(modifier = Modifier.height(24.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
                 text = price,
-                style = Typography.h4
+                style = Typography.titleLarge
             )
             Spacer(modifier = Modifier.width(16.dp))
             if (eventDate != 0L) {
@@ -253,7 +251,7 @@ fun ProductInformation(
                                 },
                         Locale.KOREA
                     ).format(eventDate),
-                    style = Typography.h4
+                    style = Typography.titleLarge
                 )
             }
         }
@@ -276,7 +274,7 @@ fun Explains(
     ) {
         Text(
             text = explain,
-            style = Typography.h5.copy(fontWeight = FontWeight.Normal),
+            style = Typography.titleMedium.copy(fontWeight = FontWeight.Normal),
             textAlign = TextAlign.Center,
             lineHeight = TextUnit(26f, type = TextUnitType.Sp)
         )
@@ -297,7 +295,7 @@ fun MoreInfoList(
     Column(modifier = modifier) {
         Text(
             text = listExplain,
-            style = Typography.h4.copy(fontWeight = FontWeight.Medium),
+            style = Typography.titleLarge.copy(fontWeight = FontWeight.Medium),
             modifier = Modifier.padding(start = 14.dp)
         )
         Spacer(modifier = Modifier.height(12.dp))
@@ -393,7 +391,7 @@ fun ProductButton(
         ) {
             Text(
                 text = "자세히 보기",
-                style = Typography.h4,
+                style = Typography.titleLarge,
                 color = White
             )
         }

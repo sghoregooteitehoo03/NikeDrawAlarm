@@ -1,34 +1,40 @@
-package com.plcoding.cryptocurrencyappyt.presentation.ui.theme
+package com.nikealarm.nikedrawalarm.presentation.ui.theme
 
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.darkColors
-import androidx.compose.material.lightColors
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Black
+import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.DarkBackground
+import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Shapes
+import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Typography
+import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.White
 
-private val DarkColorPalette = darkColors(
+private val DarkColorPalette = darkColorScheme(
     primary = Black,
-    primaryVariant = Black,
+    primaryContainer = Black,
     onPrimary = White,
     secondary = White,
-    secondaryVariant = White,
+    secondaryContainer = White,
     onSecondary = Black,
     background = DarkBackground,
     onBackground = White
 )
 
-private val LightColorPalette = lightColors(
+private val LightColorPalette = lightColorScheme(
     primary = White,
-    primaryVariant = White,
+    primaryContainer = White,
     onPrimary = Black,
     secondary = Black,
-    secondaryVariant = Black,
+    secondaryContainer = Black,
     onSecondary = White,
     background = White,
     onBackground = Black
 )
 
 @Composable
-fun NikeDrawAssistant(darkTheme: Boolean = false, content: @Composable() () -> Unit) {
+fun NikeDrawAssistant(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable() () -> Unit) {
     val colors = if (darkTheme) {
         DarkColorPalette
     } else {
@@ -36,7 +42,7 @@ fun NikeDrawAssistant(darkTheme: Boolean = false, content: @Composable() () -> U
     }
 
     MaterialTheme(
-        colors = colors,
+        colorScheme = colors,
         typography = Typography,
         shapes = Shapes,
         content = content

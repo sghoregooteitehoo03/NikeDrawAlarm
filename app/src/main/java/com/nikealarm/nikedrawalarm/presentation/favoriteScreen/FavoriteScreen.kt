@@ -15,8 +15,8 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.Text
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,7 +33,7 @@ import com.nikealarm.nikedrawalarm.data.model.entity.LatestProductEntity
 import com.nikealarm.nikedrawalarm.data.model.entity.ProductEntity
 import com.nikealarm.nikedrawalarm.domain.model.JoinedProductType
 import com.nikealarm.nikedrawalarm.presentation.ui.ProductInfoItemRow
-import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.NikeDrawAssistant
+import com.nikealarm.nikedrawalarm.presentation.ui.theme.NikeDrawAssistant
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Shapes
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.TextGray
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Typography
@@ -62,7 +62,7 @@ fun FavoriteScreen(
                             if (state.latestProducts.isEmpty()) {
                                 Text(
                                     text = "최근에 본 제품이 없습니다.",
-                                    style = Typography.h3.copy(color = TextGray, fontSize = 20.sp),
+                                    style = Typography.headlineSmall.copy(color = TextGray, fontSize = 20.sp),
                                     modifier = Modifier.align(Alignment.CenterHorizontally)
                                 )
                             }
@@ -80,7 +80,7 @@ fun FavoriteScreen(
                             if (state.notifyProducts.isEmpty()) {
                                 Text(
                                     text = "알림 설정한 제품이 없습니다.",
-                                    style = Typography.h3.copy(color = TextGray, fontSize = 20.sp),
+                                    style = Typography.headlineSmall.copy(color = TextGray, fontSize = 20.sp),
                                     modifier = Modifier.align(Alignment.CenterHorizontally)
                                 )
                             }
@@ -125,7 +125,7 @@ fun FavoriteScreen(
                             if (state.favoriteProducts.isEmpty()) {
                                 Text(
                                     text = "좋아요 한 제품이 없습니다.",
-                                    style = Typography.h3.copy(color = TextGray, fontSize = 20.sp),
+                                    style = Typography.headlineSmall.copy(color = TextGray, fontSize = 20.sp),
                                     modifier = Modifier.align(Alignment.CenterHorizontally)
                                 )
                             }
@@ -187,12 +187,12 @@ fun ProductColumn(
         ) {
             Text(
                 text = title,
-                style = Typography.h4,
+                style = Typography.titleLarge,
                 modifier = Modifier.align(Alignment.CenterStart)
             )
             Text(
                 text = subTitle,
-                style = Typography.body1.copy(fontWeight = FontWeight.Medium, color = TextGray),
+                style = Typography.titleSmall.copy(fontWeight = FontWeight.Medium, color = TextGray),
                 modifier = Modifier
                     .align(Alignment.CenterEnd)
                     .clickable { onSubTitleClick() }
@@ -252,7 +252,7 @@ fun LatestProductItem(
         Spacer(modifier = Modifier.height(6.dp))
         Text(
             text = productEntity.title,
-            style = Typography.h5,
+            style = Typography.titleMedium,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.padding(start = 4.dp, end = 4.dp)
@@ -260,7 +260,7 @@ fun LatestProductItem(
         Spacer(modifier = Modifier.height(2.dp))
         Text(
             text = productEntity.subTitle,
-            style = Typography.body1,
+            style = Typography.titleSmall,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.padding(start = 4.dp, end = 4.dp, bottom = 4.dp)

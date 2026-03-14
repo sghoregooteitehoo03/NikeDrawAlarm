@@ -8,11 +8,14 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Scaffold
-import androidx.compose.material.TopAppBar
-import androidx.compose.material.rememberScaffoldState
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -24,7 +27,7 @@ import androidx.navigation.compose.rememberNavController
 import com.nikealarm.nikedrawalarm.presentation.productScreen.ProductCategories
 import com.nikealarm.nikedrawalarm.presentation.ui.navigation.AppNavController
 import com.nikealarm.nikedrawalarm.util.Constants
-import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.NikeDrawAssistant
+import com.nikealarm.nikedrawalarm.presentation.ui.theme.NikeDrawAssistant
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 
@@ -32,6 +35,7 @@ import kotlinx.coroutines.flow.collectLatest
 class MainActivity : ComponentActivity() {
     private val gViewModel by viewModels<GlobalViewModel>()
 
+    @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         createChannel() // Notification channel 생성
@@ -39,15 +43,14 @@ class MainActivity : ComponentActivity() {
         setContent {
             NikeDrawAssistant {
                 val navController = rememberNavController()
-                val scaffoldState = rememberScaffoldState()
+                val snackbarHostState = remember { SnackbarHostState() }
                 val appNavController = remember { AppNavController(gViewModel, navController) }
 
                 LaunchedEffect(key1 = gViewModel.event) {
                     gViewModel.event.collectLatest { event ->
                         when (event) {
                             is ActionEvent.ActionShowMessage -> {
-                                scaffoldState.snackbarHostState
-                                    .showSnackbar(event.message)
+                                snackbarHostState.showSnackbar(event.message)
                             }
 
                             is ActionEvent.ActionNavigationUp -> {
@@ -64,17 +67,21 @@ class MainActivity : ComponentActivity() {
                 }
 
                 Scaffold(
-                    scaffoldState = scaffoldState,
+                    snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
                     topBar = {
                         val backStack = navController.currentBackStackEntryAsState()
                         val currentRoute = backStack.value?.destination?.route ?: ""
 
-                        TopAppBar(
-                            modifier = if (currentRoute == UiScreen.ProductScreen.route) {
-                                Modifier.height(96.dp)
-                            } else {
-                                Modifier.height(54.dp)
-                            }
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(
+                                    if (currentRoute == UiScreen.ProductScreen.route) {
+                                        96.dp
+                                    } else {
+                                        54.dp
+                                    }
+                                )
                         ) {
                             NikeTopAppBar(
                                 modifier = Modifier

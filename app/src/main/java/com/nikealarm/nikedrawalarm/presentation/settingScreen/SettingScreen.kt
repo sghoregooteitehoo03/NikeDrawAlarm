@@ -12,8 +12,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Switch
-import androidx.compose.material.Text
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -26,7 +26,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.nikealarm.nikedrawalarm.BuildConfig
-import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.NikeDrawAssistant
+import com.nikealarm.nikedrawalarm.presentation.ui.theme.NikeDrawAssistant
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.TextGray
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Typography
 
@@ -126,7 +126,7 @@ fun SettingLayout(
     Column(modifier = modifier) {
         Text(
             text = category,
-            style = Typography.body1.copy(fontWeight = FontWeight.ExtraBold),
+            style = Typography.titleSmall.copy(fontWeight = FontWeight.ExtraBold),
             modifier = Modifier.padding(paddingValues)
         )
         Spacer(modifier = Modifier.height(4.dp))
@@ -158,13 +158,13 @@ fun SettingContent(
     ) {
         Text(
             text = text,
-            style = Typography.h5.copy(fontWeight = FontWeight.Normal)
+            style = Typography.titleMedium.copy(fontWeight = FontWeight.Normal)
         )
         if (subText.isNotEmpty()) {
             Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = subText,
-                style = Typography.body1.copy(color = TextGray)
+                style = Typography.titleSmall.copy(color = TextGray)
             )
         }
     }

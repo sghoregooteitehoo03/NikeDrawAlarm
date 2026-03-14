@@ -1,7 +1,7 @@
 package com.nikealarm.nikedrawalarm.presentation.settingScreen
 
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Text
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -26,7 +26,7 @@ fun InformationDialog(
         content = {
             Text(
                 text = explain,
-                style = Typography.h5.copy(fontWeight = FontWeight.Normal),
+                style = Typography.titleMedium.copy(fontWeight = FontWeight.Normal),
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(
                     start = 20.dp,
@@ -56,7 +56,7 @@ fun ProductClearDialog(
         content = {
             Text(
                 text = explain,
-                style = Typography.h5.copy(fontWeight = FontWeight.Normal),
+                style = Typography.titleMedium.copy(fontWeight = FontWeight.Normal),
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(
                     start = 28.dp,

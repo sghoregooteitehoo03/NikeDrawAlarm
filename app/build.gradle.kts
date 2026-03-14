@@ -10,12 +10,12 @@ plugins {
 
 android {
     namespace = "com.nikealarm.nikedrawalarm"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.nikealarm.nikedrawalarm"
         minSdk = 23
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 25
         versionName = "4.0.2"
 
@@ -61,16 +61,14 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
-    // Material
-    implementation(libs.material)
-
     // Retrofit
     implementation(libs.retrofit)
     implementation(libs.retrofit.converter.gson)
 
     // Compose
+    implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)
-    implementation(libs.androidx.compose.material)
+    implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.constraintlayout.compose)
@@ -82,9 +80,6 @@ dependencies {
 
     // Custom Tabs
     implementation(libs.androidx.browser)
-
-    // Compose Collapsing Toolbar
-    implementation(libs.toolbar.compose)
 
     // ViewModel
     implementation(libs.androidx.lifecycle.viewmodel.ktx)

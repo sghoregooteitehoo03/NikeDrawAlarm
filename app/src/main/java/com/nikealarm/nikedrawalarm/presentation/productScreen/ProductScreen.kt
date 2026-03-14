@@ -17,7 +17,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.material.Text
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -40,7 +40,7 @@ import com.nikealarm.nikedrawalarm.presentation.ui.ProductInfoItem
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Black
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Gray
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.LightSky
-import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.NikeDrawAssistant
+import com.nikealarm.nikedrawalarm.presentation.ui.theme.NikeDrawAssistant
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Shapes
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.TextGray
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Typography
@@ -82,7 +82,7 @@ fun ProductScreen(
                 if (!isLoading && products.itemCount == 0) {
                     Text(
                         text = "제품이 존재하지 않습니다.",
-                        style = Typography.h2.copy(color = TextGray),
+                        style = Typography.headlineMedium.copy(color = TextGray),
                         modifier = Modifier.align(Alignment.Center)
                     )
                 } else {
@@ -120,12 +120,12 @@ fun ProductScreen(
                 ) {
                     Text(
                         text = "오류가 발생하였습니다.",
-                        style = Typography.h2.copy(color = TextGray)
+                        style = Typography.headlineMedium.copy(color = TextGray)
                     )
                     Spacer(modifier = Modifier.height(18.dp))
                     Text(
                         text = "재시도",
-                        style = Typography.h2.copy(color = LightSky, fontSize = 20.sp),
+                        style = Typography.headlineMedium.copy(color = LightSky, fontSize = 20.sp),
                         modifier = Modifier
                             .clickable { products.retry() }
                     )

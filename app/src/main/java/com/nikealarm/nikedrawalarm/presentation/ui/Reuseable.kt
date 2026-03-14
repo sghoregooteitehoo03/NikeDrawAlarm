@@ -19,18 +19,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CornerSize
-import androidx.compose.material.BottomNavigation
-import androidx.compose.material.BottomNavigationItem
-import androidx.compose.material.Divider
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBackIos
+import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.NotificationsNone
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Divider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
@@ -41,7 +39,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -54,14 +51,13 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavDestination
-import androidx.navigation.NavDestination.Companion.hierarchy
 import coil.compose.rememberImagePainter
 import com.nikealarm.nikedrawalarm.data.model.entity.NotificationEntity
 import com.nikealarm.nikedrawalarm.domain.model.JoinedProductType
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Black
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Gray
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.LightGray
-import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.NikeDrawAssistant
+import com.nikealarm.nikedrawalarm.presentation.ui.theme.NikeDrawAssistant
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Shapes
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.Typography
 import com.plcoding.cryptocurrencyappyt.presentation.ui.theme.White
@@ -166,20 +162,20 @@ fun ProductInfoItem(
         ) {
             Text(
                 text = title,
-                style = Typography.h5,
+                style = Typography.titleMedium,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
             Text(
                 text = subTitle,
-                style = Typography.body1,
+                style = Typography.titleSmall,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = price,
-                style = Typography.body1.copy(fontWeight = FontWeight.ExtraBold)
+                style = Typography.titleSmall.copy(fontWeight = FontWeight.ExtraBold)
             )
         }
     }
@@ -205,8 +201,8 @@ fun NikeTopAppBar(
             )
             Text(
                 text = title,
-                style = Typography.h2,
-                color = MaterialTheme.colors.onPrimary,
+                style = Typography.headlineMedium,
+                color = MaterialTheme.colorScheme.onPrimary,
                 modifier = Modifier.constrainAs(titleText) {
                     start.linkTo(navigation.end)
                     top.linkTo(parent.top)
@@ -240,40 +236,41 @@ fun NikeBottomBar(
         UiScreen.ProductScreen.route,
         UiScreen.UpcomingScreen.route,
         UiScreen.FavoriteScreen.route -> {
-            BottomNavigation {
-                bottomScreenList.forEach { screen ->
-                    val selected =
-                        currentDestination?.hierarchy?.any { it.route == screen.route } == true
-
-                    BottomNavigationItem(
-                        selected = selected,
-                        label = {
-                            Text(
-                                text = screen.route,
-                                style = Typography.subtitle1.copy(
-                                    fontWeight = if (selected) {
-                                        FontWeight.Bold
-                                    } else {
-                                        FontWeight.Normal
-                                    }
-                                )
-                            )
-                        },
-                        onClick = { onClick(screen.route) },
-                        icon = {
-                            val iconRes = if (selected) {
-                                screen.bottomSelectedIcon
-                            } else {
-                                screen.bottomUnSelectedIcon
-                            }
-
-                            Icon(
-                                painterResource(id = iconRes),
-                                screen.route
-                            )
-                        })
-                }
-            }
+            // TODO: Bottom Nav 구현
+//            BottomNavigation {
+//                bottomScreenList.forEach { screen ->
+//                    val selected =
+//                        currentDestination?.hierarchy?.any { it.route == screen.route } == true
+//
+//                    BottomNavigationItem(
+//                        selected = selected,
+//                        label = {
+//                            Text(
+//                                text = screen.route,
+//                                style = Typography.bodySmall.copy(
+//                                    fontWeight = if (selected) {
+//                                        FontWeight.Bold
+//                                    } else {
+//                                        FontWeight.Normal
+//                                    }
+//                                )
+//                            )
+//                        },
+//                        onClick = { onClick(screen.route) },
+//                        icon = {
+//                            val iconRes = if (selected) {
+//                                screen.bottomSelectedIcon
+//                            } else {
+//                                screen.bottomUnSelectedIcon
+//                            }
+//
+//                            Icon(
+//                                painterResource(id = iconRes),
+//                                screen.route
+//                            )
+//                        })
+//                }
+//            }
         }
 
         else -> {}
@@ -304,21 +301,21 @@ fun ProductInfoItemRow(
         Column {
             Text(
                 text = title,
-                style = Typography.h5,
+                style = Typography.titleMedium,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
             Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = subTitle,
-                style = Typography.body1,
+                style = Typography.titleSmall,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
             Spacer(modifier = Modifier.height(20.dp))
             Text(
                 text = explain,
-                style = Typography.body1.copy(fontWeight = FontWeight.ExtraBold),
+                style = Typography.titleSmall.copy(fontWeight = FontWeight.ExtraBold),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -346,7 +343,7 @@ fun DialogFormat(
             ) {
                 Text(
                     text = title,
-                    style = Typography.h4,
+                    style = Typography.titleLarge,
                     modifier = Modifier.padding(top = 14.dp, bottom = 14.dp)
                 )
                 Divider(thickness = 2.dp, color = LightGray)
@@ -397,7 +394,7 @@ fun DialogWithCancelFormat(
             ) {
                 Text(
                     text = title,
-                    style = Typography.h4,
+                    style = Typography.titleLarge,
                     modifier = Modifier.padding(top = 14.dp, bottom = 14.dp)
                 )
                 Divider(thickness = 2.dp, color = LightGray)
@@ -466,7 +463,7 @@ fun DialogButton(
     ) {
         Text(
             text = text,
-            style = Typography.h5,
+            style = Typography.titleMedium,
             color = textColor,
             modifier = Modifier
                 .padding(top = 14.dp, bottom = 14.dp)
@@ -531,7 +528,7 @@ fun ActionIcon(
             Icon(
                 imageVector = Icons.Default.Settings,
                 contentDescription = "설정",
-                tint = MaterialTheme.colors.onPrimary,
+                tint = MaterialTheme.colorScheme.onPrimary,
                 modifier = modifier
                     .size(24.dp)
                     .clickable { onClick(ActionEvent.ActionSettingIcon) },
@@ -553,7 +550,7 @@ fun ActionIcon(
                     modifier = modifier
                         .size(24.dp)
                         .clickable { onClick(ActionEvent.ActionNotificationIcon) },
-                    tint = MaterialTheme.colors.onPrimary
+                    tint = MaterialTheme.colorScheme.onPrimary
                 )
             }
         }
@@ -577,12 +574,12 @@ fun NavigationIcon(
         else -> {
             Row(modifier = modifier) {
                 Icon(
-                    imageVector = Icons.Default.ArrowBackIos,
+                    imageVector = Icons.Default.ArrowBackIosNew,
                     contentDescription = "뒤로가기",
                     modifier = Modifier
                         .size(24.dp)
                         .clickable { onClick(ActionEvent.ActionNavigationUp) },
-                    tint = MaterialTheme.colors.onPrimary
+                    tint = MaterialTheme.colorScheme.onPrimary
                 )
                 Spacer(modifier = Modifier.width(14.dp))
             }

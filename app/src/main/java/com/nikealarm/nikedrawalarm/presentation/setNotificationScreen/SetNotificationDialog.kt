@@ -17,8 +17,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material.Divider
-import androidx.compose.material.Text
+import androidx.compose.material3.Divider
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -144,9 +144,9 @@ fun NotificationPageItem(
                 Black.copy(alpha = 0.4f)
             },
             style = if (currentPage == page) {
-                Typography.h3.copy(fontWeight = FontWeight.ExtraBold)
+                Typography.headlineSmall.copy(fontWeight = FontWeight.ExtraBold)
             } else {
-                Typography.h4.copy(fontWeight = FontWeight.Medium)
+                Typography.titleLarge.copy(fontWeight = FontWeight.Medium)
             }
         )
     }

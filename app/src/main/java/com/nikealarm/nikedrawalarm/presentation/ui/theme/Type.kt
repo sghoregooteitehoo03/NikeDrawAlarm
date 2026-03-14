@@ -1,6 +1,6 @@
 package com.plcoding.cryptocurrencyappyt.presentation.ui.theme
 
-import androidx.compose.material.Typography
+import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -8,36 +8,36 @@ import androidx.compose.ui.unit.sp
 
 // Set of Material typography styles to start with
 val Typography = Typography(
-    h1 = TextStyle(
+    headlineLarge = TextStyle(
         fontWeight = FontWeight.ExtraBold,
         fontSize = 28.sp,
     ),
-    h2 = TextStyle(
+    headlineMedium = TextStyle(
         fontWeight = FontWeight.ExtraBold,
         fontSize = 24.sp
     ),
-    h3 = TextStyle(
+    headlineSmall = TextStyle(
         fontWeight = FontWeight.Medium,
         fontSize = 22.sp
     ),
-    h4 = TextStyle(
+    titleLarge = TextStyle(
         fontWeight = FontWeight.ExtraBold,
         fontSize = 18.sp
     ),
-    h5 = TextStyle(
+    titleMedium = TextStyle(
         fontWeight = FontWeight.Medium,
         fontSize = 16.sp
     ),
-    body1 = TextStyle(
+    titleSmall = TextStyle(
+        fontWeight = FontWeight.Normal,
+        fontSize = 14.sp
+    ),
+    bodyMedium = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Normal,
         fontSize = 14.sp
     ),
-    body2 = TextStyle(
-        fontWeight = FontWeight.Normal,
-        fontSize = 14.sp
-    ),
-    subtitle1 = TextStyle(
+    bodySmall = TextStyle(
         fontWeight = FontWeight.Normal,
         fontSize = 12.sp
     )
