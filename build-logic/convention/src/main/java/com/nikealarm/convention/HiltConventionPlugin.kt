@@ -1,6 +1,6 @@
-package com.ns.convention
+package com.nikealarm.convention
 
-import com.ns.convention.extension.libs
+import com.nikealarm.convention.extension.libs
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.dependencies
@@ -13,7 +13,7 @@ class HiltConventionPlugin : Plugin<Project> {
 
             dependencies {
                 "implementation"(libs.findLibrary("hilt.android").get())
-                "ksp"(libs.findLibrary("hilt.compiler").get())
+                "ksp"(libs.findLibrary("hilt.android.compiler").get())
             }
         }
     }

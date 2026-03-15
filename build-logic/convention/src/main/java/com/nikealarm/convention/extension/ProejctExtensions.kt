@@ -1,4 +1,4 @@
-package com.ns.convention.extension
+package com.nikealarm.convention.extension
 
 import org.gradle.api.Project
 import org.gradle.api.artifacts.VersionCatalog

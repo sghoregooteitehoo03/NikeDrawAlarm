@@ -1,4 +1,4 @@
-package com.ns.convention
+package com.nikealarm.convention
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project

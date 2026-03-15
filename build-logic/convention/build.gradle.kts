@@ -5,7 +5,7 @@ plugins {
     `kotlin-dsl`
 }
 
-group = "com.ns.build_logic"
+group = "com.nikealarm.build_logic"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17
@@ -29,35 +29,35 @@ gradlePlugin {
     plugins {
         register("androidApplicationConventionPlugin") {
             id = libs.plugins.android.application.convention.plugin.get().pluginId
-            implementationClass = "com.ns.convention.AndroidApplicationConventionPlugin"
+            implementationClass = "com.nikealarm.convention.AndroidApplicationConventionPlugin"
         }
         register("androidApplicationComposeConventionPlugin") {
             id = libs.plugins.android.application.compose.convention.plugin.get().pluginId
-            implementationClass = "com.ns.convention.AndroidApplicationComposeConventionPlugin"
+            implementationClass = "com.nikealarm.convention.AndroidApplicationComposeConventionPlugin"
         }
         register("androidLibraryConventionPlugin") {
             id = libs.plugins.android.library.convention.plugin.get().pluginId
-            implementationClass = "com.ns.convention.AndroidLibraryConventionPlugin"
+            implementationClass = "com.nikealarm.convention.AndroidLibraryConventionPlugin"
         }
         register("androidLibraryComposeConventionPlugin") {
             id = libs.plugins.android.library.compose.convention.plugin.get().pluginId
-            implementationClass = "com.ns.convention.AndroidLibraryComposeConventionPlugin"
+            implementationClass = "com.nikealarm.convention.AndroidLibraryComposeConventionPlugin"
         }
         register("featureApiConventionPlugin") {
             id = libs.plugins.feature.api.convention.plugin.get().pluginId
-            implementationClass = "com.ns.convention.FeatureApiConventionPlugin"
+            implementationClass = "com.nikealarm.convention.FeatureApiConventionPlugin"
         }
         register("featureImplConventionPlugin") {
             id = libs.plugins.feature.impl.convention.plugin.get().pluginId
-            implementationClass = "com.ns.convention.FeatureImplConventionPlugin"
+            implementationClass = "com.nikealarm.convention.FeatureImplConventionPlugin"
         }
         register("roomConventionPlugin") {
             id = libs.plugins.room.convention.plugin.get().pluginId
-            implementationClass = "com.ns.convention.RoomConventionPlugin"
+            implementationClass = "com.nikealarm.convention.RoomConventionPlugin"
         }
         register("hiltConventionPlugin") {
             id = libs.plugins.hilt.convention.plugin.get().pluginId
-            implementationClass = "com.ns.convention.HiltConventionPlugin"
+            implementationClass = "com.nikealarm.convention.HiltConventionPlugin"
         }
     }
 }

@@ -1,16 +1,15 @@
-package com.ns.convention.internal
+package com.nikealarm.convention.internal
 
 import com.android.build.api.dsl.CommonExtension
-import com.ns.convention.extension.libs
+import com.nikealarm.convention.extension.libs
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.dependencies
-import java.lang.module.ModuleFinder.compose
 
 internal fun Project.configureAndroidCompose(
-    commonExtension: CommonExtension<*, *, *, *, *, *>,
+    commonExtension: CommonExtension,
 ) {
     commonExtension.apply {
-        buildFeatures {
+        buildFeatures.apply {
             compose = true
         }
 

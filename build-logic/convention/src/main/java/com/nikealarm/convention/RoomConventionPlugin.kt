@@ -1,7 +1,7 @@
-package com.ns.convention
+package com.nikealarm.convention
 
 import androidx.room.gradle.RoomExtension
-import com.ns.convention.extension.libs
+import com.nikealarm.convention.extension.libs
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure

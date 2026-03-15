@@ -1,7 +1,7 @@
-package com.ns.convention
+package com.nikealarm.convention
 
 import com.android.build.api.dsl.ApplicationExtension
-import com.ns.convention.internal.configureAndroidCompose
+import com.nikealarm.convention.internal.configureAndroidCompose
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.apply
