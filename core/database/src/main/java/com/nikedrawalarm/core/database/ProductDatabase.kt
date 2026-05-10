@@ -13,6 +13,6 @@ import com.nikedrawalarm.core.database.model.ProductEntity
     version = 1,
     exportSchema = false
 )
-abstract class ProductDatabase : RoomDatabase() {
+internal abstract class ProductDatabase : RoomDatabase() {
     abstract fun getDao(): ProductDao
 }
